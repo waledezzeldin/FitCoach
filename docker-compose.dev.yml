@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+postgres:
+image: postgres:15
+environment:
+POSTGRES_USER: postgres
+POSTGRES_PASSWORD: postgres
+POSTGRES_DB: fitcoach_dev
+ports: ['5432:5432']
+volumes: ['pgdata:/var/lib/postgresql/data']
+redis:
+image: redis:7
+ports: ['6379:6379']
+rabbitmq:
+image: rabbitmq:3-management
+ports: ['5672:5672','15672:15672']
+backend:
+build: ./backend
+environment:
+DATABASE_URL: postgres://postgres:postgres@postgres:5432/fitcoach_dev
+REDIS_URL: redis://redis:6379
+AGORA_APP_ID: '{AGORA_APP_ID}'
+AGORA_APP_CERT: '{AGORA_APP_CERT}'
+STRIPE_SECRET_KEY: '{STRIPE_SECRET_KEY}'
+depends_on: ['postgres','redis','rabbitmq']
+ports: ['3000:3000']
+volumes:
+pgdata:
