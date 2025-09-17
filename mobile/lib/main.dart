@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
@@ -8,7 +9,10 @@ import 'screens/checkout_screen.dart';
 import 'screens//profile/profile_screen.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  // Send fcmToken to backend and associate with userId
   runApp(FitCoachApp());
 }
 

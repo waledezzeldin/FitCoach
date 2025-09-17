@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-// Update the path below to the correct location if needed
+import 'package:dio/dio.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class ApiService {
   // Add your API methods here
@@ -12,38 +15,100 @@ class ApiService {
   }
 }
 
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
 
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passController = TextEditingController();
-  final ApiService api = ApiService();
+  Future<void> handleGoogleSignIn(BuildContext context) async {
+    final googleSignIn = GoogleSignIn.instance;
+    final account = await googleSignIn.signIn();
+    final auth = await account?.authentication;
+    final accessToken = auth?.accessToken;
+    if (accessToken != null) {
+      final response = await Dio().post(
+        'http://your-backend-url/v1/users/social',
+        data: {'provider': 'google', 'accessToken': accessToken},
+      );
+      // Save JWT and user info from response
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google login successful!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google login failed')),
+      );
+    }
+  }
+
+  Future<void> handleFacebookSignIn(BuildContext context) async {
+    final result = await FacebookAuth.instance.login();
+    final accessToken = result.accessToken?.tokenString;
+    if (accessToken != null) {
+      final response = await Dio().post(
+        'http://your-backend-url/v1/users/social',
+        data: {'provider': 'facebook', 'accessToken': accessToken},
+      );
+      // Save JWT and user info from response
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Facebook login successful!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Facebook login failed')),
+      );
+    }
+  }
+
+  Future<void> handleAppleSignIn(BuildContext context) async {
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+      );
+      final accessToken = credential.identityToken;
+      if (accessToken != null) {
+        final response = await Dio().post(
+          'http://your-backend-url/v1/users/social',
+          data: {'provider': 'apple', 'accessToken': accessToken},
+        );
+        // Save JWT and user info from response
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Apple login successful!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Apple login failed')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Apple login error: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login")),
+      appBar: AppBar(title: const Text('Login')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: emailController, decoration: InputDecoration(labelText: "Email")),
-            TextField(controller: passController, decoration: InputDecoration(labelText: "Password"), obscureText: true),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  final res = await api.login(emailController.text, passController.text);
-                  print("Login success: $res");
-                  Navigator.pushReplacementNamed(context, "/dashboard");
-                } catch (e) {
-                  print("Login failed: $e");
-                }
-              },
-              child: Text("Login"),
+            // ...existing login fields...
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.g_mobiledata),
+              label: const Text('Sign in with Google'),
+              onPressed: () => handleGoogleSignIn(context),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.apple),
+              label: const Text('Sign in with Apple'),
+              onPressed: () => handleAppleSignIn(context),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.facebook),
+              label: const Text('Sign in with Facebook'),
+              onPressed: () => handleFacebookSignIn(context),
             ),
           ],
         ),
