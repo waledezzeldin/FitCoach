@@ -203,3 +203,11 @@ model Payment {
   provider       String
   createdAt      DateTime      @default(now())
 }
+
+model CoachRequest {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  status    String   // "pending", "approved", "rejected"
+  createdAt DateTime @default(now())
+}
