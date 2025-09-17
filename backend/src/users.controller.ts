@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import axios from 'axios';
+import { authenticateJWT, requireAdmin } from './middleware/auth.middleware';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -137,6 +138,16 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.json({ id: user.id, email: user.email, name: user.name, phone: user.phone });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update user profile.' });
+  }
+});
+
+// Admin: Get all users
+router.get('/', authenticateJWT, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch users.' });
   }
 });
 

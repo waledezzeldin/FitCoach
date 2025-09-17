@@ -44,6 +44,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return response.data;
   }
 
+  Future<void> cancelOrder(String orderId) async {
+    await Dio().post('http://your-backend-url/v1/orders/$orderId/cancel');
+  }
+
+  Future<void> returnOrder(String orderId) async {
+    await Dio().post('http://your-backend-url/v1/orders/$orderId/return');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,6 +74,30 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     );
                   },
                 ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          // Example order data, replace with your actual order data
+          final order = {
+            'id': '123',
+            'product': 'Example Product',
+            'price': 29.99,
+          };
+
+          // Cancel order button
+          ElevatedButton(
+            onPressed: () => cancelOrder(order['id'] as String),
+            child: const Text('Cancel Order'),
+          );
+
+          // Return order button
+          ElevatedButton(
+            onPressed: () => returnOrder(order['id'] as String),
+            child: const Text('Return Order'),
+          );
+        },
+        label: const Text('Manage Order'),
+        icon: const Icon(Icons.shopping_cart),
+      ),
     );
   }
 }
