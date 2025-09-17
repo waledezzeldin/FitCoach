@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-08-01' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2022-11-15' });
 
 // POST /v1/orders/create -> create DB order + Stripe PaymentIntent, return client_secret
 router.post('/create', async (req, res) => {
@@ -58,6 +58,36 @@ router.post('/create', async (req, res) => {
   } catch (e:any) {
     console.error(e);
     res.status(500).json({ error: e.message });
+  }
+});
+
+// Cancel order
+router.post('/:id/cancel', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'cancelled' }
+    });
+    // TODO: Integrate with payment provider for refund if needed
+    res.json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to cancel order.' });
+  }
+});
+
+// Return order
+router.post('/:id/return', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'returned' }
+    });
+    // TODO: Integrate with payment provider for refund if needed
+    res.json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to process return.' });
   }
 });
 

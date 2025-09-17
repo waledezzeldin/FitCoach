@@ -5,6 +5,12 @@ class AdminPanelScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Example: Only show admin panel if user.role == 'admin'
+    final user = {'role': 'admin'}; // This should come from your user management logic
+    if (user['role'] != 'admin') {
+      return const Center(child: Text('Access denied'));
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Admin Panel')),
       body: ListView(

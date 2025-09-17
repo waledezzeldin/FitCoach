@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class ApiService {
   // Add your API methods here
@@ -18,17 +19,29 @@ class ApiService {
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
+  Future<void> sendDeviceTokenToBackend(String userId) async {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    if (fcmToken != null) {
+      await Dio().post(
+        'http://your-backend-url/v1/users/device-token',
+        data: {'userId': userId, 'deviceToken': fcmToken},
+      );
+    }
+  }
+
   Future<void> handleGoogleSignIn(BuildContext context) async {
     final googleSignIn = GoogleSignIn.instance;
-    final account = await googleSignIn.signIn();
+    final account = await googleSignIn.attemptLightweightAuthentication();
     final auth = await account?.authentication;
-    final accessToken = auth?.accessToken;
-    if (accessToken != null) {
+    final idToken = auth?.idToken;
+    if (idToken != null) {
       final response = await Dio().post(
         'http://your-backend-url/v1/users/social',
-        data: {'provider': 'google', 'accessToken': accessToken},
+        data: {'provider': 'google', 'idToken': idToken},
       );
       // Save JWT and user info from response
+      final userId = response.data['user']['id'];
+      await sendDeviceTokenToBackend(userId); // <-- Register device token
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Google login successful!')),
       );
@@ -48,6 +61,8 @@ class LoginScreen extends StatelessWidget {
         data: {'provider': 'facebook', 'accessToken': accessToken},
       );
       // Save JWT and user info from response
+      final userId = response.data['user']['id'];
+      await sendDeviceTokenToBackend(userId); // <-- Register device token
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Facebook login successful!')),
       );
@@ -70,6 +85,8 @@ class LoginScreen extends StatelessWidget {
           data: {'provider': 'apple', 'accessToken': accessToken},
         );
         // Save JWT and user info from response
+        final userId = response.data['user']['id'];
+        await sendDeviceTokenToBackend(userId); // <-- Register device token
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Apple login successful!')),
         );
