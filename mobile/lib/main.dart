@@ -7,11 +7,14 @@ import 'screens/recommendations/recommendation_screen.dart';
 import 'screens//coaching/video_call_screen.dart';
 import 'screens/checkout_screen.dart';
 import 'screens//profile/profile_screen.dart';
+import 'screens/store/store_screen.dart';
+import 'screens/subscriptions/subscription_screen.dart';
+import 'screens/store/bundle_list_screen.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final fcmToken = await FirebaseMessaging.instance.getToken();
+ //final fcmToken = await FirebaseMessaging.instance.getToken();
   // Send fcmToken to backend and associate with userId
   runApp(FitCoachApp());
 }
@@ -22,7 +25,7 @@ class FitCoachApp extends StatelessWidget {
     return MaterialApp(
       title: 'FitCoach+',
       theme: ThemeData(primarySwatch: Colors.blue),
-      initialRoute: '/login',
+      initialRoute: '/dashboard',
       routes: {
         '/login': (_) => LoginScreen(),
         '/signup': (_) => SignupScreen(),
@@ -31,6 +34,9 @@ class FitCoachApp extends StatelessWidget {
         '/video': (_) => const VideoCallScreen(key: const ValueKey("testchannel"), coachId: "yourCoachId"),
         '/checkout': (_) => CheckoutScreen(),
         '/profile': (_) => ProfileScreen(),
+        '/store': (_) => StoreScreen(),
+        '/subscriptions': (_) => SubscriptionScreen(),
+        '/bundles': (_) => BundleListScreen(),
       },
     );
   }

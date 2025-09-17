@@ -1,40 +1,56 @@
 import 'package:flutter/material.dart';
-// Update the import path below if the file exists elsewhere, for example:
-import '../recommendations/recommendation_screen.dart';
-// Or create the file at lib/screens/recommendations/recommendation_screen.dart if it does not exist.
-import '../coaching/video_call_screen.dart';
-import '../checkout_screen.dart';
-import '../profile/profile_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
-  @override
-  _DashboardScreenState createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  int _index = 0;
-  final _screens = [
-    Center(child: Text("Home - Welcome to FitCoach+")),
-    const RecommendationsScreen(),
-    VideoCallScreen(key: const ValueKey("coaching123"), coachId: "yourCoachId"),
-    CheckoutScreen(),
-    ProfileScreen(),
-  ];
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_index],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.star), label: "Recs"),
-          BottomNavigationBarItem(icon: Icon(Icons.video_call), label: "Video"),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Store"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
+      appBar: AppBar(title: const Text('FitCoach+ Dashboard')),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(child: Text('Welcome!')),
+            ListTile(
+              leading: Icon(Icons.store),
+              title: Text('Store'),
+              onTap: () => Navigator.pushNamed(context, '/store'),
+            ),
+            ListTile(
+              leading: Icon(Icons.subscriptions),
+              title: Text('Subscriptions'),
+              onTap: () => Navigator.pushNamed(context, '/subscriptions'),
+            ),
+            ListTile(
+              leading: Icon(Icons.fitness_center),
+              title: Text('Coaching Bundles'),
+              onTap: () => Navigator.pushNamed(context, '/bundles'),
+            ),
+            ListTile(
+              leading: Icon(Icons.video_call),
+              title: Text('Video Coaching'),
+              onTap: () => Navigator.pushNamed(context, '/video'),
+            ),
+            ListTile(
+              leading: Icon(Icons.recommend),
+              title: Text('Recommendations'),
+              onTap: () => Navigator.pushNamed(context, '/recommendations'),
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Profile'),
+              onTap: () => Navigator.pushNamed(context, '/profile'),
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () => Navigator.pushNamed(context, '/login'),
+            ),
+          ],
+        ),
+      ),
+      body: Center(
+        child: Text('Welcome to FitCoach+! Use the menu to navigate.'),
       ),
     );
   }
