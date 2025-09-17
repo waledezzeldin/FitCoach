@@ -1,51 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 
 class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final emailController = TextEditingController();
-  final passController = TextEditingController();
-  final api = ApiService();
+  String email = '';
+  String password = '';
+  String name = '';
+  String role = 'user'; // Default role
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Signup")),
+      appBar: AppBar(title: const Text('Sign Up')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: emailController, decoration: InputDecoration(labelText: "Email")),
-            TextField(controller: passController, decoration: InputDecoration(labelText: "Password"), obscureText: true),
-            SizedBox(height: 20),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Name'),
+              onChanged: (val) => setState(() => name = val),
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Email'),
+              onChanged: (val) => setState(() => email = val),
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Password'),
+              obscureText: true,
+              onChanged: (val) => setState(() => password = val),
+            ),
+            DropdownButton<String>(
+              value: role,
+              items: [
+                DropdownMenuItem(value: 'user', child: Text('User')),
+                DropdownMenuItem(value: 'coach', child: Text('Coach')),
+              ],
+              onChanged: (val) => setState(() => role = val!),
+            ),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
-                try {
-                  await api.signup(emailController.text, passController.text);
-                  Navigator.pushReplacementNamed(context, "/login");
-                } catch (e) {
-                  print("Signup failed: $e");
+                final response = await Dio().post(
+                  'http://your-backend-url/v1/users/register',
+                  data: {
+                    'email': email,
+                    'password': password,
+                    'name': name,
+                    'role': role,
+                  },
+                );
+                if (role == 'coach') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Coach request submitted. Await admin approval.')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Signup successful!')),
+                  );
                 }
+                Navigator.pop(context);
               },
-              child: Text("Create Account"),
-            )
+              child: const Text('Sign Up'),
+            ),
           ],
         ),
       ),
     );
-  }
-}
-
-class ApiService {
-  // Add your API methods here
-
-  Future<void> signup(String email, String password) async {
-    // TODO: Implement your signup logic here, e.g., send HTTP request to backend
-    // For now, just simulate a network call
-    await Future.delayed(Duration(seconds: 1));
-    // Throw an error if needed, or return normally
   }
 }

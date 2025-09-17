@@ -127,6 +127,10 @@ class LoginScreen extends StatelessWidget {
               label: const Text('Sign in with Facebook'),
               onPressed: () => handleFacebookSignIn(context),
             ),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/signup'),
+              child: const Text('Don\'t have an account? Sign up'),
+            ),
           ],
         ),
       ),

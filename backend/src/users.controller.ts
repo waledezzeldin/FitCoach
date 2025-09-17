@@ -12,24 +12,30 @@ const prisma = new PrismaClient();
 // Register
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { email, password, name, phone } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password required.' });
-    }
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(409).json({ error: 'Email already registered.' });
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
+    const { email, password, name, role } = req.body;
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (user) return res.status(400).json({ error: 'Email already exists.' });
+
+    user = await prisma.user.create({
       data: {
         email,
-        password: hashedPassword,
+        password, // hash in production!
         name,
-        phone,
-      },
+        role: role === 'coach' ? 'pending_coach' : 'user', // Coach requests start as pending
+      }
     });
-    res.status(201).json({ id: user.id, email: user.email, name: user.name, phone: user.phone });
+
+    if (role === 'coach') {
+      // Optionally, create a CoachRequest table for admin review
+      await prisma.coachRequest.create({
+        data: {
+          userId: user.id,
+          status: 'pending',
+        }
+      });
+    }
+
+    res.json({ success: true, user });
   } catch (err) {
     res.status(500).json({ error: 'Registration failed.' });
   }
