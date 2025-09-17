@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import '../../services/session_service.dart';
+// Update the import path below to the correct location of session_service.dart
+import '../../../services/session_service.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final String coachId;
