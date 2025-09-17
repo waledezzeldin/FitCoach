@@ -18,6 +18,11 @@ dependencies:
   stream_chat_flutter: 9.16.0
   flutter_dotenv: ^6.0.0
   stream_chat: ^9.16.0
+  stripe_payment: ^1.1.4
+  google_sign_in: ^7.1.1
+  flutter_facebook_auth: ^7.1.2
+  sign_in_with_apple: ^7.0.1
+  firebase_messaging: 15.2.10
 
 dev_dependencies:
   flutter_test:

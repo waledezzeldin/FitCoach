@@ -7,6 +7,9 @@ import 'screens/profile/profile_screen.dart';
 import 'screens/profile/edit_profile_screen.dart';
 import 'screens/chat/chat_screen.dart';
 import 'screens/recommendations/recommendation_screen.dart';
+import 'screens/coach/coach_onboarding_screen.dart';
+import 'screens/progress/progress_screen.dart';
+import 'screens/subscription/subscription_screen.dart';
 
 class FitCoachApp extends StatelessWidget {
   const FitCoachApp({super.key});
@@ -29,6 +32,9 @@ class FitCoachApp extends StatelessWidget {
           token: 'yourToken',   // Replace with actual token
         ),
         '/recommendations': (c) => const RecommendationsScreen(),
+        '/coach-onboarding': (c) => CoachOnboardingScreen(),
+        '/progress': (c) => ProgressScreen(),
+        '/subscription': (c) => SubscriptionScreen(),
       },
     );
   }

@@ -1,45 +1,205 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+// prisma/schema.prisma
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 model User {
-id String @id @default(cuid())
-email String @unique
-phone String?
-password String?
-role String @default("user")
-createdAt DateTime @default(now())
-coach Coach?
-sessions Session[]
+  id              String           @id @default(uuid())
+  email           String           @unique
+  password        String?
+  name            String?
+  phone           String?
+  coach           Coach?           @relation("UserCoach") // One-to-one with Coach
+  coachId         String? // Foreign key for Coach
+  notifications   Notification[] // One-to-many with Notification
+  milestones      Milestone[] // One-to-many with Milestone
+  payments        Payment[] // One-to-many with Payment
+  recommendations Recommendation[] // One-to-many with Recommendation
+  commissions     Commission[] // One-to-many with Commission
+  coachClients    Coach?           @relation("CoachClients", fields: [coachClientsId], references: [id])
+  coachClientsId  String? // Foreign key for CoachClients relation
+  Session         Session[]
+  Order           Order[]
+  WorkoutLog      WorkoutLog[]
+  NutritionLog    NutritionLog[]
+  SupplementLog   SupplementLog[]
+  Subscription    Subscription[]
 }
-
-
-model Coach {
-id String @id @default(cuid())
-user User @relation(fields:[userId], references:[id])
-userId String @unique
-approved Boolean @default(false)
-certifications Json?
-}
-
 
 model Session {
-id String @id @default(cuid())
-user User @relation(fields:[userId], references:[id])
-userId String
-coachId String
-status String
-scheduledAt DateTime
-agoraChannel String?
-recordingUrl String?
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
 
+model Order {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  commissions Commission[] // One-to-many with Commission
+  payments    Payment[] // One-to-many with Payment
+  Delivery    Delivery?
+}
+
+model Coach {
+  id              String           @id @default(uuid())
+  userId          String           @unique
+  user            User             @relation("UserCoach", fields: [userId], references: [id])
+  clients         User[]           @relation("CoachClients")
+  commissions     Commission[] // One-to-many with Commission
+  recommendations Recommendation[] // One-to-many with Recommendation
+}
+
+model WorkoutLog {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  date     DateTime
+  activity String
+  duration Int // minutes
+  notes    String?
+}
+
+model NutritionLog {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  date     DateTime
+  meal     String
+  calories Int
+  notes    String?
+}
+
+model SupplementLog {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  date           DateTime
+  supplementName String
+  dose           String
+  notes          String?
+}
+
+model Subscription {
+  id       String    @id @default(uuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  payments Payment[] // One-to-many with Payment
+}
+
+model Recommendation {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  coachId   String?
+  coach     Coach?   @relation(fields: [coachId], references: [id])
+  type      String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String
+  products Product[]
+}
+
+model Bundle {
+  id       String    @id @default(uuid())
+  name     String
+  products Product[] @relation("BundleProducts")
+  price    Float
+}
 
 model Product {
-id String @id @default(cuid())
-sku String @unique
-name String
-priceCents Int
-currency String
-inventory Int
+  id         String    @id @default(uuid())
+  name       String
+  price      Float
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  bundles    Bundle[]  @relation("BundleProducts")
+}
+
+model Delivery {
+  id            String    @id @default(cuid())
+  orderId       String    @unique
+  order         Order     @relation(fields: [orderId], references: [id])
+  status        String // e.g., "pending", "shipped", "delivered"
+  trackingUrl   String?
+  address       String
+  courier       String?
+  estimatedDate DateTime?
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+}
+
+model Affiliate {
+  id           String       @id @default(uuid())
+  name         String
+  referralCode String
+  brandUrl     String?
+  commissions  Commission[] // One-to-many with Commission
+}
+
+model Commission {
+  id          String     @id @default(uuid())
+  coachId     String
+  coach       Coach      @relation(fields: [coachId], references: [id])
+  orderId     String
+  order       Order      @relation(fields: [orderId], references: [id])
+  affiliateId String?
+  affiliate   Affiliate? @relation(fields: [affiliateId], references: [id])
+  amount      Float
+  createdAt   DateTime   @default(now())
+  User        User?      @relation(fields: [userId], references: [id])
+  userId      String?
+}
+
+model Analytics {
+  id              String   @id @default(cuid())
+  date            DateTime @default(now())
+  revenue         Float    @default(0)
+  engagement      Int      @default(0) // e.g., active users
+  supplementSales Int      @default(0)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Milestone {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  type        String
+  description String?
+  achievedAt  DateTime?
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  orderId        String?
+  order          Order?        @relation(fields: [orderId], references: [id])
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  amount         Float
+  currency       String
+  status         String
+  provider       String
+  createdAt      DateTime      @default(now())
 }
