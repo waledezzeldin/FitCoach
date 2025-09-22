@@ -9,12 +9,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  user
+  coach
+  admin
+}
+
 model User {
   id              String           @id @default(uuid())
   email           String           @unique
   password        String?
   name            String?
-  phone           String?
+  phone           String?          @unique
+  role            UserRole
   coach           Coach?           @relation("UserCoach") // One-to-one with Coach
   coachId         String? // Foreign key for Coach
   notifications   Notification[] // One-to-many with Notification
@@ -30,6 +37,7 @@ model User {
   NutritionLog    NutritionLog[]
   SupplementLog   SupplementLog[]
   Subscription    Subscription[]
+  coachRequests   CoachRequest[] // <-- Add this line
 }
 
 model Session {
@@ -106,9 +114,9 @@ model Recommendation {
 }
 
 model Category {
-  id       String    @id @default(uuid())
-  name     String
-  products Product[]
+  id        String    @id @default(uuid())
+  name      String
+  products  Product[]
 }
 
 model Bundle {
@@ -119,12 +127,12 @@ model Bundle {
 }
 
 model Product {
-  id         String    @id @default(uuid())
-  name       String
-  price      Float
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id])
-  bundles    Bundle[]  @relation("BundleProducts")
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
 }
 
 model Delivery {
@@ -208,6 +216,6 @@ model CoachRequest {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  status    String   // "pending", "approved", "rejected"
+  status    String // "pending", "approved", "rejected"
   createdAt DateTime @default(now())
 }

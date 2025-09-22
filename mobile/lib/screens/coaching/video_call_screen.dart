@@ -63,8 +63,14 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final green = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(title: const Text("Live Session")),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text("Live Session"),
+        backgroundColor: Colors.black,
+        foregroundColor: green,
+      ),
       body: Center(
         child: _joined
             ? _remoteUid != null
@@ -75,7 +81,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                       connection: const RtcConnection(channelId: "test"),
                     ),
                   )
-                : const Text("Waiting for coach...")
+                : Text("Waiting for coach...", style: TextStyle(color: green))
             : const CircularProgressIndicator(),
       ),
     );

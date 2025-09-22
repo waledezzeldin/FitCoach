@@ -60,12 +60,54 @@ class CheckoutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final green = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(title: const Text('Checkout')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () => initiatePayment(context),
-          child: Text('Pay \$${amount.toStringAsFixed(2)}'),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Checkout'),
+        backgroundColor: Colors.black,
+        foregroundColor: green,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Order Summary', style: TextStyle(fontSize: 20, color: green)),
+            const SizedBox(height: 16),
+            Card(
+              color: Colors.black,
+              child: ListTile(
+                leading: Icon(Icons.shopping_cart, color: green),
+                title: Text('Product Name', style: TextStyle(color: green)),
+                subtitle: const Text('Quantity: 1', style: TextStyle(color: Colors.white)),
+                trailing: Text('\$49.99', style: TextStyle(color: green)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              color: Colors.black,
+              child: ListTile(
+                leading: Icon(Icons.local_shipping, color: green),
+                title: Text('Shipping Address', style: TextStyle(color: green)),
+                subtitle: const Text('123 Main St, City', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              color: Colors.black,
+              child: ListTile(
+                leading: Icon(Icons.payment, color: green),
+                title: Text('Payment Method', style: TextStyle(color: green)),
+                subtitle: const Text('Visa **** 1234', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            const Spacer(),
+            ElevatedButton(
+              onPressed: () => initiatePayment(context),
+              child: Text('Pay \$${amount.toStringAsFixed(2)}'),
+            ),
+          ],
         ),
       ),
     );

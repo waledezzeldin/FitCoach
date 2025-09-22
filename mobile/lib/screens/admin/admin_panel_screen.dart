@@ -5,39 +5,46 @@ class AdminPanelScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Example: Only show admin panel if user.role == 'admin'
-    final user = {'role': 'admin'}; // This should come from your user management logic
-    if (user['role'] != 'admin') {
-      return const Center(child: Text('Access denied'));
-    }
-
+    final green = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Panel')),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Admin Panel'),
+        backgroundColor: Colors.black,
+        foregroundColor: green,
+      ),
       body: ListView(
+        padding: const EdgeInsets.all(24),
         children: [
-          ListTile(
-            title: const Text('Manage Users'),
-            onTap: () {
-              // TODO: Navigate to user management screen
-            },
+          Card(
+            color: Colors.black,
+            child: ListTile(
+              leading: Icon(Icons.verified_user, color: green),
+              title: Text('Coach Approvals', style: TextStyle(color: green)),
+              onTap: () {
+                // Show coach approval requests
+              },
+            ),
           ),
-          ListTile(
-            title: const Text('Manage Coaches'),
-            onTap: () {
-              // TODO: Navigate to coach management screen
-            },
+          Card(
+            color: Colors.black,
+            child: ListTile(
+              leading: Icon(Icons.inventory, color: green),
+              title: Text('Catalog Management', style: TextStyle(color: green)),
+              onTap: () {
+                // Show catalog management
+              },
+            ),
           ),
-          ListTile(
-            title: const Text('Manage Products'),
-            onTap: () {
-              // TODO: Navigate to product management screen
-            },
-          ),
-          ListTile(
-            title: const Text('View Analytics'),
-            onTap: () {
-              // TODO: Navigate to analytics dashboard
-            },
+          Card(
+            color: Colors.black,
+            child: ListTile(
+              leading: Icon(Icons.analytics, color: green),
+              title: Text('Analytics', style: TextStyle(color: green)),
+              onTap: () {
+                // Show analytics dashboard
+              },
+            ),
           ),
         ],
       ),

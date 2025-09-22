@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'product_details_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -71,6 +72,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       title: Text(product['name'] ?? ''),
                       subtitle: Text(product['description'] ?? ''),
                       trailing: Text('\$${product['price'] ?? ''}'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProductDetailsScreen(product: product),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -83,16 +92,31 @@ class _ProductListScreenState extends State<ProductListScreen> {
             'price': 29.99,
           };
 
-          // Cancel order button
-          ElevatedButton(
-            onPressed: () => cancelOrder(order['id'] as String),
-            child: const Text('Cancel Order'),
-          );
-
-          // Return order button
-          ElevatedButton(
-            onPressed: () => returnOrder(order['id'] as String),
-            child: const Text('Return Order'),
+          // Show a dialog with order management options
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Manage Order'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      cancelOrder(order['id'] as String);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel Order'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      returnOrder(order['id'] as String);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Return Order'),
+                  ),
+                ],
+              ),
+            ),
           );
         },
         label: const Text('Manage Order'),

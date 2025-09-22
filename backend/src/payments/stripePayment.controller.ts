@@ -2,7 +2,7 @@ import { Controller, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2023-10-16' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2022-11-15' });
 
 @Controller('v1/webhooks/stripe')
 export class StripeWebhookController {
@@ -13,7 +13,8 @@ export class StripeWebhookController {
     try {
       event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET as string);
     } catch (err) {
-      res.status(400).send(`Webhook Error: ${err.message}`);
+      const errorMessage = typeof err === 'object' && err !== null && 'message' in err ? (err as { message: string }).message : 'Unknown error';
+      res.status(400).send(`Webhook Error: ${errorMessage}`);
       return;
     }
     if (event.type === 'checkout.session.completed') {

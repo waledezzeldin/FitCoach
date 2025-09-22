@@ -21,8 +21,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
 
   Future<void> fetchRecommendations() async {
     try {
-      // TODO: Replace with your actual backend URL and user ID retrieval logic
-      final userId = await getCurrentUserId(); // Implement this function based on your auth
+      final userId = await getCurrentUserId();
       final response = await Dio().get(
         'http://localhost:3000/api/recommendations',
         queryParameters: {'userId': userId},
@@ -39,36 +38,40 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
     }
   }
 
-  // Example stub for user ID retrieval
   Future<String> getCurrentUserId() async {
-    // Replace with your actual user ID retrieval logic (from secure storage, provider, etc.)
+    // Replace with your actual user ID retrieval logic
     return 'USER_ID';
   }
 
   @override
   Widget build(BuildContext context) {
-    // Replace these with your actual values
-    final userId = 'currentUserId';
-    final userGoals = 'Lose weight and build muscle';
-    final coachInput = 'Prefers home workouts';
-
+    final green = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(title: const Text('Recommendations')),
-      body: FutureBuilder<String?>(
-        future: fetchRecommendation(userId, userGoals, coachInput),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError || snapshot.data == null) {
-            return const Center(child: Text('Failed to load recommendation'));
-          } else {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(snapshot.data!),
-            );
-          }
-        },
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Recommendations'),
+        backgroundColor: Colors.black,
+        foregroundColor: green,
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+              ? Center(child: Text(error!, style: const TextStyle(color: Colors.white)))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(24),
+                  itemCount: recommendations.length,
+                  itemBuilder: (context, index) {
+                    final rec = recommendations[index];
+                    return Card(
+                      color: Colors.black,
+                      child: ListTile(
+                        leading: Icon(Icons.recommend, color: green),
+                        title: Text(rec['title'] ?? 'Recommendation', style: TextStyle(color: green)),
+                        subtitle: Text(rec['content'] ?? '', style: const TextStyle(color: Colors.white)),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }
