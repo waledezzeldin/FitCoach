@@ -1,0 +1,68 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const dotenv_1 = require("dotenv");
+const body_parser_1 = require("body-parser");
+const media_controller_1 = require("./media.controller");
+const webhooks_controller_1 = require("./webhooks.controller");
+const recommendations_controller_1 = require("./recommendations.controller");
+const products_controller_1 = require("./products/products.controller");
+const orders_controller_1 = require("./orders/orders.controller");
+const webhook_controller_1 = require("./payments/webhook.controller");
+const sessions_controller_1 = require("./sessions/sessions.controller");
+const users_controller_1 = require("./users.controller");
+const coaches_controller_1 = require("./coaches.controller");
+const progress_controller_1 = require("./progress.controller");
+const notifications_controller_1 = require("./notifications.controller");
+const milestones_controller_1 = require("./milestones.controller");
+const delivery_controller_1 = require("./delivery.controller");
+const affiliate_controller_1 = require("./affiliate.controller");
+const commission_controller_1 = require("./commission.controller");
+const subscription_controller_1 = require("./subscription.controller");
+const payments_controller_1 = require("./payments.controller");
+const users_controller_2 = require("./admin/users.controller");
+const bundles_controller_1 = require("./products/bundles.controller");
+const categories_controller_1 = require("./products/categories.controller");
+const users_device_token_controller_1 = require("./users.device-token.controller");
+const swagger_1 = require("./swagger");
+const express_rate_limit_1 = require("express-rate-limit");
+dotenv_1.default.config();
+const app = (0, express_1.default)();
+app.use(body_parser_1.default.json());
+const stripeWebhookRouter = require('./api/stripeWebhook');
+app.use('/api/stripe', stripeWebhookRouter);
+app.use('/v1/media', media_controller_1.default);
+app.use('/v1/webhooks', webhooks_controller_1.default);
+app.use('/v1/recommendations', recommendations_controller_1.default);
+app.use('/v1/products', products_controller_1.default);
+app.use('/v1/orders', orders_controller_1.default);
+app.use('/v1/webhooks', webhook_controller_1.default);
+app.use('/v1/sessions', sessions_controller_1.default);
+app.use('/v1/users', users_controller_1.default);
+app.use('/v1/coaches', coaches_controller_1.default);
+app.use('/v1/progress', progress_controller_1.default);
+app.use('/v1/notifications', notifications_controller_1.default);
+app.use('/v1/milestones', milestones_controller_1.default);
+app.use('/v1/delivery', delivery_controller_1.default);
+app.use('/v1/affiliate', affiliate_controller_1.default);
+app.use('/v1/commission', commission_controller_1.default);
+app.use('/v1/subscription', subscription_controller_1.default);
+app.use('/v1/payments', payments_controller_1.default);
+app.use('/v1/admin/users', users_controller_2.default);
+app.use('/v1/products/bundles', bundles_controller_1.default);
+app.use('/v1/products/categories', categories_controller_1.default);
+app.use('/v1/users', users_device_token_controller_1.default);
+app.use('/api/docs', swagger_1.swaggerUi.serve, swagger_1.swaggerUi.setup(swagger_1.swaggerSpec));
+const limiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+});
+app.use(limiter);
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+});
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Backend listening on ${port}`));
+exports.default = app;
+//# sourceMappingURL=main.js.map

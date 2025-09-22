@@ -1,26 +1,52 @@
 import 'package:flutter/material.dart';
 
-class EditProfileScreen extends StatefulWidget {
+class EditProfileScreen extends StatelessWidget {
   const EditProfileScreen({super.key});
-  @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
-}
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
-  final _nameController = TextEditingController(text: 'John Doe');
-  final _goalController = TextEditingController(text: 'Build muscle');
   @override
   Widget build(BuildContext context) {
+    final green = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profile')),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Edit Profile'),
+        backgroundColor: Colors.black,
+        foregroundColor: green,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Name')),
-          TextField(controller: _goalController, decoration: const InputDecoration(labelText: 'Goals')),
-          const SizedBox(height: 20),
-          ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Save'))
-        ]),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Name',
+                labelStyle: TextStyle(color: green),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: green),
+                ),
+              ),
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Email',
+                labelStyle: TextStyle(color: green),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: green),
+                ),
+              ),
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Save profile changes
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
       ),
     );
   }

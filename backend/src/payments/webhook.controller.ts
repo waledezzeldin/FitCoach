@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const router = Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-08-01' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2022-11-15' });
 
 router.post('/stripe', async (req, res) => {
   const sig = req.headers['stripe-signature'] as string | undefined;
@@ -49,7 +49,12 @@ router.post('/stripe', async (req, res) => {
       if (stripeSubId) {
         await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: stripeSubId },
-          data: { status: 'active', currentPeriodEnd: inv.current_period_end ? new Date(inv.current_period_end * 1000) : undefined }
+          data: { 
+            status: 'active', 
+            currentPeriodEnd: inv.lines?.data?.[0]?.period?.end 
+              ? new Date(inv.lines.data[0].period.end * 1000) 
+              : undefined 
+          }
         });
       }
     }

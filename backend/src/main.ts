@@ -20,11 +20,13 @@ import subscriptionRouter from './subscription.controller';
 import paymentsRouter from './payments.controller';
 import adminUsersRouter from './admin/users.controller';
 import bundlesRouter from './products/bundles.controller';
-import categoriesRouter from './products/categories.controller';
+import productCategoriesRouter from './products/categories.controller';
 import usersDeviceTokenRouter from './users.device-token.controller';
 import { swaggerUi, swaggerSpec } from './swagger';
 import rateLimit from 'express-rate-limit';
 import csrf from 'csurf';
+import authRouter from './auth.controller';
+import categoriesRouter from './categories.controller';
 
 dotenv.config();
 const app = express();
@@ -53,9 +55,11 @@ app.use('/v1/subscription', subscriptionRouter);
 app.use('/v1/payments', paymentsRouter);
 app.use('/v1/admin/users', adminUsersRouter);
 app.use('/v1/products/bundles', bundlesRouter);
-app.use('/v1/products/categories', categoriesRouter);
+app.use('/v1/products/categories', productCategoriesRouter);
 app.use('/v1/users', usersDeviceTokenRouter);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(authRouter);
+app.use(categoriesRouter);
 
 // Apply rate limiting middleware
 const limiter = rateLimit({

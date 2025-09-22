@@ -1,137 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
-class ApiService {
-  // Add your API methods here
-
-  Future<dynamic> login(String email, String password) async {
-    // TODO: Implement actual API call logic here
-    // For now, simulate a successful login response
-    await Future.delayed(Duration(seconds: 1));
-    return {'success': true, 'email': email};
-  }
-}
-
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
-  Future<void> sendDeviceTokenToBackend(String userId) async {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    if (fcmToken != null) {
-      await Dio().post(
-        'http://your-backend-url/v1/users/device-token',
-        data: {'userId': userId, 'deviceToken': fcmToken},
-      );
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  String email = '';
+  String password = '';
+
+  Future<void> _signInWithGoogle(BuildContext context) async {
+    final GoogleSignInAccount? account = await GoogleSignIn.instance.attemptLightweightAuthentication();
+    if (account != null) {
+      // Send account info to backend for authentication
+      // Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 
-  Future<void> handleGoogleSignIn(BuildContext context) async {
-    final googleSignIn = GoogleSignIn.instance;
-    final account = await googleSignIn.attemptLightweightAuthentication();
-    final auth = await account?.authentication;
-    final idToken = auth?.idToken;
-    if (idToken != null) {
-      final response = await Dio().post(
-        'http://your-backend-url/v1/users/social',
-        data: {'provider': 'google', 'idToken': idToken},
-      );
-      // Save JWT and user info from response
-      final userId = response.data['user']['id'];
-      await sendDeviceTokenToBackend(userId); // <-- Register device token
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google login successful!')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google login failed')),
-      );
+  Future<void> _signInWithFacebook(BuildContext context) async {
+    final LoginResult result = await FacebookAuth.instance.login();
+    if (result.status == LoginStatus.success) {
+      // Send result.accessToken to backend for authentication
+      // Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 
-  Future<void> handleFacebookSignIn(BuildContext context) async {
-    final result = await FacebookAuth.instance.login();
-    final accessToken = result.accessToken?.tokenString;
-    if (accessToken != null) {
-      final response = await Dio().post(
-        'http://your-backend-url/v1/users/social',
-        data: {'provider': 'facebook', 'accessToken': accessToken},
-      );
-      // Save JWT and user info from response
-      final userId = response.data['user']['id'];
-      await sendDeviceTokenToBackend(userId); // <-- Register device token
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Facebook login successful!')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Facebook login failed')),
-      );
-    }
-  }
-
-  Future<void> handleAppleSignIn(BuildContext context) async {
-    try {
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
-      );
-      final accessToken = credential.identityToken;
-      if (accessToken != null) {
-        final response = await Dio().post(
-          'http://your-backend-url/v1/users/social',
-          data: {'provider': 'apple', 'accessToken': accessToken},
-        );
-        // Save JWT and user info from response
-        final userId = response.data['user']['id'];
-        await sendDeviceTokenToBackend(userId); // <-- Register device token
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Apple login successful!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Apple login failed')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Apple login error: $e')),
-      );
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      // Handle email/password login
+      Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final green = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      backgroundColor: Colors.black,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // ...existing login fields...
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.g_mobiledata),
-              label: const Text('Sign in with Google'),
-              onPressed: () => handleGoogleSignIn(context),
+        padding: const EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/logo.png', width: 80),
+                const SizedBox(height: 32),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: TextStyle(color: green),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: green),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  validator: (val) {
+                    if (val == null || val.isEmpty) return 'Email is required';
+                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(val)) return 'Enter a valid email';
+                    return null;
+                  },
+                  onChanged: (val) => setState(() => email = val),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: TextStyle(color: green),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: green),
+                    ),
+                  ),
+                  obscureText: true,
+                  style: const TextStyle(color: Colors.white),
+                  validator: (val) => val == null || val.isEmpty ? 'Password is required' : null,
+                  onChanged: (val) => setState(() => password = val),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Sign In'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, '/signup'),
+                  child: Text('Don\'t have an account? Sign up', style: TextStyle(color: green)),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.g_mobiledata, color: Colors.white),
+                  label: const Text('Sign in with Google'),
+                  style: ElevatedButton.styleFrom(backgroundColor: green),
+                  onPressed: () => _signInWithGoogle(context),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.facebook, color: Colors.white),
+                  label: const Text('Sign in with Facebook'),
+                  style: ElevatedButton.styleFrom(backgroundColor: green),
+                  onPressed: () => _signInWithFacebook(context),
+                ),
+                // Add Apple and phone sign-in buttons here
+              ],
             ),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.apple),
-              label: const Text('Sign in with Apple'),
-              onPressed: () => handleAppleSignIn(context),
-            ),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.facebook),
-              label: const Text('Sign in with Facebook'),
-              onPressed: () => handleFacebookSignIn(context),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/signup'),
-              child: const Text('Don\'t have an account? Sign up'),
-            ),
-          ],
+          ),
         ),
       ),
     );

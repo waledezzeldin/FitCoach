@@ -5,52 +5,102 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final green = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(title: const Text('FitCoach+ Dashboard')),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(child: Text('Welcome!')),
-            ListTile(
-              leading: Icon(Icons.store),
-              title: Text('Store'),
-              onTap: () => Navigator.pushNamed(context, '/store'),
-            ),
-            ListTile(
-              leading: Icon(Icons.subscriptions),
-              title: Text('Subscriptions'),
-              onTap: () => Navigator.pushNamed(context, '/subscriptions'),
-            ),
-            ListTile(
-              leading: Icon(Icons.fitness_center),
-              title: Text('Coaching Bundles'),
-              onTap: () => Navigator.pushNamed(context, '/bundles'),
-            ),
-            ListTile(
-              leading: Icon(Icons.video_call),
-              title: Text('Video Coaching'),
-              onTap: () => Navigator.pushNamed(context, '/video'),
-            ),
-            ListTile(
-              leading: Icon(Icons.recommend),
-              title: Text('Recommendations'),
-              onTap: () => Navigator.pushNamed(context, '/recommendations'),
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Profile'),
-              onTap: () => Navigator.pushNamed(context, '/profile'),
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
-              onTap: () => Navigator.pushNamed(context, '/login'),
-            ),
-          ],
-        ),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('FitCoach+ Dashboard'),
+        backgroundColor: Colors.black,
+        foregroundColor: green,
       ),
-      body: Center(
-        child: Text('Welcome to FitCoach+! Use the menu to navigate.'),
+      body: GridView.count(
+        crossAxisCount: 2,
+        padding: const EdgeInsets.all(24),
+        children: [
+          _DashboardTile(
+            icon: Icons.store,
+            label: 'Store',
+            onTap: () => Navigator.pushNamed(context, '/store'),
+            color: green,
+          ),
+          _DashboardTile(
+            icon: Icons.subscriptions,
+            label: 'Subscriptions',
+            onTap: () => Navigator.pushNamed(context, '/subscriptions'),
+            color: green,
+          ),
+          _DashboardTile(
+            icon: Icons.fitness_center,
+            label: 'Bundles',
+            onTap: () => Navigator.pushNamed(context, '/bundles'),
+            color: green,
+          ),
+          _DashboardTile(
+            icon: Icons.video_call,
+            label: 'Video Coaching',
+            onTap: () => Navigator.pushNamed(context, '/video'),
+            color: green,
+          ),
+          _DashboardTile(
+            icon: Icons.recommend,
+            label: 'Recommendations',
+            onTap: () => Navigator.pushNamed(context, '/recommendations'),
+            color: green,
+          ),
+          _DashboardTile(
+            icon: Icons.person,
+            label: 'Profile',
+            onTap: () => Navigator.pushNamed(context, '/profile'),
+            color: green,
+          ),
+          _DashboardTile(
+            icon: Icons.shopping_cart,
+            label: 'Checkout',
+            onTap: () => Navigator.pushNamed(context, '/checkout'),
+            color: green,
+          ),
+          _DashboardTile(
+            icon: Icons.logout,
+            label: 'Logout',
+            onTap: () => Navigator.pushNamed(context, '/login'),
+            color: green,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
+
+  const _DashboardTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colors.black,
+      margin: const EdgeInsets.all(8),
+      child: InkWell(
+        onTap: onTap,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 40, color: color),
+              const SizedBox(height: 12),
+              Text(label, style: TextStyle(fontSize: 16, color: color)),
+            ],
+          ),
+        ),
       ),
     );
   }
