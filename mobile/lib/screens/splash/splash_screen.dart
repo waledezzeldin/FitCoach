@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../../theme/app_theme.dart';
+import '../../state/app_state.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -9,21 +11,31 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _scale = Tween<double>(begin: 0.2, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
     _controller.forward();
-
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/login');
+    _controller.addStatusListener((s) {
+      if (s == AnimationStatus.completed) {
+        Timer(const Duration(milliseconds: 600), () {
+          if (mounted) {
+            final app = AppStateScope.of(context);
+            Navigator.pushReplacementNamed(
+              context,
+              app.user == null
+                  ? '/login'
+                  : (app.needsIntake ? '/intake' : '/dashboard'),
+            );
+          }
+        });
+      }
     });
   }
 
@@ -36,11 +48,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.brand, // solid green background
       body: Center(
         child: ScaleTransition(
-          scale: _animation,
-          child: Image.asset('assets/logo.png', width: 120), // Place your logo in assets
+          scale: _scale,
+          child: Image.asset(
+            'assets/branding/logo.png',
+            width: 120,
+            height: 120,
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
