@@ -1,88 +1,152 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
-import 'product_details_screen.dart';
 
-class CategoriesScreen extends StatefulWidget {
+class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
   @override
-  State<CategoriesScreen> createState() => _CategoriesScreenState();
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    // Example static data (replace with real)
+    final categories = [
+      _Category('Supplements', 'assets/images/store/supplements.png'),
+      _Category('Equipment', 'assets/images/store/equipment.png'),
+      _Category('Apparel', 'assets/images/store/apparel.png'),
+      _Category('Accessories', 'assets/images/store/accessories.png'),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Store', style: text.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+        centerTitle: false,
+      ),
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              cs.surface,
+              cs.surfaceContainerHighest.withValues(alpha: 0.65),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: GridView.builder(
+              itemCount: categories.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+                childAspectRatio: .92,
+              ),
+              itemBuilder: (_, i) {
+                final c = categories[i];
+                return CategoryCard(
+                  title: c.title,
+                  image: c.imagePath,
+                  onTap: () {
+                    // TODO: navigate to category detail
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _CategoriesScreenState extends State<CategoriesScreen> {
-  List categories = [];
-  bool isLoading = true;
-  String? error;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCategories();
-  }
-
-  Future<void> fetchCategories() async {
-    try {
-      final response = await Dio().get('http://localhost:3000/categories');
-      setState(() {
-        categories = response.data;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        error = 'Failed to load categories';
-        isLoading = false;
-      });
-    }
-  }
-
-  Future<void> fetchProducts(String categoryId) async {
-    try {
-      final response = await Dio().get('http://localhost:3000/categories/$categoryId/products');
-      final products = response.data as List;
-      if (products.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProductDetailsScreen(product: products[0]),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load products', style: TextStyle(color: Colors.white)), backgroundColor: Colors.red),
-      );
-    }
-  }
+class CategoryCard extends StatelessWidget {
+  final String title;
+  final String image;
+  final VoidCallback onTap;
+  const CategoryCard({
+    super.key,
+    required this.title,
+    required this.image,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final green = Theme.of(context).colorScheme.primary;
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Categories'),
-        backgroundColor: Colors.black,
-        foregroundColor: green,
+    final cs = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    final borderColor = cs.outlineVariant;
+    final highlight = cs.primary.withValues(alpha: 0.08);
+
+    return Material(
+      color: cs.surface,
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: borderColor),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-              ? Center(child: Text(error!, style: const TextStyle(color: Colors.white)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(24),
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return Card(
-                      color: Colors.black,
-                      child: ListTile(
-                        leading: Icon(Icons.category, color: green),
-                        title: Text(category['name'], style: TextStyle(color: green)),
-                        onTap: () => fetchProducts(category['id']),
-                      ),
-                    );
-                  },
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: cs.primary.withValues(alpha: 0.12),
+        highlightColor: highlight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                  child: _ImageBox(image: image),
                 ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ),
+            ],
+        ),
+      ),
     );
   }
+}
+
+class _ImageBox extends StatelessWidget {
+  final String image;
+  const _ImageBox({required this.image});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: cs.surfaceContainerHighest.withValues(alpha: 0.30),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Image.asset(
+          image,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => Icon(Icons.inventory_2_outlined, color: cs.primary),
+        ),
+      ),
+    );
+  }
+}
+
+class _Category {
+  final String title;
+  final String imagePath;
+  _Category(this.title, this.imagePath);
 }

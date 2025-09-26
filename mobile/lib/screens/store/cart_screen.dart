@@ -1,26 +1,77 @@
 import 'package:flutter/material.dart';
+import '../../state/cart_state.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final cartItems = [
-      {'name': 'Whey Protein', 'price': 45.0},
-    ];
-    final total = cartItems.fold(0.0, (sum, item) => sum + (item['price'] as double));
+    final green = Theme.of(context).colorScheme.primary;
+    final cart = CartStateScope.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Cart')),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(children: cartItems.map((item) => ListTile(title: Text(item['name'] as String), trailing: Text('${item['price']} USD'))).toList()),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(children: [Text('Total: \$${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 10), ElevatedButton(onPressed: () {}, child: const Text('Checkout'))]),
-          )
-        ],
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('My Cart'),
+        backgroundColor: Colors.black,
+        foregroundColor: green,
       ),
+      body: cart.isEmpty
+          ? Center(
+              child: Text('Your cart is empty.', style: TextStyle(color: green, fontSize: 18)),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: cart.items.length,
+                      itemBuilder: (context, index) {
+                        final item = cart.items[index];
+                        return Card(
+                          color: Colors.black,
+                          child: ListTile(
+                            leading: Icon(Icons.shopping_cart, color: green),
+                            title: Text(item.name, style: TextStyle(color: green)),
+                            subtitle: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () => cart.updateQty(item.id, item.quantity - 1),
+                                  icon: const Icon(Icons.remove, color: Colors.white),
+                                ),
+                                Text('${item.quantity}', style: const TextStyle(color: Colors.white)),
+                                IconButton(
+                                  onPressed: () => cart.updateQty(item.id, item.quantity + 1),
+                                  icon: const Icon(Icons.add, color: Colors.white),
+                                ),
+                              ],
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('\$${item.price.toStringAsFixed(2)}', style: TextStyle(color: green)),
+                                IconButton(
+                                  onPressed: () => cart.remove(item.id),
+                                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Total: \$${cart.total.toStringAsFixed(2)}', style: TextStyle(color: green, fontSize: 20)),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '/checkout'),
+                    child: const Text('Proceed to Checkout'),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
