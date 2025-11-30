@@ -1,0 +1,147 @@
+Software Requirements Specification (SRS)
+
+Project: FitCoach
+Version: 1.0
+Date: 28-Sep-2025
+Frontend: Flutter (iOS/Android)
+Backend: Node.js (Express/NestJS)
+Admin: Next.js Web App
+
+1. Introduction
+
+The purpose of this document is to specify all requirements for FitCoach, a fitness and coaching platform.
+The application shall support three roles: Users, Coaches, and Admins, and shall include a Demo Mode for showcasing the application with prefilled information.
+
+The application shall provide a mobile-first experience using Flutter with a centralized theme for UI consistency across all screens.
+The backend shall be implemented in Node.js and the admin panel in Next.js.
+
+2. System Overview
+
+The application shall provide the following features:
+
+Users shall sign up, complete an intake questionnaire, receive workout and nutrition plans, track progress, interact with coaches, and manage subscriptions.
+
+Coaches shall manage session slots, communicate with assigned users, and update user plans.
+
+Admins shall manage subscriptions, coaches, users, store products, and orders.
+
+Demo Mode shall showcase application flows using pre-filled demo data with no real external side effects.
+
+3. Functional Requirements
+3.1 Authentication
+
+The application shall allow users to sign in using email/password or OAuth (Google, Apple, Facebook).
+
+The application shall support password reset via OTP.
+
+3.2 Intake & Plan Generation
+
+The application shall require new users to enter age, weight, height, gender, workout frequency, location, and experience level.
+
+The application shall generate workout plans and nutrition KPIs based on intake data.
+
+The application shall display a progress screen while generating plans.
+
+3.3 Workout Plan
+
+The application shall show a two-week workout plan based on user intake.
+
+The application shall provide exercise details with videos, sets, reps, and timers.
+
+The application shall allow users to log workouts and update statistics accordingly.
+
+3.4 Nutrition Plan
+
+The application shall calculate daily nutrition targets (calories, protein, carbs, fats).
+
+The application shall display nutrition plans to Premium users.
+
+Freemium users shall see the nutrition plan screen as locked.
+
+3.5 Subscription Management
+
+The application shall assign all new users to Freemium by default.
+
+The application shall allow users to upgrade or downgrade their subscriptions.
+
+The application shall enforce subscription benefits server-side (number of coach sessions, chat messages, nutrition plan access).
+
+3.6 Coach Interaction
+
+The application shall allow users to chat with their assigned coach.
+
+The application shall allow users to book video sessions with coaches in a calendar view.
+
+The coach shall approve or reject session requests.
+
+The application shall enforce session and chat quotas based on subscription type.
+
+3.7 Store & Orders
+
+The application shall provide a supplements store with products, cart, and order management.
+
+The application shall allow users to view their past orders in the account screen.
+
+3.8 Account Management
+
+The application shall allow users to edit profile information (age, weight, height, gender).
+
+The application shall allow users to change password with old/new confirmation.
+
+The application shall allow users to reset forgotten passwords via OTP.
+
+4. Coach Features
+
+The coach shall log in with admin-assigned credentials.
+
+The coach shall manage session slots that can be booked by users.
+
+The coach shall access assigned users’ workout and nutrition plans.
+
+The coach shall chat or video call with users (limits applied).
+
+The coach shall reset password when required.
+
+5. Admin Features
+
+The admin shall manage all users and coaches.
+
+The admin shall create new coach accounts with temporary passwords.
+
+The admin shall manage subscription plans, benefits, and prices.
+
+The admin shall manage store products and stock.
+
+The admin shall manage and review orders.
+
+The admin shall access analytics dashboards for sales, subscriptions, and usage.
+
+6. Demo Mode
+
+The application shall include a Demo Mode with pre-filled data and personas.
+
+The application shall disable external side effects (emails, push notifications, payments) in Demo Mode.
+
+The application shall allow activation of Demo Mode via a hidden gesture or demo option at login.
+
+The application shall reset demo data after inactivity or upon request.
+
+The application shall visually indicate Demo Mode is active with a badge.
+
+The Demo Mode shall include user persona Mina H. and coach persona Sara A.
+
+The Demo Mode shall preload demo workout plans, nutrition targets, store products, and chat scripts.
+
+7. Non-Functional Requirements
+
+The application shall load the home screen in less than 2 seconds on average.
+
+The application shall generate plans in less than 5 seconds.
+
+The application shall encrypt all sensitive data and comply with GDPR.
+
+The application shall provide 99.5% uptime and horizontal scalability.
+
+The application shall implement a centralized theme across all Flutter screens for consistent look and feel.
+
+The application shall support accessibility requirements (font scaling, screen reader support).

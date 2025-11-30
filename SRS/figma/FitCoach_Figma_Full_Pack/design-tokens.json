@@ -1,0 +1,89 @@
+{
+  "version": "1.0",
+  "core": {
+    "color": {
+      "primary": {
+        "value": "#0EA5E9"
+      },
+      "secondary": {
+        "value": "#22D3EE"
+      },
+      "accent": {
+        "value": "#22C55E"
+      },
+      "bg": {
+        "value": "#0B1220"
+      },
+      "surface": {
+        "value": "#121A2A"
+      },
+      "panel": {
+        "value": "#0F172A"
+      },
+      "text": {
+        "value": "#E5E7EB"
+      },
+      "muted": {
+        "value": "#94A3B8"
+      }
+    },
+    "radius": {
+      "sm": {
+        "value": "8"
+      },
+      "md": {
+        "value": "12"
+      },
+      "lg": {
+        "value": "16"
+      }
+    },
+    "spacing": {
+      "xs": {
+        "value": "4"
+      },
+      "sm": {
+        "value": "8"
+      },
+      "md": {
+        "value": "12"
+      },
+      "lg": {
+        "value": "16"
+      },
+      "xl": {
+        "value": "24"
+      }
+    },
+    "font": {
+      "family": {
+        "value": "Inter"
+      },
+      "size": {
+        "sm": {
+          "value": "12"
+        },
+        "md": {
+          "value": "14"
+        },
+        "lg": {
+          "value": "18"
+        },
+        "xl": {
+          "value": "24"
+        }
+      },
+      "weight": {
+        "regular": {
+          "value": "400"
+        },
+        "medium": {
+          "value": "500"
+        },
+        "semibold": {
+          "value": "600"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE CoachLoginScreen
+RECTANGLE CoachForgotPasswordScreen
+RECTANGLE CoachHomeScreen
+RECTANGLE DashboardScreen
+
+RECTANGLE SlotsCalendarScreen
+RECTANGLE NewSlotScreen
+RECTANGLE RecurringRulesScreen
+
+RECTANGLE BookingRequestsScreen
+RECTANGLE BookingDetailScreen
+RECTANGLE VideoSessionScreen
+
+RECTANGLE MyUsersScreen
+RECTANGLE UserOverviewScreen
+RECTANGLE WorkoutPlanEditScreen
+RECTANGLE NutritionPlanEditScreen
+RECTANGLE ProgressInsightsScreen
+
+RECTANGLE MessagesScreen
+RECTANGLE ChatThreadScreen
+
+RECTANGLE CoachAccountScreen
+RECTANGLE CoachChangePasswordScreen
+
+' Auth
+CoachLoginScreen -down-> CoachHomeScreen : "Sign In (success)"
+CoachLoginScreen -down-> CoachForgotPasswordScreen : "Forgot Password"
+
+' Home & dashboard
+CoachHomeScreen -down-> DashboardScreen : "Overview"
+
+' Availability management
+DashboardScreen -down-> SlotsCalendarScreen : "Manage availability"
+SlotsCalendarScreen -down-> NewSlotScreen : "Add slot"
+SlotsCalendarScreen -down-> RecurringRulesScreen : "Set recurring"
+
+' Bookings
+DashboardScreen -down-> BookingRequestsScreen : "Incoming requests"
+BookingRequestsScreen -down-> BookingDetailScreen : "Select request"
+BookingDetailScreen -down-> BookingRequestsScreen : "Approve/Reject"
+BookingDetailScreen -down-> VideoSessionScreen : "Join at slot time"
+
+' Users & plans
+DashboardScreen -down-> MyUsersScreen : "Assigned users"
+MyUsersScreen -down-> UserOverviewScreen : "Open user"
+UserOverviewScreen -down-> WorkoutPlanEditScreen : "Edit workout plan"
+UserOverviewScreen -down-> NutritionPlanEditScreen : "Edit nutrition targets"
+UserOverviewScreen -down-> ProgressInsightsScreen : "Review progress"
+UserOverviewScreen -down-> ChatThreadScreen : "Open chat"
+
+' Messages hub
+DashboardScreen -down-> MessagesScreen : "All threads"
+MessagesScreen -down-> ChatThreadScreen : "Open thread"
+
+' Account
+DashboardScreen -down-> CoachAccountScreen : "Account"
+CoachAccountScreen -down-> CoachChangePasswordScreen : "Change password"
+@enduml

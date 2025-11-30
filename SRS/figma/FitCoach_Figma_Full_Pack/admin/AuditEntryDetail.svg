@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1024" viewBox="0 0 1440 1024">
+<rect x="0" y="0" width="1440" height="1024" fill="#0B1220"/>
+<rect x="0" y="0" width="256" height="1024" fill="#0F172A"/>
+<text x="24" y="48" fill="#E5E7EB" font-size="18" font-family="Inter" font-weight="600">Admin</text>
+<rect x="256" y="0" width="1184" height="64" fill="#121A2A"/>
+<text x="280" y="40" fill="#E5E7EB" font-size="18" font-family="Inter" font-weight="600">AuditEntryDetail</text>
+<rect x="280" y="88" rx="12" ry="12" width="520" height="200" fill="#121A2A" stroke="#1F2A40"/>
+<text x="296" y="124" fill="#94A3B8" font-size="14" font-family="Inter">Primary content</text>
+<rect x="824" y="88" rx="12" ry="12" width="520" height="200" fill="#121A2A" stroke="#1F2A40"/>
+<text x="840" y="124" fill="#94A3B8" font-size="14" font-family="Inter">Secondary content</text>
+<rect x="280" y="304" rx="12" ry="12" width="520" height="200" fill="#121A2A" stroke="#1F2A40"/>
+<text x="296" y="340" fill="#94A3B8" font-size="14" font-family="Inter">List / Cards</text>
+<rect x="824" y="304" rx="12" ry="12" width="520" height="200" fill="#121A2A" stroke="#1F2A40"/>
+<text x="840" y="340" fill="#94A3B8" font-size="14" font-family="Inter">Actions</text>
+</svg>

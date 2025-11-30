@@ -1,0 +1,94 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE SplashScreen
+RECTANGLE DemoModeEntryScreen
+RECTANGLE LoginScreen
+RECTANGLE SignupScreen
+RECTANGLE OAuthProvidersSheet
+RECTANGLE IntakeScreen
+RECTANGLE GeneratingPlanScreen
+RECTANGLE HomeScreen
+
+RECTANGLE SupplementsStoreScreen
+RECTANGLE ProductDetailsScreen
+RECTANGLE CartScreen
+RECTANGLE CheckoutScreen
+RECTANGLE OrderConfirmationScreen
+
+RECTANGLE WorkoutPlanScreen
+RECTANGLE ExerciseDetailScreen
+RECTANGLE WorkoutSessionScreen
+
+RECTANGLE CoachHubScreen
+RECTANGLE BookingCalendarScreen
+RECTANGLE BookingDetailScreen
+RECTANGLE BookingStatusScreen
+RECTANGLE VideoCallScreen
+RECTANGLE ChatScreen
+
+RECTANGLE NutritionPlanScreen
+RECTANGLE SubscriptionScreen
+RECTANGLE PlansCompareScreen
+RECTANGLE UpgradeCheckoutScreen
+
+RECTANGLE ProfileScreen
+RECTANGLE EditProfileScreen
+RECTANGLE OrdersScreen
+RECTANGLE OrderDetailsScreen
+RECTANGLE ChangePasswordScreen
+RECTANGLE ForgotPasswordScreen
+RECTANGLE NotificationsScreen
+
+' Entry & Auth
+SplashScreen -down-> DemoModeEntryScreen : "Long-press / CTA (optional)"
+SplashScreen -down-> LoginScreen : "No session"
+SplashScreen -down-> HomeScreen : "Existing session"
+
+LoginScreen -down-> HomeScreen : "Sign In (success)"
+LoginScreen -down-> SignupScreen : "Sign Up"
+LoginScreen -down-> ForgotPasswordScreen : "Forgot Password"
+LoginScreen -down-> OAuthProvidersSheet : "Google / Apple / Facebook"
+SignupScreen -down-> IntakeScreen : "Submit"
+IntakeScreen -down-> GeneratingPlanScreen : "Submit intake"
+GeneratingPlanScreen -down-> HomeScreen : "Plan assigned + KPIs ready"
+
+' Home navigation (feature gating)
+HomeScreen -down-> SupplementsStoreScreen : "Freemium & up"
+HomeScreen -down-> WorkoutPlanScreen : "Freemium & up"
+HomeScreen -down-> CoachHubScreen : "Freemium & up (quota)"
+HomeScreen -down-> NutritionPlanScreen : "Premium & Smart only"
+HomeScreen -down-> SubscriptionScreen : "View/Upgrade"
+HomeScreen -down-> ProfileScreen : "My Account"
+HomeScreen -down-> NotificationsScreen : "Alerts"
+
+' Store flow
+SupplementsStoreScreen -down-> ProductDetailsScreen : "Select product"
+ProductDetailsScreen -down-> CartScreen : "Add to cart"
+CartScreen -down-> CheckoutScreen : "Proceed"
+CheckoutScreen -down-> OrderConfirmationScreen : "Payment success"
+OrderConfirmationScreen -down-> OrdersScreen : "View orders"
+
+' Workout flow
+WorkoutPlanScreen -down-> ExerciseDetailScreen : "Pick exercise"
+ExerciseDetailScreen -down-> WorkoutSessionScreen : "Start timer"
+WorkoutSessionScreen -down-> ExerciseDetailScreen : "Stop & log"
+
+' Coach & sessions
+CoachHubScreen -down-> BookingCalendarScreen : "Book session"
+BookingCalendarScreen -down-> BookingDetailScreen : "Select slot"
+BookingDetailScreen -down-> BookingStatusScreen : "Request sent"
+CoachHubScreen -down-> ChatScreen : "Chat (quota-based)"
+CoachHubScreen -down-> VideoCallScreen : "Start call (if allowed)"
+
+' Subscription details
+SubscriptionScreen -down-> PlansCompareScreen : "Compare benefits"
+PlansCompareScreen -down-> UpgradeCheckoutScreen : "Upgrade"
+UpgradeCheckoutScreen -down-> SubscriptionScreen : "Success → refresh entitlements"
+
+' Profile & orders
+ProfileScreen -down-> EditProfileScreen : "Edit info"
+ProfileScreen -down-> ChangePasswordScreen : "Change password"
+ProfileScreen -down-> OrdersScreen : "My orders"
+OrdersScreen -down-> OrderDetailsScreen : "Order details"
+@enduml
