@@ -1,0 +1,50 @@
+{
+  "name": "fitcoach-app",
+  "version": "2.0.0",
+  "description": "A comprehensive fitness app with multi-language support, onboarding, and role-based dashboards for users, coaches, and admins",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --force",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "clean": "rm -rf node_modules dist .vite && npm install"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.447.0",
+    "motion": "^10.18.0",
+    "recharts": "^2.8.0",
+    "react-hook-form": "^7.55.0",
+    "sonner": "^2.0.3",
+    "react-slick": "^0.29.0",
+    "react-responsive-masonry": "^2.1.7",
+    "react-dnd": "^16.0.1",
+    "re-resizable": "^6.9.11"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  },
+  "keywords": [
+    "fitness",
+    "health",
+    "react",
+    "typescript",
+    "tailwindcss",
+    "multi-language",
+    "pwa"
+  ],
+  "author": "FitCoach Team",
+  "license": "MIT"
+}
