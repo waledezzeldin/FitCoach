@@ -1,0 +1,137 @@
+import React from 'react';
+import { Button } from './ui/button';
+import { Card, CardContent } from './ui/card';
+import { Apple, Target, ChefHat, TrendingUp, ArrowRight } from 'lucide-react';
+import { useLanguage } from './LanguageContext';
+
+interface NutritionIntroScreenProps {
+  onGetStarted: () => void;
+}
+
+export function NutritionIntroScreen({ onGetStarted }: NutritionIntroScreenProps) {
+  const { t, isRTL } = useLanguage();
+
+  return (
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Full Foreground Image with Overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: 'url(https://images.unsplash.com/photo-1749280446532-60869b4b9863?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)',
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col p-6 text-white">
+        {/* Logo/Icon */}
+        <div className="flex justify-center mt-12 mb-8">
+          <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center shadow-2xl">
+            <Apple className="w-10 h-10" />
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-3">{t('nutrition.introTitle') || 'Nutrition Hub'}</h1>
+          <p className="text-xl text-white/90">
+            {t('nutrition.introSubtitle') || 'Fuel your body with the right nutrition'}
+          </p>
+        </div>
+
+        {/* Features */}
+        <div className="flex-1 flex items-center">
+          <div className="w-full space-y-4">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardContent className="p-4">
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-12 h-12 bg-green-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Target className="w-6 h-6 text-green-400" />
+                  </div>
+                  <div className={isRTL ? 'text-right' : 'text-left'}>
+                    <h3 className="font-semibold mb-1 text-white">
+                      {t('nutrition.introFeature1Title') || 'Personalized Meal Plans'}
+                    </h3>
+                    <p className="text-sm text-white/80">
+                      {t('nutrition.introFeature1Desc') || 'Get custom meal plans based on your dietary preferences and fitness goals'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardContent className="p-4">
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <ChefHat className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div className={isRTL ? 'text-right' : 'text-left'}>
+                    <h3 className="font-semibold mb-1 text-white">
+                      {t('nutrition.introFeature2Title') || 'Easy Recipes'}
+                    </h3>
+                    <p className="text-sm text-white/80">
+                      {t('nutrition.introFeature2Desc') || 'Access hundreds of healthy recipes with step-by-step instructions'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardContent className="p-4">
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-12 h-12 bg-purple-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div className={isRTL ? 'text-right' : 'text-left'}>
+                    <h3 className="font-semibold mb-1 text-white">
+                      {t('nutrition.introFeature3Title') || 'Track Macros'}
+                    </h3>
+                    <p className="text-sm text-white/80">
+                      {t('nutrition.introFeature3Desc') || 'Monitor your daily calorie, protein, carbs, and fat intake'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardContent className="p-4">
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-12 h-12 bg-orange-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Apple className="w-6 h-6 text-orange-400" />
+                  </div>
+                  <div className={isRTL ? 'text-right' : 'text-left'}>
+                    <h3 className="font-semibold mb-1 text-white">
+                      {t('nutrition.introFeature4Title') || 'Food Database'}
+                    </h3>
+                    <p className="text-sm text-white/80">
+                      {t('nutrition.introFeature4Desc') || 'Search thousands of foods and log your meals with ease'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* CTA Button */}
+        <div className="mt-8 pb-8">
+          <Button 
+            onClick={onGetStarted}
+            className="w-full bg-green-600 hover:bg-green-700 text-white h-14 text-lg shadow-2xl"
+            size="lg"
+          >
+            {t('nutrition.getStarted') || 'Get Started'}
+            <ArrowRight className={`w-5 h-5 ${isRTL ? 'mr-2' : 'ml-2'}`} />
+          </Button>
+          <p className="text-center text-white/60 text-sm mt-3">
+            {t('nutrition.introNote') || 'You can always access help from the nutrition screen'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
