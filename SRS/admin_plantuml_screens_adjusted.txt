@@ -1,0 +1,81 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE AdminLoginPage
+RECTANGLE AdminForgotPasswordPage
+RECTANGLE AdminHomePage
+RECTANGLE DashboardPage
+
+RECTANGLE UsersPage
+RECTANGLE UserDetailPage
+RECTANGLE CreateUserPage
+RECTANGLE AssignCoachDialog
+RECTANGLE SubscriptionOverrideDialog
+
+RECTANGLE CoachesPage
+RECTANGLE CoachDetailPage
+RECTANGLE CreateCoachPage
+
+RECTANGLE PlansListPage
+RECTANGLE PlanEditorPage
+RECTANGLE BenefitsMatrixPage
+
+RECTANGLE ProductsPage
+RECTANGLE ProductEditorPage
+RECTANGLE InventoryAdjustPage
+
+RECTANGLE OrdersPage
+RECTANGLE OrderDetailPage
+RECTANGLE EditOrderPage
+
+RECTANGLE AnalyticsPage
+RECTANGLE SettingsPage
+RECTANGLE PaymentsSettingsPage
+RECTANGLE NotificationsSettingsPage
+RECTANGLE DemoModePage
+RECTANGLE AuditLogPage
+RECTANGLE AuditEntryDetailPage
+
+' Auth & landing
+AdminLoginPage -down-> AdminHomePage : "Sign In (success)"
+AdminLoginPage -down-> AdminForgotPasswordPage : "Forgot Password"
+AdminHomePage -down-> DashboardPage : "Overview"
+
+' Users
+DashboardPage -down-> UsersPage : "Manage users"
+UsersPage -down-> UserDetailPage : "Open user"
+UsersPage -down-> CreateUserPage : "Create user"
+UserDetailPage -down-> AssignCoachDialog : "Assign coach"
+UserDetailPage -down-> SubscriptionOverrideDialog : "Override subscription"
+
+' Coaches
+DashboardPage -down-> CoachesPage : "Manage coaches"
+CoachesPage -down-> CoachDetailPage : "Open coach"
+CoachesPage -down-> CreateCoachPage : "Create coach (temp pwd)"
+
+' Subscription plans
+DashboardPage -down-> PlansListPage : "Subscription plans"
+PlansListPage -down-> PlanEditorPage : "Edit plan"
+PlansListPage -down-> BenefitsMatrixPage : "Benefits comparison"
+
+' Store
+DashboardPage -down-> ProductsPage : "Store products"
+ProductsPage -down-> ProductEditorPage : "Create/Edit product"
+ProductsPage -down-> InventoryAdjustPage : "Adjust inventory"
+
+' Orders
+DashboardPage -down-> OrdersPage : "Orders"
+OrdersPage -down-> OrderDetailPage : "Open order"
+OrderDetailPage -down-> EditOrderPage : "Update/Cancel"
+
+' Analytics & Settings
+DashboardPage -down-> AnalyticsPage : "Analytics"
+DashboardPage -down-> SettingsPage : "Settings"
+SettingsPage -down-> PaymentsSettingsPage : "Payments"
+SettingsPage -down-> NotificationsSettingsPage : "Notifications"
+SettingsPage -down-> DemoModePage : "Demo config"
+
+' Audit
+DashboardPage -down-> AuditLogPage : "Audit log"
+AuditLogPage -down-> AuditEntryDetailPage : "Entry detail"
+@enduml

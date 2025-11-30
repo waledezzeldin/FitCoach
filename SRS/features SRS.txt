@@ -1,0 +1,138 @@
+Software Requirements Specification (SRS)
+
+Project: FitCoach
+Version: 1.0
+Date: 28-Sep-2025
+Frontend: Flutter (iOS/Android)
+Backend: Node.js (Express/NestJS)
+Admin: Next.js Web App
+
+1. Introduction
+
+FitCoach is a fitness and coaching application that provides workout and nutrition planning, subscription-based features, and direct coach interaction. The platform serves three roles: users (trainees), coaches, and admins. A demo mode is included for customer presentations with pre-filled data and safe offline/online use.
+
+The app is built with Flutter for mobile, using a centralized theme to ensure UI consistency. The backend is Node.js, and the admin panel is implemented in Next.js.
+
+2. System Overview
+
+Users sign up, complete an intake questionnaire, receive personalized workout and nutrition plans, track progress, interact with coaches, manage subscriptions, and shop supplements.
+
+Coaches manage availability, communicate with assigned users, and update workout/nutrition plans.
+
+Admins oversee users, coaches, subscriptions, products, and orders, with reporting dashboards.
+
+Demo Mode showcases all major flows with pre-seeded data and no real external effects.
+
+3. User Features
+Authentication
+
+Users can register and log in with email/password or OAuth (Google, Apple, Facebook). Password resets are handled via OTP.
+
+Intake & Onboarding
+
+During onboarding, new users enter their age, weight, height, gender, workout frequency (2–6 days/week), workout location (home or gym), and experience level (beginner, intermediate, advanced).
+A loading screen shows progress while the system selects a workout template from pre-generated plans and calculates KPIs (calories, macros, muscle gain/fat loss targets).
+
+Home Screen
+
+The home screen presents navigation buttons for workouts, nutrition (locked for Freemium), coach, subscription, account, and store. It also displays statistics such as calories burned, logged workouts, and plan adherence.
+
+Workout Plans
+
+Users receive two-week workout programs based on their intake. Each exercise includes demo videos, sets, reps, and timers. Users can log completed sets, reps, and duration, updating progress statistics. Plans are refreshed every two weeks.
+
+Nutrition Plans
+
+Daily macro targets (calories, protein, carbs, fats) are displayed along with sample meals. This feature is available only for Premium/Smart Premium users; Freemium users see it locked.
+
+Subscription Management
+
+All users start on Freemium. Subscriptions can be upgraded or downgraded from within the app. Freemium includes workouts, supplements store, and one coach session per month (configurable). Higher tiers add nutrition plans, more coach sessions, and expanded chat limits.
+
+Coach Interaction
+
+Users can contact their coach via chat or video. Booking a video session opens a calendar with available slots. Requests are marked Pending until approved or rejected by the coach. Subscription limits define the number of sessions and chat messages per month.
+
+Store & Orders
+
+Users can browse supplements, add them to a cart, and place orders. Order history is available in the account section.
+
+Account Management
+
+Users can update personal details (gender, weight, height), change their password, and reset forgotten passwords via OTP. They can also view past orders.
+
+4. Coach Features
+
+Coaches log in with admin-provided credentials (resetting password at first login).
+
+They define session availability and manage booking approvals.
+
+Coaches can view and edit assigned users’ workout and nutrition plans.
+
+Chat and video communication are provided within subscription limits.
+
+5. Admin Features
+
+Manage all users and coaches, including assigning coaches to trainees.
+
+Create new coach accounts with temporary passwords.
+
+Configure subscription tiers, benefits, quotas, and pricing.
+
+Manage products in the store, including inventory and descriptions.
+
+Review and manage user orders.
+
+Access dashboards showing sales, active users, subscription revenue, and store performance.
+
+6. Demo Mode
+
+Purpose: Provide a guided, safe, and complete showcase of the application without real data or external services.
+
+Features Covered:
+
+Full user journey from splash to account.
+
+Workout plans with videos, nutrition targets, chat with simulated replies, coach booking with auto-approval, subscription upgrade flows, store checkout with mock payments.
+
+Personas:
+
+User Mina H. – 28, male, 178 cm, 78 kg, gym 4 days/week, intermediate. Assigned to Coach Sara, Smart Premium trial, with workouts logged, pending booking, and a cart of supplements.
+
+Coach Sara A. – Assigned to demo users, with session slots available.
+
+Activation:
+
+Mobile: Long-press logo or demo option on login.
+
+Backend: Demo flag or header.
+
+Admin: “Enter Demo” button.
+
+Data Sources:
+
+Pre-generated JSON for workout plans, nutrition targets, store products, chat scripts.
+
+Local demo videos bundled for offline use.
+
+Safety Measures:
+
+No real emails, push notifications, payments, or external API calls.
+
+Visual “Demo” badges across the UI.
+
+Demo data resets after inactivity or on demand.
+
+7. Non-Functional Requirements
+
+Home screen loads in under 2 seconds.
+
+Plan generation completes in under 5 seconds.
+
+Data is encrypted at rest and in transit, compliant with GDPR.
+
+99.5% uptime target, horizontally scalable backend.
+
+Centralized Flutter theme ensures consistent colors, typography, and components.
+
+Accessibility support includes dynamic font scaling and screen reader compatibility.
