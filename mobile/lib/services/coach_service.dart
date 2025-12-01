@@ -3,40 +3,50 @@ import 'api_service.dart';
 class CoachService {
   final _api = ApiService();
 
-  Future<List<Map<String, dynamic>>> listCoaches({int page = 1}) async {
+  Future<Map<String, dynamic>> dashboard(String coachId, {required String userId}) async {
     try {
-      final res = await _api.dio.get('/coaches', queryParameters: {'page': page});
-      return (res.data as List).cast<Map<String, dynamic>>();
+      final res = await _api.dio.get('/v1/coaches/$coachId/dashboard', queryParameters: {'userId': userId});
+      return (res.data as Map<String, dynamic>);
     } catch (e) {
-      throw Exception(_api.mapError(e, fallback: 'Failed to load coaches'));
+      throw Exception(_api.mapError(e, fallback: 'Failed to load coach dashboard'));
     }
   }
 
-  Future<List<Map<String, dynamic>>> reviews(String coachId) async {
+  Future<Map<String, dynamic>> profile(String coachId, {String? userId}) async {
     try {
-      final res = await _api.dio.get('/coaches/$coachId/reviews');
-      return (res.data as List).cast<Map<String, dynamic>>();
+      final res = await _api.dio.get(
+        '/v1/coaches/$coachId/profile',
+        queryParameters: {
+          if (userId != null) 'userId': userId,
+        },
+      );
+      return (res.data as Map<String, dynamic>);
     } catch (e) {
-      throw Exception(_api.mapError(e, fallback: 'Failed to load reviews'));
+      throw Exception(_api.mapError(e, fallback: 'Failed to load coach profile'));
     }
   }
 
-  Future<List<Map<String, dynamic>>> schedule(String coachId) async {
+  Future<Map<String, dynamic>> availability(String coachId, {int days = 7}) async {
     try {
-      final res = await _api.dio.get('/coaches/$coachId/schedule');
-      return (res.data as List).cast<Map<String, dynamic>>();
+      final res = await _api.dio.get('/v1/sessions/availability/$coachId', queryParameters: {'days': days});
+      return (res.data as Map<String, dynamic>);
     } catch (e) {
-      throw Exception(_api.mapError(e, fallback: 'Failed to load schedule'));
+      throw Exception(_api.mapError(e, fallback: 'Failed to load availability'));
     }
   }
 
-  Future<Map<String, dynamic>> book({
+  Future<Map<String, dynamic>> bookSession({
     required String coachId,
-    required String sessionId,
+    required String userId,
+    required DateTime start,
+    int durationMinutes = 30,
   }) async {
     try {
-      final res = await _api.dio.post('/coaches/$coachId/bookings', data: {
-        'sessionId': sessionId,
+      final res = await _api.dio.post('/v1/sessions', data: {
+        'coachId': coachId,
+        'userId': userId,
+        'scheduledAt': start.toIso8601String(),
+        'durationMin': durationMinutes,
       });
       return (res.data as Map<String, dynamic>);
     } catch (e) {
@@ -44,52 +54,61 @@ class CoachService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> videoCalls() async {
-    try {
-      final res = await _api.dio.get('/video-calls');
-      return (res.data as List).cast<Map<String, dynamic>>();
-    } catch (e) {
-      throw Exception(_api.mapError(e, fallback: 'Failed to load video calls'));
-    }
-  }
-
-  Future<Map<String, dynamic>> bookingSummary() async {
-    try {
-      final res = await _api.dio.get('/coaches/bookings/summary');
-      return (res.data as Map<String, dynamic>);
-    } catch (e) {
-      throw Exception(_api.mapError(e, fallback: 'Failed to load quota'));
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> listBookings() async {
-    try {
-      final res = await _api.dio.get('/coaches/bookings');
-      return (res.data as List).cast<Map<String, dynamic>>();
-    } catch (e) {
-      throw Exception(_api.mapError(e, fallback: 'Failed to load bookings'));
-    }
-  }
-
-  Future<void> cancelBooking(String bookingId) async {
-    try {
-      await _api.dio.post('/coaches/bookings/$bookingId/cancel');
-    } catch (e) {
-      throw Exception(_api.mapError(e, fallback: 'Failed to cancel booking'));
-    }
-  }
-
-  Future<Map<String, dynamic>> rescheduleBooking({
-    required String bookingId,
-    required String newSessionId,
+  Future<void> rateSession({
+    required String sessionId,
+    required String userId,
+    required int rating,
+    String? note,
   }) async {
     try {
-      final res = await _api.dio.post('/coaches/bookings/$bookingId/reschedule', data: {
-        'sessionId': newSessionId,
+      await _api.dio.post('/v1/sessions/$sessionId/rate', data: {
+        'userId': userId,
+        'rating': rating,
+        if (note != null && note.isNotEmpty) 'note': note,
+      });
+    } catch (e) {
+      throw Exception(_api.mapError(e, fallback: 'Failed to submit rating'));
+    }
+  }
+
+  Future<Map<String, dynamic>> clientDetail(String coachId, String userId) async {
+    try {
+      final res = await _api.dio.get('/v1/coaches/$coachId/clients/$userId');
+      return (res.data as Map<String, dynamic>);
+    } catch (e) {
+      throw Exception(_api.mapError(e, fallback: 'Failed to load client detail'));
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMessages(String coachId, {String? userId}) async {
+    try {
+      final res = await _api.dio.get('/v1/coaches/$coachId/messages', queryParameters: {
+        if (userId != null) 'userId': userId,
+      });
+      final data = res.data as Map<String, dynamic>;
+      return (data['messages'] as List).cast<Map<String, dynamic>>();
+    } catch (e) {
+      throw Exception(_api.mapError(e, fallback: 'Failed to load messages'));
+    }
+  }
+
+  Future<Map<String, dynamic>> sendMessage({
+    required String coachId,
+    required String userId,
+    required String sender,
+    String? body,
+    Map<String, dynamic>? attachment,
+  }) async {
+    try {
+      final res = await _api.dio.post('/v1/coaches/$coachId/messages', data: {
+        'userId': userId,
+        'sender': sender,
+        'body': body,
+        if (attachment != null) ...attachment,
       });
       return (res.data as Map<String, dynamic>);
     } catch (e) {
-      throw Exception(_api.mapError(e, fallback: 'Failed to reschedule'));
+      throw Exception(_api.mapError(e, fallback: 'Failed to send message'));
     }
   }
 }

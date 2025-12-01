@@ -40,7 +40,7 @@ router.post('/stripe', async (req, res) => {
         // mark order paid if metadata.orderId exists
         const orderId = pi.metadata?.orderId;
         if (orderId) {
-          await prisma.order.update({ where: { id: orderId }, data: { status: 'paid', paymentId: pi.id }});
+          await prisma.order.update({ where: { id: orderId }, data: { status: 'paid' }});
         }
       }
     } else if (event.type === 'invoice.payment_succeeded') {

@@ -24,6 +24,17 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { userId, title, message, deviceToken } = req.body;
+    if (req.isDemoMode) {
+      return res.status(200).json({
+        id: `demo_notification_${Date.now()}`,
+        userId,
+        title,
+        message,
+        read: false,
+        createdAt: new Date().toISOString(),
+        demo: true,
+      });
+    }
     const notification = await prisma.notification.create({
       data: { userId, title, message }
     });
@@ -40,6 +51,13 @@ router.post('/', async (req: Request, res: Response) => {
 // Mark notification as read
 router.put('/:id/read', async (req: Request, res: Response) => {
   try {
+    if (req.isDemoMode) {
+      return res.json({
+        id: req.params.id,
+        read: true,
+        demo: true,
+      });
+    }
     const notification = await prisma.notification.update({
       where: { id: req.params.id },
       data: { read: true }

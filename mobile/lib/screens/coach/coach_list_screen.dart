@@ -1,63 +1,53 @@
 import 'package:flutter/material.dart';
-import '../../services/coach_service.dart';
 
-class CoachListScreen extends StatefulWidget {
+const _featuredCoaches = [
+  {
+    'name': 'Mira Soliman',
+    'specialty': 'Functional strength · Cairo',
+  },
+  {
+    'name': 'Adel Nour',
+    'specialty': 'Endurance & conditioning',
+  },
+  {
+    'name': 'Yasmeen Kamal',
+    'specialty': 'Mobility & Pilates',
+  },
+];
+
+class CoachListScreen extends StatelessWidget {
   const CoachListScreen({super.key});
-  @override
-  State<CoachListScreen> createState() => _CoachListScreenState();
-}
-
-class _CoachListScreenState extends State<CoachListScreen> {
-  bool loading = true;
-  String? error;
-  List<Map<String, dynamic>> coaches = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() { loading = true; error = null; });
-    try {
-      coaches = await CoachService().listCoaches();
-    } catch (e) {
-      error = 'Failed to load coaches';
-    } finally {
-      if (mounted) setState(() => loading = false);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final green = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(title: const Text('Coaches'), backgroundColor: Colors.black, foregroundColor: green),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-              ? Center(child: Text(error!, style: const TextStyle(color: Colors.red)))
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView.builder(
-                    itemCount: coaches.length,
-                    itemBuilder: (_, i) {
-                      final c = coaches[i];
-                      return ListTile(
-                        title: Text((c['name'] ?? '').toString(), style: TextStyle(color: green)),
-                        subtitle: Text((c['specialty'] ?? '').toString(), style: const TextStyle(color: Colors.white70)),
-                        trailing: const Icon(Icons.chevron_right, color: Colors.white70),
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          '/coach_schedule',
-                          arguments: c,
-                        ),
-                      );
-                    },
+      appBar: AppBar(title: const Text('Coaches')),
+      body: RefreshIndicator(
+        onRefresh: () async {},
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              'We\'re curating verified FitCoach pros. Tap a profile to learn more once the directory launches.',
+              style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            const SizedBox(height: 16),
+            ..._featuredCoaches.map((coach) => Card(
+                  child: ListTile(
+                    leading: CircleAvatar(child: Text(coach['name']![0])),
+                    title: Text(coach['name']!),
+                    subtitle: Text(coach['specialty']!),
+                    trailing: const Icon(Icons.lock_outline),
+                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Coach directory is coming soon.')),
+                    ),
                   ),
-                ),
+                )),
+          ],
+        ),
+      ),
     );
   }
 }

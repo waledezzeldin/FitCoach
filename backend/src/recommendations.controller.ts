@@ -4,12 +4,16 @@ import { OpenAI } from 'openai';
 
 const router = Router();
 const prisma = new PrismaClient();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { userId, goals, coachInput } = req.body;
     // Call OpenAI for recommendation
+    if (!openai) {
+      return res.status(503).json({ error: 'OpenAI API key is not configured.' });
+    }
+
     const completion = await openai.chat.completions.create({
       messages: [
         { role: 'system', content: 'You are a fitness and nutrition expert.' },
@@ -17,7 +21,10 @@ router.post('/', async (req: Request, res: Response) => {
       ],
       model: 'gpt-3.5-turbo'
     });
-    const aiContent = completion.choices[0].message.content;
+    const aiContent = completion.choices[0]?.message?.content?.trim();
+    if (!aiContent) {
+      return res.status(502).json({ error: 'OpenAI returned empty recommendation.' });
+    }
     // Save recommendation
     const recommendation = await prisma.recommendation.create({
       data: { userId, type: 'ai', content: aiContent }

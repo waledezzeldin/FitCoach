@@ -1,7 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../localization/app_localizations.dart';
+import '../../models/quota_models.dart';
 import '../../services/chat_socket_service.dart';
 import '../../services/chat_service.dart';
+import '../../state/app_state.dart';
+import '../../widgets/quota_usage_banner.dart';
+import '../../widgets/subscription_manager_sheet.dart';
 
 class ChatThreadScreen extends StatefulWidget {
   const ChatThreadScreen({super.key, required this.conversation});
@@ -17,28 +22,51 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   final _input = TextEditingController();
   final _socket = ChatSocketService();
 
-  // Replace this with your actual user ID retrieval logic
-  final String meId = 'CURRENT_USER_ID'; // TODO: Set this to the logged-in user's ID
-
   bool loading = true;
   String? error;
   List<Map<String, dynamic>> messages = [];
   String? beforeCursor;
   Timer? _poll;
+  bool _loadingOlder = false;
+  bool _requestedQuotaRefresh = false;
 
   bool peerTyping = false;
   Timer? _typingDebounce;
 
   String get convoId => (widget.conversation['id'] ?? widget.conversation['_id']).toString();
   String get title => (widget.conversation['peerName'] ?? widget.conversation['userName'] ?? widget.conversation['coachName'] ?? 'Chat').toString();
+  String? get _currentUserId {
+    final user = AppStateScope.of(context).user;
+    final dynamic id = user?['id'] ?? user?['_id'] ?? user?['userId'];
+    return id?.toString();
+  }
+
+  bool get _isMessageQuotaExceeded {
+    final snapshot = AppStateScope.of(context).quotaSnapshot;
+    final limit = snapshot?.limits.messages;
+    if (snapshot != null && limit is num && limit > 0) {
+      return snapshot.usage.messagesUsed >= limit;
+    }
+    return false;
+  }
 
   @override
   void initState() {
     super.initState();
+    _scroll.addListener(_handleScroll);
     _initSocket();
     _load();
     // Simple polling; replace with WebSocket if available
     _poll = Timer.periodic(const Duration(seconds: 30), (_) => _refreshNew());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_requestedQuotaRefresh) {
+      _requestedQuotaRefresh = true;
+      unawaited(AppStateScope.of(context).refreshQuota());
+    }
   }
 
   Future<void> _initSocket() async {
@@ -78,6 +106,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   @override
   void dispose() {
     _typingDebounce?.cancel();
+    _poll?.cancel();
+    _scroll.removeListener(_handleScroll);
     _socket.leaveConversation(convoId);
     // do not disconnect globally (other screens may use it)
     super.dispose();
@@ -102,8 +132,17 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     }
   }
 
+  void _handleScroll() {
+    if (!_scroll.hasClients) return;
+    final threshold = _scroll.position.minScrollExtent + 48;
+    if (_scroll.position.pixels <= threshold) {
+      _loadOlder();
+    }
+  }
+
   Future<void> _loadOlder() async {
-    if (beforeCursor == null) return;
+    if (beforeCursor == null || _loadingOlder) return;
+    _loadingOlder = true;
     try {
       final older = await _svc.messages(convoId, before: beforeCursor);
       if (older.isEmpty) {
@@ -113,7 +152,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         beforeCursor = older.last['createdAt']?.toString();
         if (mounted) setState(() {});
       }
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      _loadingOlder = false;
+    }
   }
 
   Future<void> _refreshNew() async {
@@ -148,6 +190,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   Future<void> _send() async {
     final text = _input.text.trim();
     if (text.isEmpty) return;
+    if (_isMessageQuotaExceeded) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(context.l10n.t('quota.exceeded'))));
+      return;
+    }
     _input.clear();
 
     // Optimistic append
@@ -167,19 +215,35 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       // Also call REST as fallback
       await _svc.send(convoId, text); // FIX: pass text as positional arg
       await _markReadLatest();
+      unawaited(AppStateScope.of(context).refreshQuota(force: true));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to send')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final l10n = context.l10n;
+    final currentUserId = _currentUserId;
+    final app = AppStateScope.of(context);
+    final quota = app.quotaSnapshot;
+    final tier = SubscriptionTierDisplay.parse(app.subscriptionType);
+    final upgradeAction = tier == SubscriptionTier.freemium ? () => SubscriptionManagerSheet.show(context) : null;
+    final dynamic messageLimit = quota?.limits.messages;
+    final int? messageLimitValue = messageLimit is num && messageLimit > 0 ? messageLimit.toInt() : null;
+    final int messagesUsed = quota?.usage.messagesUsed ?? 0;
+    final double? usagePercent = messageLimitValue != null && messageLimitValue > 0
+        ? (messagesUsed / messageLimitValue).clamp(0, 1).toDouble()
+        : null;
+    final bool quotaExceeded = messageLimitValue != null && messagesUsed >= messageLimitValue;
+    final bool showQuotaWarning = usagePercent != null && usagePercent >= 0.8 && !quotaExceeded;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text((widget.conversation?['title'] ?? 'Chat').toString()),
+        title: Text(title),
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -187,6 +251,24 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               ? Center(child: Text(error!, style: TextStyle(color: cs.error)))
               : Column(
                   children: [
+                    if (quota != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                        child: QuotaUsageBanner(
+                          snapshot: quota,
+                          onUpgrade: upgradeAction,
+                          margin: EdgeInsets.zero,
+                        ),
+                      ),
+                    if ((showQuotaWarning || quotaExceeded) && quota != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                        child: _QuotaNotice(
+                          quotaExceeded: quotaExceeded,
+                          percent: usagePercent,
+                          onUpgrade: upgradeAction,
+                        ),
+                      ),
                     Expanded(
                       child: ListView.builder(
                         controller: _scroll,
@@ -194,7 +276,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                         itemCount: messages.length,
                         itemBuilder: (_, i) {
                           final m = messages[i];
-                          final mine = m['mine'] == true || (m['senderId'] == meId);
+                          final mine = m['mine'] == true ||
+                              (currentUserId != null && m['senderId']?.toString() == currentUserId);
                           final txt = (m['text'] ?? '').toString();
 
                           return Align(
@@ -204,8 +287,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                               margin: const EdgeInsets.symmetric(vertical: 4),
                               decoration: BoxDecoration(
                                 color: mine
-                                    ? cs.primary.withOpacity(0.12)
-                                    : cs.surfaceVariant.withOpacity(0.8),
+                                    ? cs.primary.withValues(alpha: 0.12)
+                                    : cs.surfaceContainerHighest.withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(txt, style: TextStyle(color: cs.onSurface)),
@@ -224,18 +307,22 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                             Expanded(
                               child: TextField(
                                 controller: _input,
-                                decoration: const InputDecoration(
-                                  hintText: 'Message...',
+                                enabled: !quotaExceeded,
+                                decoration: InputDecoration(
+                                  hintText: l10n.t('coach.messagePlaceholder'),
                                 ), // use global InputDecorationTheme
-                                onSubmitted: (_) => _send(),
-                                onChanged: (v) => _emitTyping?.call(v.isNotEmpty),
+                                onSubmitted: (_) {
+                                  if (!quotaExceeded) _send();
+                                },
+                                onChanged:
+                                    quotaExceeded ? null : (v) => _emitTyping(v.isNotEmpty),
                               ),
                             ),
                             const SizedBox(width: 4),
                             IconButton(
                               tooltip: 'Send',
                               icon: Icon(Icons.send, color: cs.primary),
-                              onPressed: _send,
+                              onPressed: quotaExceeded ? null : _send,
                             ),
                           ],
                         ),
@@ -243,6 +330,78 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                     ),
                   ],
                 ),
+    );
+  }
+}
+
+class _QuotaNotice extends StatelessWidget {
+  const _QuotaNotice({
+    required this.quotaExceeded,
+    required this.percent,
+    this.onUpgrade,
+  });
+
+  final bool quotaExceeded;
+  final double? percent;
+  final VoidCallback? onUpgrade;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final bgColor = quotaExceeded
+      ? colorScheme.errorContainer
+      : Colors.orange.withValues(alpha: 0.12);
+    final textColor = quotaExceeded ? colorScheme.onErrorContainer : Colors.orange.shade900;
+    final icon = quotaExceeded ? Icons.lock : Icons.warning_amber_rounded;
+    final percentValue = ((percent ?? 0) * 100).clamp(0, 100).round();
+    final subtitle = quotaExceeded
+        ? l10n.t('quota.upgradeForMore')
+        : l10n.t('coach.quotaWarning').replaceFirst('{percent}', percentValue.toString());
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: textColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  quotaExceeded ? l10n.t('quota.exceeded') : l10n.t('quota.runningLow'),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                        color: textColor.withValues(alpha: 0.9),
+                      ),
+                ),
+                if (onUpgrade != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: onUpgrade,
+                      child: Text(l10n.t('quota.upgradePrompt')),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

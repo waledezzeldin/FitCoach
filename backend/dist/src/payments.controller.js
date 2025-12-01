@@ -7,6 +7,21 @@ const prisma = new client_1.PrismaClient();
 router.post('/', async (req, res) => {
     try {
         const { userId, orderId, amount, provider, currency, subscriptionId } = req.body;
+        if (req.isDemoMode) {
+            const simulated = {
+                id: `demo_payment_${Date.now()}`,
+                userId,
+                orderId,
+                subscriptionId,
+                amount,
+                currency: currency || 'USD',
+                status: 'simulated',
+                provider,
+                createdAt: new Date().toISOString(),
+                demo: true,
+            };
+            return res.status(200).json(simulated);
+        }
         const payment = await prisma.payment.create({
             data: {
                 userId,

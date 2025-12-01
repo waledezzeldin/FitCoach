@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../design_system/design_tokens.dart';
+import '../../design_system/theme_extensions.dart';
+import '../../services/plan_generator.dart';
 import '../../state/app_state.dart';
 import 'intake_state.dart';
-import '../../services/plan_generator.dart';
 
 class PlanGenerationScreen extends StatefulWidget {
   final IntakeState intake;
@@ -69,35 +71,44 @@ class _PlanGenerationScreenState extends State<PlanGenerationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final gradient = theme.extension<FitCoachSurfaces>()?.primaryCTA ?? FitCoachGradients.primaryCTA;
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 140,
-                    height: 140,
-                    child: CircularProgressIndicator(
-                      value: progress / 100,
-                      strokeWidth: 10,
+      body: Container(
+        decoration: BoxDecoration(gradient: gradient),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 140,
+                      height: 140,
+                      child: CircularProgressIndicator(
+                        value: progress / 100,
+                        strokeWidth: 10,
+                      ),
                     ),
-                  ),
-                  Text('$progress%', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: cs.primary)),
-                ],
-              ),
-              const SizedBox(height: 28),
-              Text(
-                step,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 16),
-              ),
-            ],
+                    Text(
+                      '$progress%',
+                      style: theme.textTheme.headlineSmall?.copyWith(color: cs.onPrimary) ??
+                          TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: cs.onPrimary),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  step,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(color: cs.onPrimary.withValues(alpha: 0.9)),
+                ),
+              ],
+            ),
           ),
         ),
       ),

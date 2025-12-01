@@ -11,16 +11,29 @@ router.get('/', async (req, res) => {
 
 // get product
 router.get('/:sku', async (req, res) => {
-  const product = await prisma.product.findUnique({ where: { sku: req.params.sku }});
+  const product = await prisma.product.findUnique({ where: { sku: req.params.sku } });
   if (!product) return res.status(404).json({ error: 'not_found' });
   res.json(product);
 });
 
 // admin: create product (protect in real app)
 router.post('/', async (req, res) => {
-  const { sku, name, priceCents, currency, inventory, description } = req.body;
+  const { sku, name, priceCents, currency, inventory, description, categoryId } = req.body;
+
+  if (!sku || !name || typeof priceCents !== 'number' || !categoryId) {
+    return res.status(400).json({ error: 'sku, name, priceCents, and categoryId are required' });
+  }
+
   const p = await prisma.product.create({
-    data: { sku, name, priceCents, currency: currency || 'usd', inventory: inventory || 0, description }
+    data: {
+      sku,
+      name,
+      priceCents: Math.round(priceCents),
+      currency: currency || 'usd',
+      inventory: typeof inventory === 'number' ? inventory : 0,
+      description,
+      categoryId,
+    },
   });
   res.json(p);
 });

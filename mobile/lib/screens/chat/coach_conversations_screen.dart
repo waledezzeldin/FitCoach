@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import '../../services/chat_service.dart';
-import 'chat_thread_screen.dart';
-import '../../services/chat_socket_service.dart';
 import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+import '../../services/chat_service.dart';
+import '../../services/chat_socket_service.dart';
 
 class CoachConversationsScreen extends StatefulWidget {
   const CoachConversationsScreen({super.key});
@@ -90,7 +91,7 @@ class _CoachConversationsScreenState extends State<CoachConversationsScreen> {
                         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: cs.primary.withOpacity(0.12),
+                            backgroundColor: cs.primary.withValues(alpha: 0.12),
                             child: Icon(Icons.person, color: cs.primary),
                           ),
                           title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -102,7 +103,7 @@ class _CoachConversationsScreenState extends State<CoachConversationsScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: cs.primary.withOpacity(0.15),
+                                    color: cs.primary.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(

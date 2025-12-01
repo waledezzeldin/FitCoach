@@ -11,6 +11,8 @@ import '../../state/app_state.dart';
 import '../../widgets/demo_banner.dart';
 import '../../config/env.dart';
 import '../../repositories/profile_repository.dart';
+import '../../models/quota_models.dart';
+import '../../widgets/subscription_manager_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -49,12 +51,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     final name = _data?['name']?.toString() ?? 'User';
     final email = _data?['email']?.toString() ?? '';
+    final app = AppStateScope.of(context);
+    final tier = SubscriptionTierDisplay.parse(app.subscriptionType);
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         _ProfileHeader(name: name, email: email, showEdit: !Env.demo),
         const SizedBox(height: 24),
+        _SubscriptionStatusCard(
+          tier: tier,
+          onManage: () => _openSubscriptionManager(context),
+        ),
+        const SizedBox(height: 16),
         if (Env.demo)
           Container(
             padding: const EdgeInsets.all(12),
@@ -70,6 +79,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // ...other sections (guard each with if(!Env.demo) where needed)...
       ],
     );
+  }
+
+  Future<void> _openSubscriptionManager(BuildContext context) async {
+    final before = AppStateScope.of(context).subscriptionType;
+    await SubscriptionManagerSheet.show(context);
+    if (!mounted) return;
+    final after = AppStateScope.of(context).subscriptionType;
+    if (before != after) {
+      setState(() {});
+    }
   }
 }
 
@@ -124,6 +143,33 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _SubscriptionStatusCard extends StatelessWidget {
+  const _SubscriptionStatusCard({required this.tier, required this.onManage});
+  final SubscriptionTier tier;
+  final VoidCallback onManage;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isFreemium = tier == SubscriptionTier.freemium;
+    return Card(
+      child: ListTile(
+        leading: Icon(Icons.workspace_premium_outlined, color: cs.primary),
+        title: Text(isFreemium ? 'Freemium plan' : tier.label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(
+          isFreemium
+              ? 'Upgrade to unlock personalized nutrition and coaching access.'
+              : 'Manage your billing or switch plans any time.',
+          style: TextStyle(color: cs.onSurfaceVariant),
+        ),
+        trailing: isFreemium
+            ? FilledButton(onPressed: onManage, child: const Text('Upgrade'))
+            : TextButton(onPressed: onManage, child: const Text('Manage')),
+      ),
     );
   }
 }

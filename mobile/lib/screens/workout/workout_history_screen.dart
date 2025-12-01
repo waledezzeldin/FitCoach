@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import '../../services/workout_service.dart';
 
 class WorkoutHistoryScreen extends StatefulWidget {
-  const WorkoutHistoryScreen({super.key});
+  WorkoutHistoryScreen({super.key, WorkoutService? service}) : service = service ?? WorkoutService();
+
+  final WorkoutService service;
 
   @override
   State<WorkoutHistoryScreen> createState() => _WorkoutHistoryScreenState();
 }
 
 class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
+  late final WorkoutService svc;
   bool loading = true;
   String? error;
   List<Map<String, dynamic>> items = [];
@@ -16,6 +19,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
   @override
   void initState() {
     super.initState();
+    svc = widget.service;
     _load();
   }
 
@@ -25,7 +29,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
       error = null;
     });
     try {
-      items = await WorkoutService().history();
+      items = await svc.history();
     } catch (_) {
       error = 'Failed to load history';
     } finally {

@@ -3,6 +3,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'api_service.dart';
 import '../config/env.dart';
 import '../demo/demo_data.dart';
+import '../models/quota_models.dart';
 
 class SubscriptionService {
   final _api = ApiService();
@@ -55,5 +56,16 @@ class SubscriptionService {
 
   Future<void> cancel() async {
     await _api.dio.post('/billing/cancel');
+  }
+
+  Future<SubscriptionTier> changeTier(String userId, SubscriptionTier nextTier) async {
+    if (Env.demo) {
+      return nextTier;
+    }
+    await _api.dio.post('/v1/subscription/tier', data: {
+      'userId': userId,
+      'tier': nextTier.apiValue,
+    });
+    return nextTier;
   }
 }

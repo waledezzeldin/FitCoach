@@ -13,6 +13,13 @@ enum UserRole {
   user
   coach
   admin
+  pending_coach
+}
+
+enum SubscriptionTier {
+  freemium
+  premium
+  smart_premium
 }
 
 model User {
@@ -21,6 +28,8 @@ model User {
   password        String?
   name            String?
   phone           String?          @unique
+  preferredLocale String?
+  deviceToken     String?
   role            UserRole
   coach           Coach?           @relation("UserCoach") // One-to-one with Coach
   coachId         String? // Foreign key for Coach
@@ -38,22 +47,51 @@ model User {
   SupplementLog   SupplementLog[]
   Subscription    Subscription[]
   coachRequests   CoachRequest[] // <-- Add this line
+  intake          UserIntake?
+  subscriptionQuota SubscriptionQuota?
+  nutritionPreference NutritionPreference?
+  nutritionAccess   NutritionAccess?
+  coachMessages   CoachMessage[]
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  coachId      String?
+  coach        Coach?   @relation("CoachSessions", fields: [coachId], references: [id])
+  scheduledAt  DateTime
+  durationMin  Int      @default(30)
+  status       String   @default("scheduled")
+  agoraChannel String?
+  rating       Int?
+  ratingNote   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Order {
   id          String       @id @default(uuid())
   userId      String
   user        User         @relation(fields: [userId], references: [id])
+  totalCents  Int          @default(0)
+  currency    String       @default("usd")
+  status      String       @default("pending")
+  items       OrderItem[]
   commissions Commission[] // One-to-many with Commission
   payments    Payment[] // One-to-many with Payment
   Delivery    Delivery?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model OrderItem {
+  id         String @id @default(uuid())
+  orderId    String
+  order      Order  @relation(fields: [orderId], references: [id])
+  sku        String
+  qty        Int
+  priceCents Int
 }
 
 model Coach {
@@ -63,6 +101,57 @@ model Coach {
   clients         User[]           @relation("CoachClients")
   commissions     Commission[] // One-to-many with Commission
   recommendations Recommendation[] // One-to-many with Recommendation
+  sessions        Session[]        @relation("CoachSessions")
+  bio             String?
+  certifications  String?
+  referralCode    String?
+  messages        CoachMessage[]
+  specializations String[]         @default([])
+  experienceYears Int?
+  headline        String?
+  verified        Boolean          @default(false)
+  certificates    CoachCertificate[]
+  experiences     CoachExperience[]
+  achievements    CoachAchievement[]
+}
+
+model CoachCertificate {
+  id                   String   @id @default(uuid())
+  coachId              String
+  coach                Coach    @relation(fields: [coachId], references: [id])
+  name                 String
+  issuingOrganization  String
+  issuedAt             DateTime
+  expiresAt            DateTime?
+  certificateUrl       String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model CoachExperience {
+  id            String   @id @default(uuid())
+  coachId       String
+  coach         Coach    @relation(fields: [coachId], references: [id])
+  title         String
+  organization  String
+  startDate     DateTime
+  endDate       DateTime?
+  isCurrent     Boolean  @default(false)
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CoachAchievement {
+  id          String   @id @default(uuid())
+  coachId     String
+  coach       Coach    @relation(fields: [coachId], references: [id])
+  title       String
+  description String?
+  achievedAt  DateTime
+  type        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model WorkoutLog {
@@ -82,6 +171,10 @@ model NutritionLog {
   date     DateTime
   meal     String
   calories Int
+  protein  Float?
+  carbs    Float?
+  fats     Float?
+  mealType String?
   notes    String?
 }
 
@@ -99,6 +192,12 @@ model Subscription {
   id       String    @id @default(uuid())
   userId   String
   user     User      @relation(fields: [userId], references: [id])
+  stripeSubscriptionId String? @unique
+  status   String    @default("inactive")
+  planCode String?
+  currentPeriodEnd DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   payments Payment[] // One-to-many with Payment
 }
 
@@ -128,11 +227,16 @@ model Bundle {
 
 model Product {
   id          String    @id @default(uuid())
+  sku         String    @unique
   name        String
   description String?
-  price       Float
+  price       Float?
+  priceCents  Int
+  currency    String    @default("usd")
+  inventory   Int       @default(0)
   categoryId  String
   category    Category  @relation(fields: [categoryId], references: [id])
+  bundles     Bundle[]  @relation("BundleProducts")
 }
 
 model Delivery {
@@ -154,6 +258,21 @@ model Affiliate {
   referralCode String
   brandUrl     String?
   commissions  Commission[] // One-to-many with Commission
+}
+
+model CoachMessage {
+  id             String   @id @default(uuid())
+  coachId        String
+  coach          Coach    @relation(fields: [coachId], references: [id])
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  sender         String
+  body           String?
+  attachmentUrl  String?
+  attachmentName String?
+  attachmentType String?
+  attachmentSize Int?
+  createdAt      DateTime @default(now())
 }
 
 model Commission {
@@ -205,11 +324,23 @@ model Payment {
   order          Order?        @relation(fields: [orderId], references: [id])
   subscriptionId String?
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
-  amount         Float
+  amount         Float?
+  amountCents    Int           @default(0)
   currency       String
   status         String
   provider       String
+  providerId     String?   @unique
+  raw            Json?
   createdAt      DateTime      @default(now())
+}
+
+model WebhookEvent {
+  id        String   @id @default(uuid())
+  provider  String
+  eventId   String   @unique
+  payload   Json
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model CoachRequest {
@@ -218,4 +349,65 @@ model CoachRequest {
   user      User     @relation(fields: [userId], references: [id])
   status    String // "pending", "approved", "rejected"
   createdAt DateTime @default(now())
+}
+
+model UserIntake {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+  gender            String?
+  mainGoal          String?
+  workoutLocation   String?
+  firstCompletedAt  DateTime?
+  age               Int?
+  weightKg          Float?
+  heightCm          Float?
+  experienceLevel   String?
+  workoutFrequency  Int?
+  injuries          String[] @default([])
+  secondCompletedAt DateTime?
+  skippedSecond     Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SubscriptionQuota {
+  id              String           @id @default(uuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id])
+  tier            SubscriptionTier @default(freemium)
+  messagesUsed    Int              @default(0)
+  callsUsed       Int              @default(0)
+  attachmentsUsed Int              @default(0)
+  resetAt         DateTime         @default(now())
+  nutritionWindowDays Int?
+  nutritionExpiresAt DateTime?
+  nutritionLocked Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model NutritionPreference {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id])
+  proteinSources     String[]
+  proteinAllergies   String[]
+  dinnerPreferences  Json?
+  additionalNotes    String?
+  completedAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model NutritionAccess {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  planGeneratedAt DateTime
+  expiresAt       DateTime?
+  locked          Boolean  @default(false)
+  windowDays      Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

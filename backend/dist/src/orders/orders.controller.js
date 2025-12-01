@@ -37,14 +37,16 @@ router.post('/create', async (req, res) => {
         }, { idempotencyKey: `order_${order.id}` });
         await prisma.payment.create({
             data: {
+                userId,
                 provider: 'stripe',
                 providerId: pi.id,
                 orderId: order.id,
+                amount: total / 100,
                 amountCents: total,
                 currency,
                 status: pi.status,
                 raw: pi,
-            }
+            },
         });
         res.json({ orderId: order.id, clientSecret: pi.client_secret });
     }
