@@ -1,69 +1,73 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:fitcoach_plus/state/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/mock_secure_storage.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final secureStorageMock = MockSecureStorageChannel()..install();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    secureStorageMock.reset();
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  group('AppState.resolveLandingRoute', () {
+    test('requires language selection first', () {
+      final app = AppState(enableNetworkSync: false);
+      expect(app.resolveLandingRoute(), '/language_select');
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('shows intro after language selection', () {
+      final app = AppState(enableNetworkSync: false)
+        ..locale = const Locale('en');
+      expect(app.resolveLandingRoute(), '/app_intro');
+    });
+
+    test('defaults to phone login after intro is seen', () {
+      final app = AppState(enableNetworkSync: false)
+        ..locale = const Locale('ar')
+        ..introSeen = true;
+      expect(app.resolveLandingRoute(), '/phone_login');
+    });
+
+    test('routes to intake when authenticated but onboarding incomplete', () async {
+      final app = AppState(enableNetworkSync: false)
+        ..locale = const Locale('en')
+        ..introSeen = true;
+      await app.signIn(user: {'id': 'user-1'}); // missing intake map
+      expect(app.resolveLandingRoute(), '/intake');
+    });
+
+    test('routes to dashboard once language, intro, auth, and intake are satisfied', () async {
+      final intakeNow = DateTime.now().toIso8601String();
+      final app = AppState(enableNetworkSync: false)
+        ..locale = const Locale('en')
+        ..introSeen = true;
+      await app.signIn(user: {
+        'id': 'user-1',
+        'intake': {
+          'first': {
+            'gender': 'female',
+            'mainGoal': 'general_fitness',
+            'workoutLocation': 'home',
+            'completedAt': intakeNow,
+          },
+          'second': {
+            'age': 28,
+            'weight': 70,
+            'height': 168,
+            'experienceLevel': 'intermediate',
+            'workoutFrequency': 4,
+            'injuries': <String>[],
+            'completedAt': intakeNow,
+          },
+        },
+      });
+      expect(app.resolveLandingRoute(), '/dashboard');
+    });
   });
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: CounterWidget(),
-    );
-  }
-}
-
-class CounterWidget extends StatefulWidget {
-  const CounterWidget({super.key});
-
-  @override
-  State<CounterWidget> createState() => _CounterWidgetState();
-}
-
-class _CounterWidgetState extends State<CounterWidget> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Counter')),
-      body: Center(child: Text('$_counter')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}

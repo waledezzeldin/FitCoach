@@ -26,17 +26,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       if (s == AnimationStatus.completed) {
         Timer(const Duration(milliseconds: 600), () {
           if (mounted) {
-            final app = AppStateScope.of(context);
-            Navigator.pushReplacementNamed(
-              context,
-              app.user == null
-                  ? '/login'
-                  : (app.needsIntake ? '/intake' : '/dashboard'),
-            );
+            _routeFromSplash();
           }
         });
       }
     });
+  }
+
+  Future<void> _routeFromSplash() async {
+    final app = AppStateScope.of(context);
+    if (!app.initialized) {
+      await app.load();
+    }
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, app.resolveLandingRoute());
   }
 
   @override

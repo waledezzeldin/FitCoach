@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../design_system/design_tokens.dart';
+import '../design_system/theme_extensions.dart';
 
 class PrimaryCTA extends StatelessWidget {
   final String label;
@@ -14,11 +15,8 @@ class PrimaryCTA extends StatelessWidget {
       width: double.infinity,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppTheme.brandDark, AppTheme.brandLight],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
+          gradient: Theme.of(context).extension<FitCoachSurfaces>()?.primaryCTA ??
+              FitCoachGradients.primaryCTA,
           borderRadius: BorderRadius.circular(26),
         ),
         child: Material(

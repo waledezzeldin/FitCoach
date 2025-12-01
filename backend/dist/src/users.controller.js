@@ -9,7 +9,7 @@ const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
 router.post('/register', async (req, res) => {
     try {
-        const { email, password, name, role } = req.body;
+        const { email, password, name, role, preferredLocale } = req.body;
         let user = await prisma.user.findUnique({ where: { email } });
         if (user)
             return res.status(400).json({ error: 'Email already exists.' });
@@ -19,6 +19,7 @@ router.post('/register', async (req, res) => {
                 password,
                 name,
                 role: role === 'coach' ? 'pending_coach' : 'user',
+                preferredLocale,
             }
         });
         if (role === 'coach') {
@@ -29,7 +30,7 @@ router.post('/register', async (req, res) => {
                 }
             });
         }
-        res.json({ success: true, user });
+        res.json({ success: true, user: { ...user, preferredLocale } });
     }
     catch (err) {
         res.status(500).json({ error: 'Registration failed.' });
@@ -45,12 +46,18 @@ router.post('/login', async (req, res) => {
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials.' });
         }
+        if (!user.password) {
+            return res.status(401).json({ error: 'Invalid credentials.' });
+        }
         const valid = await bcryptjs_1.default.compare(password, user.password);
         if (!valid) {
             return res.status(401).json({ error: 'Invalid credentials.' });
         }
         const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
-        res.json({ token, user: { id: user.id, email: user.email, name: user.name, phone: user.phone } });
+        res.json({
+            token,
+            user: { id: user.id, email: user.email, name: user.name, phone: user.phone, preferredLocale: user.preferredLocale },
+        });
     }
     catch (err) {
         res.status(500).json({ error: 'Login failed.' });
@@ -86,7 +93,8 @@ router.post('/social', async (req, res) => {
                 data: {
                     email: profile.email,
                     name: profile.name,
-                }
+                    role: 'user',
+                },
             });
         }
         const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
@@ -100,7 +108,7 @@ router.get('/:id', async (req, res) => {
     try {
         const user = await prisma.user.findUnique({
             where: { id: req.params.id },
-            select: { id: true, email: true, name: true, phone: true }
+            select: { id: true, email: true, name: true, phone: true, preferredLocale: true }
         });
         if (!user) {
             return res.status(404).json({ error: 'User not found.' });
@@ -113,12 +121,22 @@ router.get('/:id', async (req, res) => {
 });
 router.put('/:id', async (req, res) => {
     try {
-        const { name, phone } = req.body;
+        const { name, phone, preferredLocale } = req.body;
+        const updateData = {};
+        if (typeof name === 'string')
+            updateData.name = name;
+        if (typeof phone === 'string')
+            updateData.phone = phone;
+        if (typeof preferredLocale === 'string')
+            updateData.preferredLocale = preferredLocale;
+        if (!Object.keys(updateData).length) {
+            return res.status(400).json({ error: 'No valid fields provided.' });
+        }
         const user = await prisma.user.update({
             where: { id: req.params.id },
-            data: { name, phone }
+            data: updateData,
         });
-        res.json({ id: user.id, email: user.email, name: user.name, phone: user.phone });
+        res.json({ id: user.id, email: user.email, name: user.name, phone: user.phone, preferredLocale: user.preferredLocale });
     }
     catch (err) {
         res.status(500).json({ error: 'Failed to update user profile.' });

@@ -20,6 +20,8 @@ class ApiService {
 
   final Dio dio;
   final _secure = const FlutterSecureStorage();
+  String? _preferredLocale;
+  bool _demoMode = false;
 
   static const String _baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:3000');
   static const String _kAccess = 'access_token';
@@ -50,6 +52,12 @@ class ApiService {
         final token = await getAccessToken();
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
+        }
+        options.headers['Accept-Language'] = _preferredLocale ?? 'en';
+        if (_demoMode) {
+          options.headers['X-Demo-Mode'] = '1';
+        } else {
+          options.headers.remove('X-Demo-Mode');
         }
         handler.next(options);
       },
@@ -147,5 +155,17 @@ class ApiService {
       }
     }
     return fallback;
+  }
+
+  void setPreferredLocale(String? localeCode) {
+    if (localeCode == null || localeCode.trim().isEmpty) {
+      _preferredLocale = null;
+      return;
+    }
+    _preferredLocale = localeCode.trim();
+  }
+
+  void setDemoMode(bool value) {
+    _demoMode = value;
   }
 }

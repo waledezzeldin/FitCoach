@@ -22,19 +22,33 @@ import adminUsersRouter from './admin/users.controller';
 import bundlesRouter from './products/bundles.controller';
 import productCategoriesRouter from './products/categories.controller';
 import usersDeviceTokenRouter from './users.device-token.controller';
+import { createIntakeRouter } from './intake.controller';
+import { PrismaClient } from '@prisma/client';
 import { swaggerUi, swaggerSpec } from './swagger';
 import rateLimit from 'express-rate-limit';
 import csrf from 'csurf';
 import authRouter from './auth.controller';
 import categoriesRouter from './categories.controller';
+import nutritionRouter from './nutrition/nutrition.controller';
+import demoRouter from './demo.controller';
+import createDemoModeGuard from './middleware/demo-mode.guard';
+import workoutsRouter from './workouts.controller';
+import homeRouter from './home/home.controller';
 
 dotenv.config();
 const app = express();
 app.use(bodyParser.json());
+app.use(createDemoModeGuard());
 
-const stripeWebhookRouter = require('./api/stripeWebhook');
+let stripeWebhookRouter: any;
+try {
+  stripeWebhookRouter = require('../api/stripeWebhook');
+  app.use('/api/stripe', stripeWebhookRouter);
+} catch (err) {
+  const message = err instanceof Error ? err.message : String(err);
+  console.warn('Stripe webhook router not loaded. Ensure api/stripeWebhook.js exists.', message);
+}
 import { Request, Response, NextFunction } from 'express';
-app.use('/api/stripe', stripeWebhookRouter);
 
 app.use('/v1/media', mediaRouter);
 app.use('/v1/webhooks', webhooksRouter);
@@ -46,6 +60,7 @@ app.use('/v1/sessions', sessionsRouter);
 app.use('/v1/users', usersRouter);
 app.use('/v1/coaches', coachesRouter);
 app.use('/v1/progress', progressRouter);
+app.use('/v1/nutrition', nutritionRouter);
 app.use('/v1/notifications', notificationsRouter);
 app.use('/v1/milestones', milestonesRouter);
 app.use('/v1/delivery', deliveryRouter);
@@ -53,10 +68,15 @@ app.use('/v1/affiliate', affiliateRouter);
 app.use('/v1/commission', commissionRouter);
 app.use('/v1/subscription', subscriptionRouter);
 app.use('/v1/payments', paymentsRouter);
+app.use('/v1/workouts', workoutsRouter);
+app.use('/v1/home', homeRouter);
 app.use('/v1/admin/users', adminUsersRouter);
 app.use('/v1/products/bundles', bundlesRouter);
 app.use('/v1/products/categories', productCategoriesRouter);
 app.use('/v1/users', usersDeviceTokenRouter);
+app.use(demoRouter);
+const prisma = new PrismaClient();
+app.use('/v1/intake', createIntakeRouter(prisma));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(authRouter);
 app.use(categoriesRouter);
@@ -84,7 +104,10 @@ app.use((err: ErrorWithStatus, req: Request, res: Response, next: NextFunction) 
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Backend listening on ${port}`));
+
+if (require.main === module) {
+  app.listen(port, () => console.log(`Backend listening on ${port}`));
+}
 
 export default app;
 

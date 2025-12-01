@@ -44,14 +44,16 @@ router.post('/create', async (req, res) => {
     // create Payment record
     await prisma.payment.create({
       data: {
+        userId,
         provider: 'stripe',
         providerId: pi.id,
         orderId: order.id,
+        amount: total / 100,
         amountCents: total,
         currency,
         status: pi.status,
         raw: pi as any,
-      }
+      },
     });
 
     res.json({ orderId: order.id, clientSecret: pi.client_secret });

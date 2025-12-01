@@ -15,13 +15,16 @@ class OptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return SizedBox(
       width: 140,
       height: 180, // fixed height removes need for Expanded
       child: Material(
-        color: selected ? cs.primary.withOpacity(.08) : cs.surface,
+        color: selected
+          ? cs.primary.withValues(alpha: 0.08)
+          : cs.surfaceContainerHighest,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: selected ? cs.primary : cs.outlineVariant),
@@ -39,7 +42,7 @@ class OptionCard extends StatelessWidget {
                   image,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    color: cs.surfaceVariant,
+                    color: cs.surfaceContainerHighest,
                     child: Icon(Icons.image_not_supported, color: cs.onSurfaceVariant),
                   ),
                 ),

@@ -8,6 +8,21 @@ const prisma = new PrismaClient();
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { userId, orderId, amount, provider, currency, subscriptionId } = req.body;
+    if (req.isDemoMode) {
+      const simulated = {
+        id: `demo_payment_${Date.now()}`,
+        userId,
+        orderId,
+        subscriptionId,
+        amount,
+        currency: currency || 'USD',
+        status: 'simulated',
+        provider,
+        createdAt: new Date().toISOString(),
+        demo: true,
+      };
+      return res.status(200).json(simulated);
+    }
     // You would typically call your payment provider here (e.g., Stripe)
     // For now, just create a payment record as pending
     const payment = await prisma.payment.create({

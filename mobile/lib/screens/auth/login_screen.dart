@@ -5,8 +5,9 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../services/auth_service.dart';
 import '../../state/app_state.dart';
 import '../../widgets/primary_cta.dart';
-import '../../config/env.dart';
-import '../../demo/demo_session.dart';
+import '../../demo/demo_launcher.dart';
+import '../../design_system/design_tokens.dart';
+import 'phone_login_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,7 +24,10 @@ class _LoginScreenState extends State<LoginScreen> {
   String? error;
 
   Future<void> _signInWithGoogle() async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
     try {
       final googleSignIn = GoogleSignIn.instance;
       final account = await googleSignIn.attemptLightweightAuthentication();
@@ -45,7 +49,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithFacebook() async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
     try {
       final result = await FacebookAuth.instance.login();
       if (result.status != LoginStatus.success) throw Exception('Canceled');
@@ -64,7 +71,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithApple() async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
@@ -88,7 +98,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => isLoading = true);
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
       try {
         await AuthService().login(email, password);
         final app = AppStateScope.of(context);
@@ -105,173 +118,258 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _demoGo(DemoRole role) async {
-    DemoSession.role = role;
-    await AppStateScope.of(context).signIn(
-      user: {'id': 'demo_${role.name}', 'role': role.name},
-      subscription: role == DemoRole.user ? 'freemium' : 'pro',
-    );
+  Future<void> _showDemoSheet() async {
     if (!mounted) return;
-    Navigator.pushReplacementNamed(context, AppStateScope.of(context).needsIntake ? '/intake' : '/dashboard');
+    await DemoLauncher.showSheet(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final tabIndicator = BoxDecoration(
+      color: Colors.white.withOpacity(0.14),
+      borderRadius: BorderRadius.circular(28),
+    );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign in')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Logo
-          const SizedBox(height: 32),
-          Center(child: Image.asset('assets/branding/logo.png', width: 96, height: 96, semanticLabel: 'FitCoach')),
-          const SizedBox(height: 24),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF03030D), Color(0xFF09091D), Color(0xFF050208)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: DefaultTabController(
+            length: 2,
+            initialIndex: 0,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome back',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Choose how you want to sign in',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(32),
+                      border: Border.all(color: Colors.white.withOpacity(0.08)),
+                    ),
+                    child: TabBar(
+                      labelStyle: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.white70,
+                      indicator: tabIndicator,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      tabs: const [
+                        Tab(text: 'Phone'),
+                        Tab(text: 'Email'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: TabBarView(
+                      physics: const BouncingScrollPhysics(),
+                      children: [
+                        const PhoneLoginPanel(
+                          embedded: true,
+                          showDemoCta: false,
+                          showEmailSwitch: false,
+                          showHeader: false,
+                        ),
+                        _buildEmailTab(theme),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.tonalIcon(
+                    icon: const Icon(Icons.visibility_outlined),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.12),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(54),
+                    ),
+                    onPressed: isLoading ? null : _showDemoSheet,
+                    label: const Text('Try Demo Mode'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
+                    child: const Text('Create account'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: 'Email',
-              labelStyle: TextStyle(color: cs.primary),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: cs.primary),
+  Widget _buildEmailTab(ThemeData theme) {
+    final cs = theme.colorScheme;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 32),
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _glassCard(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    decoration: _fieldDecoration(label: 'Email', icon: Icons.alternate_email),
+                    style: const TextStyle(color: Colors.white),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) return 'Email is required';
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(val)) return 'Enter a valid email';
+                      return null;
+                    },
+                    onChanged: (val) => setState(() => email = val),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    decoration: _fieldDecoration(label: 'Password', icon: Icons.lock_outline),
+                    obscureText: true,
+                    style: const TextStyle(color: Colors.white),
+                    validator: (val) => val == null || val.isEmpty ? 'Password is required' : null,
+                    onChanged: (val) => setState(() => password = val),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pushNamed(context, '/forgot_password'),
+                      child: const Text('Forgot password?', style: TextStyle(color: Colors.white70)),
+                    ),
+                  ),
+                  if (error != null) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: FitCoachColors.destructive.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(error!, style: const TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: PrimaryCTA(
+                      label: 'Sign in with Email',
+                      onPressed: isLoading ? null : _submit,
+                    ),
+                  ),
+                ],
               ),
             ),
-            style: const TextStyle(color: Colors.white),
-            validator: (val) {
-              if (val == null || val.isEmpty) return 'Email is required';
-              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(val)) return 'Enter a valid email';
-              return null;
-            },
-            onChanged: (val) => setState(() => email = val),
           ),
-          const SizedBox(height: 16),
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: 'Password',
-              labelStyle: TextStyle(color: cs.primary),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: cs.primary),
+          const SizedBox(height: 24),
+          Text('Or continue with', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70)),
+          const SizedBox(height: 12),
+          Column(
+            children: [
+              _ssoButton(
+                icon: Icons.g_mobiledata,
+                label: 'Continue with Google',
+                onTap: isLoading ? null : _signInWithGoogle,
+                color: cs.primary,
               ),
-            ),
-            obscureText: true,
-            style: const TextStyle(color: Colors.white),
-            validator: (val) => val == null || val.isEmpty ? 'Password is required' : null,
-            onChanged: (val) => setState(() => password = val),
+              const SizedBox(height: 12),
+              _ssoButton(
+                icon: Icons.facebook,
+                label: 'Continue with Facebook',
+                onTap: isLoading ? null : _signInWithFacebook,
+                color: const Color(0xFF1877F2),
+              ),
+              const SizedBox(height: 12),
+              _ssoButton(
+                icon: Icons.apple,
+                label: 'Continue with Apple',
+                onTap: isLoading ? null : _signInWithApple,
+                color: Colors.white,
+                foreground: Colors.black,
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/forgot_password'),
-              child: Text('Forgot password?', style: TextStyle(color: cs.primary)),
-            ),
-          ),
-          PrimaryCTA(
-            label: 'Sign in',
-            onPressed: isLoading ? null : _submit,
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
-            child: const Text('Create account'),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.g_mobiledata, color: Colors.white),
-            label: const Text('Sign in with Google'),
-            style: ElevatedButton.styleFrom(backgroundColor: cs.primary),
-            onPressed: isLoading ? null : _signInWithGoogle,
-          ),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.facebook, color: Colors.white),
-            label: const Text('Sign in with Facebook'),
-            style: ElevatedButton.styleFrom(backgroundColor: cs.primary),
-            onPressed: isLoading ? null : _signInWithFacebook,
-          ),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.apple, color: Colors.white),
-            label: const Text('Sign in with Apple'),
-            style: ElevatedButton.styleFrom(backgroundColor: cs.primary),
-            onPressed: isLoading ? null : _signInWithApple,
-          ),
-          ElevatedButton.icon(
-            onPressed: () => Navigator.pushNamed(context, '/phone_login'),
-            icon: const Icon(Icons.phone),
-            label: const Text('Continue with Phone'),
-          ),
-          // Demo-only bypass buttons (appear only when --dart-define=DEMO=true)
-          if (Env.demo) ...[
-            const SizedBox(height: 20),
-            Center(child: Text('Demo login', style: TextStyle(color: cs.onSurfaceVariant))),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _MiniRoleButton(label: 'User',    color: cs.primary, onTap: () => _demoGo(DemoRole.user)),
-                const SizedBox(width: 10),
-                _MiniRoleButton(label: 'Coach',   color: cs.primary, onTap: () => _demoGo(DemoRole.coach)),
-                const SizedBox(width: 10),
-                _MiniRoleButton(label: 'Admin',   color: cs.primary, onTap: () => _demoGo(DemoRole.admin)),
-              ],
-            ),
-          ],
         ],
       ),
     );
   }
-}
 
-class _SocialIconButton extends StatelessWidget {
-  final IconData icon;
-  final String? tooltip;
-  final VoidCallback? onPressed;
-  const _SocialIconButton({required this.icon, this.tooltip, this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget _ssoButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onTap,
+    required Color color,
+    Color? foreground,
+  }) {
     return SizedBox(
-      width: 44,
-      height: 44,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(44, 44), // override global min size
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          padding: EdgeInsets.zero,
-          shape: const CircleBorder(),
-          side: BorderSide(color: cs.primary, width: 1.2),
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        icon: Icon(icon, color: foreground ?? Colors.white),
+        label: Text(label, style: TextStyle(color: foreground ?? Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: foreground ?? Colors.white,
+          minimumSize: const Size.fromHeight(52),
         ),
-        onPressed: onPressed,
-        child: Icon(icon, color: cs.primary, size: 22),
+        onPressed: onTap,
       ),
     );
   }
-}
 
-class _MiniRoleButton extends StatelessWidget {
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-  const _MiniRoleButton({required this.label, required this.color, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints.tightFor(height: 44), // fixed height to match style
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 44),      // allow narrow width, fixed height
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          shape: const StadiumBorder(),
-          side: BorderSide(color: color, width: 1.2),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        onPressed: onTap,
-        child: Text(label, style: TextStyle(color: color)),
+  InputDecoration _fieldDecoration({required String label, required IconData icon}) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: Colors.white70),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.06),
+      labelStyle: const TextStyle(color: Colors.white70),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
       ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _glassCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x33000000), blurRadius: 40, offset: Offset(0, 24)),
+        ],
+      ),
+      child: child,
     );
   }
 }

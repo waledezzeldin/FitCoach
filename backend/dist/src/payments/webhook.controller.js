@@ -36,7 +36,7 @@ router.post('/stripe', async (req, res) => {
                 await prisma.payment.update({ where: { id: pay.id }, data: { status: 'succeeded', raw: pi } });
                 const orderId = pi.metadata?.orderId;
                 if (orderId) {
-                    await prisma.order.update({ where: { id: orderId }, data: { status: 'paid', paymentId: pi.id } });
+                    await prisma.order.update({ where: { id: orderId }, data: { status: 'paid' } });
                 }
             }
         }

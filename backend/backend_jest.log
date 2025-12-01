@@ -1,0 +1,54 @@
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+PASS tests/quota.service.test.ts (10.741 s)
+PASS tests/users.controller.test.ts (5.312 s)
+  ● Console
+
+    console.warn
+      Firebase service account not configured; push notifications disabled.
+
+    [0m [90m 21 |[39m     firebaseReady [33m=[39m [36mtrue[39m[33m;[39m
+     [90m 22 |[39m   } [36melse[39m {
+    [31m[1m>[22m[39m[90m 23 |[39m     console[33m.[39mwarn([32m'Firebase service account not configured; push notifications disabled.'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 24 |[39m   }
+     [90m 25 |[39m } [36mcatch[39m (err) {
+     [90m 26 |[39m   console[33m.[39mwarn([32m'Failed to initialize Firebase Admin SDK. Push notifications disabled.'[39m[33m,[39m err)[33m;[39m[0m
+
+      at Object.<anonymous> (src/notifications/push.service.ts:23:13)
+      at Object.<anonymous> (src/notifications.controller.ts:3:1)
+      at Object.<anonymous> (src/main.ts:14:1)
+      at Object.<anonymous> (tests/users.controller.test.ts:2:1)
+
+    console.warn
+      Stripe webhook router not loaded. Ensure api/stripeWebhook.js exists. Error: Cannot find module '../prismaClient' from 'api/stripeWebhook.js'
+      
+      Require stack:
+        api/stripeWebhook.js
+        src/main.ts
+        tests/users.controller.test.ts
+
+    [0m [90m 42 |[39m } [36mcatch[39m (err) {
+     [90m 43 |[39m   [36mconst[39m message [33m=[39m err [36minstanceof[39m [33mError[39m [33m?[39m err[33m.[39mmessage [33m:[39m [33mString[39m(err)[33m;[39m
+    [31m[1m>[22m[39m[90m 44 |[39m   console[33m.[39mwarn([32m'Stripe webhook router not loaded. Ensure api/stripeWebhook.js exists.'[39m[33m,[39m message)[33m;[39m
+     [90m    |[39m           [31m[1m^[22m[39m
+     [90m 45 |[39m }
+     [90m 46 |[39m [36mimport[39m { [33mRequest[39m[33m,[39m [33mResponse[39m[33m,[39m [33mNextFunction[39m } [36mfrom[39m [32m'express'[39m[33m;[39m
+     [90m 47 |[39m[0m
+
+      at Object.<anonymous> (src/main.ts:44:11)
+      at Object.<anonymous> (tests/users.controller.test.ts:2:1)
+
+PASS tests/auth.controller.test.ts
+PASS tests/intake.controller.test.ts
+PASS tests/smoke.test.ts
+PASS tests/nutrition.utils.test.ts
+
+Test Suites: 6 passed, 6 total
+Tests:       20 passed, 20 total
+Snapshots:   0 total
+Time:        18.885 s
+Ran all test suites.

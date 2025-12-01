@@ -15,9 +15,20 @@ router.get('/:sku', async (req, res) => {
     res.json(product);
 });
 router.post('/', async (req, res) => {
-    const { sku, name, priceCents, currency, inventory, description } = req.body;
+    const { sku, name, priceCents, currency, inventory, description, categoryId } = req.body;
+    if (!sku || !name || typeof priceCents !== 'number' || !categoryId) {
+        return res.status(400).json({ error: 'sku, name, priceCents, and categoryId are required' });
+    }
     const p = await prisma.product.create({
-        data: { sku, name, priceCents, currency: currency || 'usd', inventory: inventory || 0, description }
+        data: {
+            sku,
+            name,
+            priceCents: Math.round(priceCents),
+            currency: currency || 'usd',
+            inventory: typeof inventory === 'number' ? inventory : 0,
+            description,
+            categoryId,
+        },
     });
     res.json(p);
 });

@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import Stripe from 'stripe';
 const router = Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-08-01' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2024-08-01' as Stripe.LatestApiVersion,
+});
 
 router.post('/stripe', (req, res) => {
   // NOTE: in production verify stripe signature header with raw body
