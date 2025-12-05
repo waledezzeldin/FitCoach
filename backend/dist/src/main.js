@@ -39,15 +39,6 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use(body_parser_1.default.json());
 app.use((0, demo_mode_guard_1.default)());
-let stripeWebhookRouter;
-try {
-    stripeWebhookRouter = require('../api/stripeWebhook');
-    app.use('/api/stripe', stripeWebhookRouter);
-}
-catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.warn('Stripe webhook router not loaded. Ensure api/stripeWebhook.js exists.', message);
-}
 app.use('/v1/media', media_controller_1.default);
 app.use('/v1/webhooks', webhooks_controller_1.default);
 app.use('/v1/recommendations', recommendations_controller_1.default);

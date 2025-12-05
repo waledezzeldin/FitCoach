@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import mediaRouter from './media.controller';
@@ -39,16 +39,6 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 app.use(createDemoModeGuard());
-
-let stripeWebhookRouter: any;
-try {
-  stripeWebhookRouter = require('../api/stripeWebhook');
-  app.use('/api/stripe', stripeWebhookRouter);
-} catch (err) {
-  const message = err instanceof Error ? err.message : String(err);
-  console.warn('Stripe webhook router not loaded. Ensure api/stripeWebhook.js exists.', message);
-}
-import { Request, Response, NextFunction } from 'express';
 
 app.use('/v1/media', mediaRouter);
 app.use('/v1/webhooks', webhooksRouter);

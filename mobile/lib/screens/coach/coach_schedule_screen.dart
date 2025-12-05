@@ -4,18 +4,29 @@ import '../../services/coach_service.dart';
 import '../../state/app_state.dart';
 
 class CoachScheduleScreen extends StatefulWidget {
-  const CoachScheduleScreen({super.key});
+  const CoachScheduleScreen({super.key, this.coach, CoachService? coachService})
+      : coachServiceOverride = coachService;
+
+  final Map<String, dynamic>? coach;
+  final CoachService? coachServiceOverride;
   @override
   State<CoachScheduleScreen> createState() => _CoachScheduleScreenState();
 }
 
 class _CoachScheduleScreenState extends State<CoachScheduleScreen> {
-  final _coachService = CoachService();
+  late final CoachService _coachService;
   bool loading = true;
   String? error;
   List<Map<String, dynamic>> sessions = [];
   Map<String, dynamic>? coach;
   bool _booking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _coachService = widget.coachServiceOverride ?? CoachService();
+    coach = widget.coach;
+  }
 
   @override
   void didChangeDependencies() {

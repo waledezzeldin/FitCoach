@@ -47,6 +47,31 @@ const mockNutritionFindMany = homePrismaMocks.nutritionFindMany;
 const mockSessionFindFirst = homePrismaMocks.sessionFindFirst;
 const mockQuotaFindUnique = homePrismaMocks.quotaFindUnique;
 
+const buildQuota = (overrides: Record<string, any> = {}) => ({
+  id: 'quota-1',
+  userId: 'user-1',
+  tier: 'premium',
+  messagesUsed: 0,
+  callsUsed: 0,
+  attachmentsUsed: 0,
+  resetAt: new Date('2025-12-15T00:00:00Z'),
+  nutritionWindowDays: null,
+  nutritionExpiresAt: null,
+  nutritionLocked: false,
+  createdAt: new Date('2025-11-01T00:00:00Z'),
+  updatedAt: new Date('2025-11-01T00:00:00Z'),
+  ...overrides,
+});
+
+const buildUser = (overrides: Record<string, any> = {}) => ({
+  id: 'user-1',
+  subscriptionQuota: buildQuota(),
+  nutritionPreference: null,
+  intake: null,
+  coach: null,
+  ...overrides,
+});
+
 describe('Home Controller', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -110,5 +135,42 @@ describe('Home Controller', () => {
 
     expect(res.status).toBe(404);
     expect(res.body.error).toMatch(/User not found/);
+  });
+
+  it('marks quick actions when intake metrics exist', async () => {
+    const quota = buildQuota();
+    mockUserFindUnique.mockResolvedValue(
+      buildUser({
+        subscriptionQuota: quota,
+        intake: {
+          weightKg: 72.5,
+          heightCm: 178,
+        },
+      }),
+    );
+    mockWorkoutFindMany.mockResolvedValue([]);
+    mockNutritionFindMany.mockResolvedValue([]);
+    mockSessionFindFirst.mockResolvedValue(null);
+    mockQuotaFindUnique.mockResolvedValue(quota);
+
+    const res = await request(app).get('/v1/home/summary/user-1');
+
+    expect(res.status).toBe(200);
+    expect(res.body.quickActions.hasInBodyData).toBe(true);
+    expect(res.body.quickActions.canBookVideoSession).toBe(true);
+  });
+
+  it('disables video booking when call quota is exhausted', async () => {
+    const quota = buildQuota({ callsUsed: 2 });
+    mockUserFindUnique.mockResolvedValue(buildUser({ subscriptionQuota: quota }));
+    mockWorkoutFindMany.mockResolvedValue([]);
+    mockNutritionFindMany.mockResolvedValue([]);
+    mockSessionFindFirst.mockResolvedValue(null);
+    mockQuotaFindUnique.mockResolvedValue(quota);
+
+    const res = await request(app).get('/v1/home/summary/user-1');
+
+    expect(res.status).toBe(200);
+    expect(res.body.quickActions.canBookVideoSession).toBe(false);
   });
 });

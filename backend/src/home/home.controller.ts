@@ -5,8 +5,10 @@ import {
   NutritionLog,
   SubscriptionQuota,
   SubscriptionTier,
+  UserIntake,
 } from '@prisma/client';
 import { getDemoFixture } from '../demo/demo.fixtures';
+import { TIER_QUOTAS } from '../subscription/quota.config';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -113,7 +115,13 @@ router.get('/summary/:userId', async (req: Request, res: Response) => {
             type: upcomingSession.status,
           }
         : null,
-      quickActions: buildQuickActions(user.subscriptionQuota?.tier),
+      quickActions: buildQuickActions({
+        tier: user.subscriptionQuota?.tier,
+        quota: quota ?? user.subscriptionQuota ?? undefined,
+        workoutsCompletedWeek,
+        hasNutritionEntries: nutritionToday.length > 0 || nutritionWeek.length > 0,
+        hasInBodyData: hasBodyCompositionMetrics(user.intake ?? undefined),
+      }),
       quota,
     };
 
@@ -253,15 +261,33 @@ function buildTodayWorkout(workouts: WorkoutLog[], now: Date) {
   };
 }
 
-function buildQuickActions(tier?: SubscriptionTier | null) {
-  const isPremium = tier && tier !== SubscriptionTier.freemium;
+type QuickActionInputs = {
+  tier?: SubscriptionTier | null;
+  quota?: SubscriptionQuota | null;
+  workoutsCompletedWeek: number;
+  hasNutritionEntries: boolean;
+  hasInBodyData: boolean;
+};
+
+function buildQuickActions({ tier, quota, workoutsCompletedWeek, hasNutritionEntries, hasInBodyData }: QuickActionInputs) {
+  const resolvedTier = tier ?? SubscriptionTier.freemium;
+  const limits = TIER_QUOTAS[resolvedTier];
+  const callsUsed = quota?.callsUsed ?? 0;
+  const remainingCalls = Math.max(limits.calls - callsUsed, 0);
   return {
-    canBookVideoSession: Boolean(isPremium),
-    canViewProgress: true,
+    canBookVideoSession: resolvedTier !== SubscriptionTier.freemium && remainingCalls > 0,
+    canViewProgress: workoutsCompletedWeek > 0 || hasNutritionEntries,
     canAccessExerciseLibrary: true,
-    hasInBodyData: false,
+    hasInBodyData,
     canShopSupplements: true,
   };
+}
+
+function hasBodyCompositionMetrics(intake?: UserIntake | null) {
+  if (!intake) return false;
+  const hasWeight = typeof intake.weightKg === 'number';
+  const hasHeight = typeof intake.heightCm === 'number';
+  return hasWeight && hasHeight;
 }
 
 function buildDemoSummary(persona: string) {
@@ -298,7 +324,13 @@ function buildDemoSummary(persona: string) {
       completed: false,
     },
     upcomingSession: null,
-    quickActions: buildQuickActions(SubscriptionTier.smart_premium),
+    quickActions: buildQuickActions({
+      tier: SubscriptionTier.smart_premium,
+      quota: null,
+      workoutsCompletedWeek: stats?.workouts_completed_week ?? 0,
+      hasNutritionEntries: true,
+      hasInBodyData: true,
+    }),
     quota: null,
   };
 }
