@@ -1,124 +1,151 @@
 import 'package:flutter/material.dart';
-import '../../services/auth_service.dart';
-import '../../state/app_state.dart';
-import '../../config/env.dart'; // ADDED
+import 'package:provider/provider.dart';
+import 'package:fitcoach/auth/auth_state.dart';
 
-class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
-  String email = '';
-  String password = '';
-  String password2 = '';
-  bool isLoading = false;
-  String? error;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _loading = false;
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => isLoading = true);
-    try {
-      // DEMO MODE: bypass real signup and go directly to intake
-      if (Env.demo) {
-        await AppStateScope.of(context).signIn(
-          subscription: 'freemium',
-          user: {
-            'id': 'demo_user',
-            'email': email.trim(),
-            'role': 'user',
-            'demo': true,
-          },
-        );
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/intake'); // ALWAYS go to intake
-        return;
-      }
-
-      final data = await AuthService().signup(email.trim(), password.trim());
-      await AppStateScope.of(context).signIn(subscription: 'freemium', user: data);
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/intake'); // real signup -> intake
-    } catch (e) {
-      setState(() => error = 'Signup failed');
-    } finally {
-      if (mounted) setState(() => isLoading = false);
-    }
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
+    final t = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Create account')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          const SizedBox(height: 24),
-          Center(
-            child: Image.asset(
-              'assets/branding/logo.png',
-              width: 90,
-              height: 90,
-              semanticLabel: 'FitCoach',
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/login_bg.jpg'), // Use same background as login
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Container(
+              color: Colors.black.withOpacity(0.35),
             ),
           ),
-          const SizedBox(height: 24),
-          if (error != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(error!, style: TextStyle(color: cs.error)),
-            ),
-          Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Email is required';
-                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(val)) return 'Enter a valid email';
-                    return null;
-                  },
-                  onChanged: (v) => email = v,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                  validator: (v) => (v == null || v.isEmpty) ? 'Password is required' : null,
-                  onChanged: (v) => password = v,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Confirm password'),
-                  obscureText: true,
-                  validator: (v) => v != password ? 'Passwords do not match' : null,
-                  onChanged: (v) => password2 = v,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: isLoading ? null : _submit,
-                  child: isLoading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text(Env.demo ? 'Enter Demo' : 'Sign Up'),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.phone),
-                  label: const Text('Sign up with Phone'),
-                  onPressed: isLoading ? null : () => Navigator.pushNamed(context, '/phone_login'),
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-                  child: Text('Already have an account? Sign in', style: TextStyle(color: cs.primary)),
-                ),
-              ],
+          Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.fitness_center, color: Colors.black, size: 36),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Create your account',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Start your fitness journey today',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: 380,
+                    padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 28),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.10),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: const InputDecoration(labelText: 'Email'),
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (v) => (v == null || v.isEmpty || !v.contains('@')) ? 'Enter a valid email' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: const InputDecoration(labelText: 'Password'),
+                            obscureText: true,
+                            validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _confirmController,
+                            decoration: const InputDecoration(labelText: 'Confirm Password'),
+                            obscureText: true,
+                            validator: (v) => (v != _passwordController.text) ? 'Passwords don\'t match' : null,
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            key: const Key('signupSubmit'),
+                            onPressed: _loading
+                                ? null
+                                : () async {
+                                    if (!_formKey.currentState!.validate()) return;
+                                    setState(() => _loading = true);
+                                    await Future.delayed(const Duration(milliseconds: 500));
+                                    final email = _emailController.text.trim();
+                                    if (!context.mounted) return;
+                                    await context.read<AuthState>().login(email);
+                                    if (!context.mounted) return;
+                                    Navigator.of(context).pushReplacementNamed('/quickstart/1');
+                                  },
+                            child: _loading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Text('Create account'),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            key: const Key('signupLoginLink'),
+                            onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
+                            child: const Text('Have an account? Log in'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

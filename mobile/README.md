@@ -1,35 +1,16 @@
-# FitCoach Mobile
+# fitcoach
 
-Flutter client for the FitCoach platform. It delivers multilingual onboarding,
-demo-aware dashboards, and an intake workflow that persists across sessions.
+A new Flutter project.
 
-## Prerequisites
+## Getting Started
 
-- Flutter 3.24+ with the stable channel
-- Android/iOS tooling as required by your platform
+This project is a starting point for a Flutter application.
 
-## Running the App
+A few resources to get you started if this is your first Flutter project:
 
-```sh
-flutter run
-```
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-Use `--dart-define=DEMO=true` to pre-load demo data locally.
-
-## Testing
-
-- Unit/Widget tests
-
-	```sh
-	flutter test
-	```
-
-- Integration tests (Phase 1 + Phase 2 flows)
-
-	```sh
-	flutter test test/integration
-	```
-
-	These suites validate localization + intro + auth progression as well as the
-	two-stage intake resume/completion path, using the shared secure-storage
-	mock under `test/support/mock_secure_storage.dart`.
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
