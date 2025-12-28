@@ -1,0 +1,142 @@
+{
+  "shoulder_pain": {
+    "description_en": "Shoulder Pain",
+    "description_ar": "ألم الكتف",
+    "avoid_keywords": [
+      "overhead",
+      "press",
+      "shoulder",
+      "lateral_raise"
+    ],
+    "substitute_exercises": [
+      "push_up",
+      "incline_push_up",
+      "band_row",
+      "face_pull",
+      "bird_dog"
+    ]
+  },
+  "knee_pain": {
+    "description_en": "Knee Pain",
+    "description_ar": "ألم الركبة",
+    "avoid_keywords": [
+      "squat",
+      "lunge",
+      "step_up",
+      "leg_press",
+      "leg_extension"
+    ],
+    "substitute_exercises": [
+      "glute_bridge",
+      "hip_thrust",
+      "romanian_deadlift",
+      "hamstring_curl",
+      "superman"
+    ]
+  },
+  "lower_back_pain": {
+    "description_en": "Lower Back Pain",
+    "description_ar": "ألم أسفل الظهر",
+    "avoid_keywords": [
+      "deadlift",
+      "row",
+      "superman",
+      "good_morning",
+      "barbell_back_squat"
+    ],
+    "substitute_exercises": [
+      "glute_bridge",
+      "bird_dog",
+      "plank",
+      "hip_thrust",
+      "leg_extension"
+    ]
+  },
+  "neck_pain": {
+    "description_en": "Neck Pain",
+    "description_ar": "ألم الرقبة",
+    "avoid_keywords": [
+      "shrug",
+      "neck",
+      "upright_row",
+      "overhead_press"
+    ],
+    "substitute_exercises": [
+      "push_up",
+      "lat_pulldown",
+      "band_row",
+      "seated_cable_row"
+    ]
+  },
+  "ankle_pain": {
+    "description_en": "Ankle Pain",
+    "description_ar": "ألم الكاحل",
+    "avoid_keywords": [
+      "calf",
+      "jump",
+      "step_up",
+      "lunge",
+      "box_jump",
+      "high_knees"
+    ],
+    "substitute_exercises": [
+      "glute_bridge",
+      "hip_thrust",
+      "seated_leg_curl",
+      "plank"
+    ]
+  },
+  "wrist_pain": {
+    "description_en": "Wrist Pain",
+    "description_ar": "ألم المعصم",
+    "avoid_keywords": [
+      "push_up",
+      "plank",
+      "dumbbell",
+      "barbell",
+      "handstand"
+    ],
+    "substitute_exercises": [
+      "leg_press",
+      "leg_curl",
+      "leg_extension",
+      "glute_bridge",
+      "hip_thrust"
+    ]
+  },
+  "elbow_pain": {
+    "description_en": "Elbow Pain",
+    "description_ar": "ألم الكوع",
+    "avoid_keywords": [
+      "curl",
+      "extension",
+      "chin_up",
+      "pull_up",
+      "tricep"
+    ],
+    "substitute_exercises": [
+      "leg_press",
+      "squat",
+      "lunge",
+      "glute_bridge",
+      "plank"
+    ]
+  },
+  "hip_pain": {
+    "description_en": "Hip Pain",
+    "description_ar": "ألم الورك",
+    "avoid_keywords": [
+      "squat",
+      "lunge",
+      "deadlift",
+      "hip_thrust"
+    ],
+    "substitute_exercises": [
+      "leg_extension",
+      "hamstring_curl",
+      "seated_leg_curl",
+      "plank",
+      "bird_dog"
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "plan_id": "starter_fatloss_home_3d_v1",
+  "type": "starter",
+  "location": "home",
+  "goal": "fat_loss",
+  "weeks": 12,
+  "frequency_days_per_week": 3,
+  "blocks": [
+    {"block": 1, "weeks": [1,2], "progression": "RPE 6→7"},
+    {"block": 2, "weeks": [3,4], "progression": "Add reps within 8–12 then +2.5% load via backpack/DB"},
+    {"block": 3, "weeks": [5,6], "progression": "+1 set on squats, rows, hinges"},
+    {"block": 4, "weeks": [7,8], "progression": "Top set RPE8 + backoff −10%"},
+    {"block": 5, "weeks": [9,10], "progression": "Density: drop rest by 15s where recovered"},
+    {"block": 6, "weeks": [11,12], "progression": "Deload −35% volume, RPE 6"}
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "name": "Full Body A",
+      "work": [
+        {"ex": "goblet_squat", "equip": ["dumbbell"], "muscles": ["quads","glutes","core"], "sets": 3, "reps": "8–12", "rest_s": 90, "rpe": 6.5},
+        {"ex": "push_up", "equip": ["bodyweight"], "muscles": ["chest","triceps","front_delts"], "sets": 3, "reps": "6–10", "rest_s": 90, "rpe": 6.5, "substitutes": ["incline_push_up","kneeling_push_up"]},
+        {"ex": "one_arm_db_row", "equip": ["dumbbell"], "muscles": ["lats","mid_back","biceps"], "sets": 3, "reps": "8–12", "rest_s": 90, "rpe": 6.5},
+        {"ex": "hip_hinge_banded", "equip": ["band"], "muscles": ["glutes","hamstrings","erectors"], "sets": 3, "reps": "10–15", "rest_s": 75, "rpe": 6.5},
+        {"ex": "plank", "equip": ["bodyweight"], "muscles": ["core"], "sets": 3, "reps": "30–45s", "rest_s": 60, "rpe": 6}
+      ],
+      "conditioning": {
+        "type": "intervals",
+        "protocol": "EMOM 14 min",
+        "moves": ["jumping_jacks","bodyweight_squat","mountain_climber"],
+        "intense_s": 30,
+        "easy_s": 30
+      }
+    },
+    {
+      "day": 3,
+      "name": "Full Body B",
+      "work": [
+        {"ex": "split_squat", "equip": ["bodyweight","dumbbell"], "muscles": ["quads","glutes"], "sets": 3, "reps": "8–12/leg", "rest_s": 90, "rpe": 6.5},
+        {"ex": "pike_push_up", "equip": ["bodyweight"], "muscles": ["shoulders","triceps"], "sets": 3, "reps": "6–10", "rest_s": 90, "rpe": 6.5, "substitutes": ["db_overhead_press_seated"]},
+        {"ex": "band_row", "equip": ["band"], "muscles": ["lats","mid_back"], "sets": 3, "reps": "12–15", "rest_s": 75, "rpe": 6.5},
+        {"ex": "glute_bridge", "equip": ["bodyweight"], "muscles": ["glutes","hamstrings"], "sets": 3, "reps": "12–15", "rest_s": 75, "rpe": 6},
+        {"ex": "dead_bug", "equip": ["bodyweight"], "muscles": ["core"], "sets": 3, "reps": "10/side", "rest_s": 60, "rpe": 6}
+      ]
+    },
+    {
+      "day": 5,
+      "name": "Full Body C",
+      "work": [
+        {"ex": "reverse_lunge", "equip": ["bodyweight","dumbbell"], "muscles": ["quads","glutes"], "sets": 3, "reps": "8–12/leg", "rest_s": 90, "rpe": 6.5},
+        {"ex": "db_floor_press", "equip": ["dumbbell"], "muscles": ["chest","triceps"], "sets": 3, "reps": "8–12", "rest_s": 90, "rpe": 6.5},
+        {"ex": "inverted_row_table", "equip": ["household"], "muscles": ["back","biceps"], "sets": 3, "reps": "6–10", "rest_s": 90, "rpe": 6.5, "substitutes": ["band_row"]},
+        {"ex": "rdl_suitcase", "equip": ["dumbbell"], "muscles": ["hamstrings","glutes"], "sets": 3, "reps": "8–12", "rest_s": 90, "rpe": 6.5},
+        {"ex": "side_plank", "equip": ["bodyweight"], "muscles": ["core"], "sets": 2, "reps": "20–30s/side", "rest_s": 60, "rpe": 6}
+      ],
+      "conditioning": {
+        "type": "steady",
+        "protocol": "Zone 2",
+        "duration_min": 25,
+        "note": "walk/cycle at conversational pace"
+      }
+    }
+  ],
+  "routing": {
+    "injury_swaps": true,
+    "equipment_swaps": true,
+    "volume_guards": {"target_sets_per_muscle_week": [8,12]}
+  },
+  "notes": [
+    "Warm-up 5–8 min, ramp sets before first heavy set",
+    "Tempo default 2-0-2 unless stated"
+  ]
+}

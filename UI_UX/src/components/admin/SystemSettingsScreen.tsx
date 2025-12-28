@@ -13,7 +13,7 @@ import { toast } from 'sonner@2.0.3';
 export function SystemSettingsScreen({ onBack }: { onBack: () => void }) {
   const { t } = useLanguage();
   const [settings, setSettings] = useState({
-    appName: 'FitCoach+',
+    appName: 'عاش',
     maintenanceMode: false,
     allowRegistration: true,
     emailNotifications: true,

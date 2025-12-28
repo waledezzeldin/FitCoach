@@ -288,10 +288,10 @@ export function SecondIntakeScreen({ onComplete, onBack, isDemoMode }: SecondInt
       <div 
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1647213053074-a00c7b885ebf?w=1200)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1680761827444-9214a9c3129f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib2R5YnVpbGRlciUyMGd5bSUyMGVxdWlwbWVudHxlbnwxfHx8fDE3NjUzMTUyMzh8MA&ixlib=rb-4.1.0&q=80&w=1080)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.4
+          opacity: 0.8
         }}
       />
       

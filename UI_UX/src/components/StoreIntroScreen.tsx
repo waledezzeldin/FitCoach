@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { ShoppingBag, Package, Truck, Sparkles } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
+import { motion } from 'motion/react';
 
 interface StoreIntroScreenProps {
   onGetStarted: () => void;
@@ -10,6 +11,33 @@ interface StoreIntroScreenProps {
 
 export function StoreIntroScreen({ onGetStarted }: StoreIntroScreenProps) {
   const { t, isRTL } = useLanguage();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3, // Increased delay between items
+        delayChildren: 0.3
+      }
+    }
+  };
+
+  // Directional animation based on language
+  const itemVariants = {
+    hidden: { 
+      opacity: 0, 
+      x: isRTL ? 100 : -100  // Right to left for RTL, left to right for LTR
+    },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -27,64 +55,91 @@ export function StoreIntroScreen({ onGetStarted }: StoreIntroScreenProps) {
         <div className="space-y-6">
           {/* Title */}
           <div className="text-white space-y-2">
-            <h1 className="text-4xl font-bold">FitCoach Store</h1>
+            <h1 className="text-4xl font-bold">{t('store.intro.title')}</h1>
             <p className="text-xl text-white/90">
-              Premium fitness gear and supplements
+              {t('store.intro.subtitle')}
             </p>
           </div>
 
           {/* Features */}
-          <div className="space-y-3">
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-              <CardContent className="p-4">
-                <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
-                    <ShoppingBag className="w-6 h-6 text-orange-300" />
+          <motion.div className="space-y-3" variants={containerVariants} initial="hidden" animate="visible">
+            <motion.div variants={itemVariants}>
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+                <CardContent className="p-4">
+                  <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
+                      <ShoppingBag className="w-6 h-6 text-orange-300" />
+                    </div>
+                    <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <h3 className="font-semibold text-white">{t('store.intro.feature1Title')}</h3>
+                      <p className="text-sm text-white/80">{t('store.intro.feature1Desc')}</p>
+                    </div>
                   </div>
-                  <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
-                    <h3 className="font-semibold text-white">Curated Products</h3>
-                    <p className="text-sm text-white/80">Handpicked fitness equipment & supplements</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-              <CardContent className="p-4">
-                <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-blue-300" />
+            <motion.div variants={itemVariants}>
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+                <CardContent className="p-4">
+                  <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                      <Sparkles className="w-6 h-6 text-blue-300" />
+                    </div>
+                    <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <h3 className="font-semibold text-white">{t('store.intro.feature2Title')}</h3>
+                      <p className="text-sm text-white/80">{t('store.intro.feature2Desc')}</p>
+                    </div>
                   </div>
-                  <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
-                    <h3 className="font-semibold text-white">Member Discounts</h3>
-                    <p className="text-sm text-white/80">Exclusive deals for premium members</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-              <CardContent className="p-4">
-                <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <Truck className="w-6 h-6 text-green-300" />
+            <motion.div variants={itemVariants}>
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+                <CardContent className="p-4">
+                  <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <Truck className="w-6 h-6 text-green-300" />
+                    </div>
+                    <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <h3 className="font-semibold text-white">{t('store.intro.feature3Title')}</h3>
+                      <p className="text-sm text-white/80">{t('store.intro.feature3Desc')}</p>
+                    </div>
                   </div>
-                  <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
-                    <h3 className="font-semibold text-white">Fast Delivery</h3>
-                    <p className="text-sm text-white/80">Quick shipping on all orders</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+                <CardContent className="p-4">
+                  <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+                      <Package className="w-6 h-6 text-purple-300" />
+                    </div>
+                    <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <h3 className="font-semibold text-white">{t('store.intro.feature4Title')}</h3>
+                      <p className="text-sm text-white/80">{t('store.intro.feature4Desc')}</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
 
           {/* CTA Button */}
-          <Button 
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white h-14 text-lg"
-            onClick={onGetStarted}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            Start Shopping
-          </Button>
+            <Button 
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white h-14 text-lg"
+              onClick={onGetStarted}
+            >
+              {t('store.intro.startShopping')}
+            </Button>
+          </motion.div>
         </div>
       </div>
     </div>

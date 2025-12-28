@@ -95,7 +95,7 @@ export function SettingsScreen({ onBack, userProfile, onUpdateProfile }: Setting
           backgroundImage: 'url(https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1200)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.4
+          opacity: 0.8
         }}
       />
       

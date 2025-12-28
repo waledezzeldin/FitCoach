@@ -1,0 +1,37 @@
+{
+  "plan_id": "starter_general_gym_3d_v1",
+  "type": "starter",
+  "location": "gym",
+  "goal": "general_fitness",
+  "weeks": 12,
+  "frequency_days_per_week": 3,
+  "sessions": [
+    {
+      "day": 1,
+      "name": "Full Body A",
+      "work": [
+        {"ex": "leg_press", "sets": 3, "reps": "10–15"},
+        {"ex": "bench_press", "sets": 3, "reps": "8–12"},
+        {"ex": "lat_pulldown", "sets": 3, "reps": "8–12"}
+      ]
+    },
+    {
+      "day": 3,
+      "name": "Full Body B",
+      "work": [
+        {"ex": "deadlift_light", "sets": 3, "reps": "5–8"},
+        {"ex": "chest_press_machine", "sets": 3, "reps": "10–15"},
+        {"ex": "seated_row", "sets": 3, "reps": "8–12"}
+      ]
+    },
+    {
+      "day": 5,
+      "name": "Cardio + Core",
+      "work": [
+        {"ex": "treadmill_walk", "sets": 1, "duration_min": 20},
+        {"ex": "cable_crunch", "sets": 3, "reps": "12–15"},
+        {"ex": "plank", "sets": 3, "reps": "20–30s"}
+      ]
+    }
+  ]
+}

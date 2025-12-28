@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../App';
 import { NutritionPreferencesIntake, NutritionPreferences } from './NutritionPreferencesIntake';
-import { NutritionWelcomeScreen } from './NutritionWelcomeScreen';
 import { SubscriptionManager } from './SubscriptionManager';
 import { useLanguage } from './LanguageContext';
 import { NutritionExpiryBanner } from './NutritionExpiryBanner';
@@ -125,20 +124,6 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     return false;
   });
   
-  // v2.0: Track welcome and intake screens separately for better flow control
-  const [showWelcomeScreen, setShowWelcomeScreen] = useState(() => {
-    const pendingIntakeKey = `pending_nutrition_intake_${userProfile.phoneNumber}`;
-    const pendingIntake = localStorage.getItem(pendingIntakeKey);
-    // Show welcome screen if user just upgraded (has pending intake)
-    const shouldShowWelcome = pendingIntake === 'true' && userProfile.subscriptionTier !== 'Freemium';
-    console.log('[NutritionScreen] showWelcomeScreen initial state:', {
-      pendingIntake,
-      tier: userProfile.subscriptionTier,
-      shouldShowWelcome
-    });
-    return shouldShowWelcome;
-  });
-  
   const [showPreferencesIntake, setShowPreferencesIntake] = useState(false);
   const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
@@ -232,33 +217,33 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
       return [
         {
           id: 'breakfast',
-          name: 'Breakfast',
+          name: t('meals.breakfast'),
           time: '8:00 AM',
           foods: [
-            { id: '1', name: 'Oatmeal with Berries', calories: 320, protein: 12, carbs: 55, fats: 8, serving: '1 bowl' },
-            { id: '2', name: 'Greek Yogurt', calories: 150, protein: 20, carbs: 8, fats: 0, serving: '200g' },
+            { id: '1', name: t('meals.oatmeal'), calories: 320, protein: 12, carbs: 55, fats: 8, serving: '1 bowl' },
+            { id: '2', name: t('meals.yogurt'), calories: 150, protein: 20, carbs: 8, fats: 0, serving: '200g' },
           ],
           totalCalories: 470,
         },
         {
           id: 'lunch',
-          name: 'Lunch',
+          name: t('meals.lunch'),
           time: '1:00 PM',
           foods: [
-            { id: '3', name: 'Grilled Chicken Breast', calories: 280, protein: 54, carbs: 0, fats: 6, serving: '200g' },
-            { id: '4', name: 'Brown Rice', calories: 220, protein: 5, carbs: 45, fats: 2, serving: '1 cup' },
-            { id: '5', name: 'Mixed Vegetables', calories: 80, protein: 3, carbs: 15, fats: 1, serving: '1 cup' },
+            { id: '3', name: t('meals.chicken'), calories: 280, protein: 54, carbs: 0, fats: 6, serving: '200g' },
+            { id: '4', name: t('meals.rice'), calories: 220, protein: 5, carbs: 45, fats: 2, serving: '1 cup' },
+            { id: '5', name: t('meals.vegetables'), calories: 80, protein: 3, carbs: 15, fats: 1, serving: '1 cup' },
           ],
           totalCalories: 580,
         },
         {
           id: 'dinner',
-          name: 'Dinner',
+          name: t('meals.dinner'),
           time: '7:00 PM',
           foods: [
-            { id: '6', name: 'Salmon Fillet', calories: 410, protein: 40, carbs: 0, fats: 28, serving: '180g' },
-            { id: '7', name: 'Sweet Potato', calories: 180, protein: 4, carbs: 42, fats: 0, serving: '1 medium' },
-            { id: '8', name: 'Green Salad', calories: 50, protein: 2, carbs: 8, fats: 2, serving: '1 bowl' },
+            { id: '6', name: t('meals.salmon'), calories: 410, protein: 40, carbs: 0, fats: 28, serving: '180g' },
+            { id: '7', name: t('meals.sweetPotato'), calories: 180, protein: 4, carbs: 42, fats: 0, serving: '1 medium' },
+            { id: '8', name: t('meals.salad'), calories: 50, protein: 2, carbs: 8, fats: 2, serving: '1 bowl' },
           ],
           totalCalories: 640,
         },
@@ -272,14 +257,14 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     const avoidFoods = nutritionPreferences.dinnerPreferences.avoid;
 
     // Generate dinner based on preferences
-    let dinnerProtein = 'Grilled Chicken Breast';
+    let dinnerProtein = t('meals.chicken');
     let dinnerCalories = 280;
     
     if (preferredProteins.includes('salmon')) {
-      dinnerProtein = 'Grilled Salmon';
+      dinnerProtein = t('meals.grilledSalmon');
       dinnerCalories = 350;
     } else if (preferredProteins.includes('tuna')) {
-      dinnerProtein = 'Seared Tuna Steak';
+      dinnerProtein = t('meals.tunaSteak');
       dinnerCalories = 320;
     }
 
@@ -288,13 +273,13 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     
     if (carbLevel === 'includes_carbs') {
       if (preferredCuisines.includes('mediterranean')) {
-        dinnerCarb = 'Quinoa Pilaf';
+        dinnerCarb = t('meals.quinoa');
         dinnerCarbCalories = 200;
       } else if (preferredCuisines.includes('arabic')) {
-        dinnerCarb = 'Bulgur Rice';
+        dinnerCarb = t('meals.bulgur');
         dinnerCarbCalories = 180;
       } else {
-        dinnerCarb = 'Sweet Potato';
+        dinnerCarb = t('meals.sweetPotato');
         dinnerCarbCalories = 180;
       }
     }
@@ -302,34 +287,34 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     const dinnerFoods = [
       { id: '6', name: dinnerProtein, calories: dinnerCalories, protein: 40, carbs: 0, fats: 15, serving: '180g' },
       ...(dinnerCarb ? [{ id: '7', name: dinnerCarb, calories: dinnerCarbCalories, protein: 4, carbs: carbLevel === 'low_carb' ? 20 : 42, fats: 2, serving: '1 cup' }] : []),
-      { id: '8', name: preferredCuisines.includes('mediterranean') ? 'Greek Salad' : 'Mixed Greens', calories: 80, protein: 3, carbs: 8, fats: 5, serving: '1 bowl' },
+      { id: '8', name: preferredCuisines.includes('mediterranean') ? t('meals.greekSalad') : t('meals.mixedGreens'), calories: 80, protein: 3, carbs: 8, fats: 5, serving: '1 bowl' },
     ];
 
     return [
       {
         id: 'breakfast',
-        name: 'Breakfast',
+        name: t('meals.breakfast'),
         time: '8:00 AM',
         foods: [
-          { id: '1', name: preferredProteins.includes('eggs') ? 'Scrambled Eggs with Spinach' : 'Protein Smoothie', calories: 320, protein: 25, carbs: 15, fats: 18, serving: '1 serving' },
-          { id: '2', name: 'Greek Yogurt with Berries', calories: 150, protein: 20, carbs: 12, fats: 2, serving: '200g' },
+          { id: '1', name: preferredProteins.includes('eggs') ? t('meals.scrambledEggs') : t('meals.proteinSmoothie'), calories: 320, protein: 25, carbs: 15, fats: 18, serving: '1 serving' },
+          { id: '2', name: t('meals.yogurtBerries'), calories: 150, protein: 20, carbs: 12, fats: 2, serving: '200g' },
         ],
         totalCalories: 470,
       },
       {
         id: 'lunch',
-        name: 'Lunch',
+        name: t('meals.lunch'),
         time: '1:00 PM',
         foods: [
-          { id: '3', name: preferredProteins.includes('chicken') ? 'Mediterranean Chicken Bowl' : 'Tuna Salad', calories: 350, protein: 35, carbs: 25, fats: 12, serving: '1 bowl' },
-          { id: '4', name: 'Whole Grain Pita', calories: 120, protein: 4, carbs: 24, fats: 1, serving: '1 piece' },
-          { id: '5', name: 'Hummus & Vegetables', calories: 110, protein: 4, carbs: 12, fats: 6, serving: '1 serving' },
+          { id: '3', name: preferredProteins.includes('chicken') ? t('meals.mediterraneanChicken') : t('meals.tunaSalad'), calories: 350, protein: 35, carbs: 25, fats: 12, serving: '1 bowl' },
+          { id: '4', name: t('meals.wholePita'), calories: 120, protein: 4, carbs: 24, fats: 1, serving: '1 piece' },
+          { id: '5', name: t('meals.hummus'), calories: 110, protein: 4, carbs: 12, fats: 6, serving: '1 serving' },
         ],
         totalCalories: 580,
       },
       {
         id: 'dinner',
-        name: 'Dinner',
+        name: t('meals.dinner'),
         time: '7:00 PM',
         foods: dinnerFoods,
         totalCalories: dinnerFoods.reduce((sum, food) => sum + food.calories, 0),
@@ -362,7 +347,6 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     setNutritionPreferences(preferences);
     setHasCompletedPreferences(true);
     setShowPreferencesIntake(false);
-    setShowWelcomeScreen(false);
     
     // v2.0: Store preferences and completion flag in localStorage (persisted)
     localStorage.setItem(`nutrition_preferences_${userProfile.phoneNumber}`, JSON.stringify(preferences));
@@ -381,13 +365,12 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     };
     onUpdateProfile(updatedProfile);
     
-    // v2.0: After upgrade from Freemium, show welcome screen then intake
+    // v2.0: After upgrade from Freemium, show intake directly
     if (userProfile.subscriptionTier === 'Freemium' && newTier !== 'Freemium') {
-      console.log('[NutritionScreen] Upgrade detected - showing welcome screen');
+      console.log('[NutritionScreen] Upgrade detected - showing intake');
       setHasCompletedPreferences(false);
       setShowSubscriptionManager(false);
-      setShowWelcomeScreen(true);
-      // The welcome screen will then lead to the intake form
+      setShowPreferencesIntake(true);
     }
   };
   
@@ -404,36 +387,33 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     const pendingNutritionIntake = localStorage.getItem(`pending_nutrition_intake_${userProfile.phoneNumber}`) === 'true';
     
     console.log('[NutritionScreen] useEffect state check:', { 
-      wasFreemium, 
-      isNowPaid, 
-      hasCompletedFlag, 
+      wasFreemium,
+      isNowPaid,
+      hasCompletedFlag,
       pendingNutritionIntake,
       phoneNumber: userProfile.phoneNumber
     });
     
     if (wasFreemium === 'true' && isNowPaid && !hasCompletedFlag) {
       // User just upgraded from Freemium to paid plan and hasn't completed nutrition intake
-      // Mark that nutrition intake is pending and show welcome screen
-      console.log('[NutritionScreen] ✓ Branch 1: User just upgraded, showing welcome screen');
+      // Mark that nutrition intake is pending and show intake directly
+      console.log('[NutritionScreen] ✓ Branch 1: User just upgraded, showing intake');
       localStorage.setItem(`pending_nutrition_intake_${userProfile.phoneNumber}`, 'true');
       localStorage.removeItem(`was_freemium_${userProfile.phoneNumber}`);
       setHasCompletedPreferences(false);
-      setShowWelcomeScreen(true); // Show welcome screen first
-      setShowPreferencesIntake(false);
-      console.log('[NutritionScreen] Set showWelcomeScreen to TRUE');
+      setShowPreferencesIntake(true);
+      console.log('[NutritionScreen] Set showPreferencesIntake to TRUE');
     } else if (pendingNutritionIntake && isNowPaid && !hasCompletedFlag) {
-      // User upgraded earlier and nutrition intake is pending - show welcome screen
-      console.log('[NutritionScreen] ✓ Branch 2: Pending intake detected, showing welcome screen');
+      // User upgraded earlier and nutrition intake is pending - show intake
+      console.log('[NutritionScreen] ✓ Branch 2: Pending intake detected, showing intake');
       setHasCompletedPreferences(false);
-      setShowWelcomeScreen(true); // Show welcome screen first
-      setShowPreferencesIntake(false);
-      console.log('[NutritionScreen] Set showWelcomeScreen to TRUE');
+      setShowPreferencesIntake(true);
+      console.log('[NutritionScreen] Set showPreferencesIntake to TRUE');
     } else if (userProfile.subscriptionTier === 'Freemium') {
       // Track that user is/was freemium
       console.log('[NutritionScreen] ✓ Branch 3: User is Freemium, tracking status');
       localStorage.setItem(`was_freemium_${userProfile.phoneNumber}`, 'true');
       setHasCompletedPreferences(false); // Ensure no access to nutrition tracking
-      setShowWelcomeScreen(false);
       setShowPreferencesIntake(false);
       console.log('[NutritionScreen] Set hasCompletedPreferences to FALSE');
     } else {
@@ -442,21 +422,6 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     console.log('====== [NutritionScreen] useEffect END ======');
   }, [userProfile.subscriptionTier, userProfile.phoneNumber]);
 
-  // Show Welcome Screen first (for new premium users or after upgrade)
-  if (showWelcomeScreen) {
-    console.log('[NutritionScreen] Rendering NutritionWelcomeScreen');
-    return (
-      <NutritionWelcomeScreen
-        onStart={() => {
-          console.log('[NutritionScreen] User clicked Start - showing intake form');
-          setShowWelcomeScreen(false);
-          setShowPreferencesIntake(true);
-        }}
-        onBack={() => onNavigate('home')}
-      />
-    );
-  }
-  
   // Show intro screen on first visit (for non-locked users)
   if (showIntro && !isLocked) {
     return (
@@ -465,20 +430,6 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
           setShowIntro(false);
           localStorage.setItem('nutrition_intro_seen', 'true');
         }}
-      />
-    );
-  }
-
-  // First-time nutrition access for paid users (legacy path - no pending upgrade)
-  if (!isLocked && !hasCompletedPreferences && !showPreferencesIntake && !showWelcomeScreen) {
-    console.log('[NutritionScreen] Showing welcome screen (legacy path) - isLocked:', isLocked, 'hasCompleted:', hasCompletedPreferences);
-    return (
-      <NutritionWelcomeScreen
-        onStart={() => {
-          console.log('[NutritionScreen] User clicked Start - showing intake form');
-          setShowPreferencesIntake(true);
-        }}
-        onBack={() => onNavigate('home')}
       />
     );
   }
@@ -572,14 +523,14 @@ export function NutritionScreen({ userProfile, onNavigate, onUpdateProfile, onLo
     <div className="min-h-screen bg-background relative">
       {/* Background Image */}
       <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
         style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1749280446532-60869b4b9863?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
       />
       
       {/* Content */}
       <div className="relative z-10">
         {/* Header */}
-        <div className="bg-green-600 text-white p-4">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4">
           <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Button 
               variant="ghost" 

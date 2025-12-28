@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Separator } from './ui/separator';
-import { Dumbbell, Mail, Phone } from 'lucide-react';
+import { Mail, Lock, Phone, ArrowRight } from 'lucide-react';
 import { UserProfile } from '../App';
 import { useLanguage } from './LanguageContext';
 import { PhoneNumberInput } from './PhoneNumberInput';
 import { OTPInput } from './OTPInput';
+import { validatePhoneNumber } from '../utils/phoneValidation';
+import { toast } from 'sonner@2.0.3';
+import logoImage from 'figma:asset/a18300719941655fc0e724274fe3c0687ac10328.png';
 
 interface AuthScreenProps {
   onAuthenticate: (userType: 'user' | 'coach' | 'admin', profile?: UserProfile) => void;
@@ -143,8 +145,8 @@ export function AuthScreen({ onAuthenticate, onActivateDemo }: AuthScreenProps) 
     <div className="min-h-screen flex items-center justify-center bg-background relative">
       {/* Background Image */}
       <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-20"
-        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1595079835020-30a7ac7c0b02?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
+        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1689007669034-9ef988d89742?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxneW0lMjBtYW4lMjB3b3Jrb3V0fGVufDF8fHx8MTc2NTMxNTIzOHww&ixlib=rb-4.1.0&q=80&w=1080)' }}
       />
       
       {/* Content */}
@@ -158,9 +160,9 @@ export function AuthScreen({ onAuthenticate, onActivateDemo }: AuthScreenProps) 
           onTouchEnd={handleLogoRelease}
         >
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
-            <Dumbbell className="w-8 h-8 text-primary-foreground" />
+            <img src={logoImage} alt="عاش" className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-primary">FitCoach+</h1>
+          <h1 className="text-3xl font-bold text-primary">عاش</h1>
           <p className="text-muted-foreground">{t('auth.tagline')}</p>
         </div>
 
@@ -182,7 +184,7 @@ export function AuthScreen({ onAuthenticate, onActivateDemo }: AuthScreenProps) 
                 : authStep === 'phone'
                 ? t('auth.phoneWillReceiveOTP')
                 : authStep === 'emailSignup'
-                ? (t('auth.createAccountSubtitle') || 'Join FitCoach+ and start your fitness journey')
+                ? (t('auth.createAccountSubtitle') || 'Join عاش and start your fitness journey')
                 : t('auth.welcomeSubtitle')
               }
             </CardDescription>
@@ -213,10 +215,14 @@ export function AuthScreen({ onAuthenticate, onActivateDemo }: AuthScreenProps) 
                 </Button>
 
                 <div className="relative my-4">
-                  <Separator />
-                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
-                    {t('auth.orDivider')}
-                  </span>
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      {t('auth.orDivider')}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Social Login Icons - Icons Only */}

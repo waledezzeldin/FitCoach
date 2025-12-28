@@ -1,4 +1,0 @@
-ALTER TABLE "Coach"
-    ADD COLUMN IF NOT EXISTS "bio" TEXT,
-    ADD COLUMN IF NOT EXISTS "certifications" TEXT,
-    ADD COLUMN IF NOT EXISTS "referralCode" TEXT;

@@ -17,6 +17,7 @@ import {
   Utensils
 } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
+import { motion } from 'framer-motion';
 
 interface NutritionPreferencesIntakeProps {
   onComplete: (preferences: NutritionPreferences) => void;
@@ -148,310 +149,333 @@ export function NutritionPreferencesIntake({ onComplete, onBack, onLogout }: Nut
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-green-600 text-white p-4">
-        <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={prevStep}
-            onDoubleClick={onLogout}
-            className="text-white hover:bg-white/20"
-            title={currentStep === 1 ? 'Double-tap to logout' : 'Back'}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-xl">{t('nutritionPrefs.title')}</h1>
-            <p className="text-white/80">{t('nutritionPrefs.step')} {currentStep} {t('onboarding.step')} {totalSteps}</p>
-          </div>
-          <ChefHat className="w-6 h-6" />
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="w-full bg-white/20 rounded-full h-2">
-          <div 
-            className="bg-white h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-          />
-        </div>
+    <div className="min-h-screen bg-background relative">
+      {/* Background Image with Overlay */}
+      <div 
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1534258936925-c58bed479fcb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-white/90 to-white/95" />
       </div>
 
-      <div className="p-4 space-y-6">
-        {/* Step 1: Protein Preferences */}
-        {currentStep === 1 && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-red-500" />
-                  {t('nutritionPrefs.protein.title')}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {t('nutritionPrefs.protein.subtitle')}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  {proteinOptions.map((protein) => (
-                    <div
-                      key={protein.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                        preferences.proteinSources.includes(protein.id)
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleProteinToggle(protein.id)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{protein.icon}</span>
-                        <span className="text-sm">{protein.name}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Badge variant="destructive" className="w-fit">!</Badge>
-                  {t('nutritionPrefs.allergies.title')}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {t('nutritionPrefs.allergies.subtitle')}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  {proteinOptions.map((protein) => (
-                    <div
-                      key={protein.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                        preferences.proteinAllergies.includes(protein.id)
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleProteinToggle(protein.id, true)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{protein.icon}</span>
-                        <span className="text-sm">{protein.name}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="bg-green-600 text-white p-4">
+          <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={prevStep}
+              onDoubleClick={onLogout}
+              className="text-white hover:bg-white/20"
+              title={currentStep === 1 ? 'Double-tap to logout' : 'Back'}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-xl">{t('nutritionPrefs.title')}</h1>
+              <p className="text-white/80">{t('nutritionPrefs.step')} {currentStep} {t('onboarding.step')} {totalSteps}</p>
+            </div>
+            <ChefHat className="w-6 h-6" />
           </div>
-        )}
-
-        {/* Step 2: Dinner Preferences */}
-        {currentStep === 2 && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Utensils className="w-5 h-5 text-orange-500" />
-                  {t('nutritionPrefs.dinner.title')}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {t('nutritionPrefs.dinner.subtitle')}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Portion Size */}
-                <div>
-                  <Label className="text-sm font-medium">{t('nutritionPrefs.portionSize')}</Label>
-                  <RadioGroup 
-                    value={preferences.dinnerPreferences.portionSize}
-                    onValueChange={(value) => handleDinnerPreferenceChange('portionSize', value)}
-                    className="mt-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="light" id="light" />
-                      <Label htmlFor="light">{t('nutritionPrefs.portionSize.light')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="moderate" id="moderate" />
-                      <Label htmlFor="moderate">{t('nutritionPrefs.portionSize.moderate')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="filling" id="filling" />
-                      <Label htmlFor="filling">{t('nutritionPrefs.portionSize.filling')}</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Prep Speed */}
-                <div>
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {t('nutritionPrefs.prepTime')}
-                  </Label>
-                  <RadioGroup 
-                    value={preferences.dinnerPreferences.prepSpeed}
-                    onValueChange={(value) => handleDinnerPreferenceChange('prepSpeed', value)}
-                    className="mt-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="quick" id="quick" />
-                      <Label htmlFor="quick">{t('nutritionPrefs.prepTime.quick')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="normal" id="normal" />
-                      <Label htmlFor="normal">{t('nutritionPrefs.prepTime.normal')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="prep_ahead" id="prep_ahead" />
-                      <Label htmlFor="prep_ahead">{t('nutritionPrefs.prepTime.prepAhead')}</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Carb Level */}
-                <div>
-                  <Label className="text-sm font-medium">{t('nutritionPrefs.carbs')}</Label>
-                  <RadioGroup 
-                    value={preferences.dinnerPreferences.carbLevel}
-                    onValueChange={(value) => handleDinnerPreferenceChange('carbLevel', value)}
-                    className="mt-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no_carb" id="no_carb" />
-                      <Label htmlFor="no_carb">{t('nutritionPrefs.carbs.noCarb')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="low_carb" id="low_carb" />
-                      <Label htmlFor="low_carb">{t('nutritionPrefs.carbs.lowCarb')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="includes_carbs" id="includes_carbs" />
-                      <Label htmlFor="includes_carbs">{t('nutritionPrefs.carbs.includesCarbs')}</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('nutritionPrefs.cuisines')}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {t('nutritionPrefs.cuisines.subtitle')}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  {cuisineOptions.map((cuisine) => (
-                    <div
-                      key={cuisine.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                        preferences.dinnerPreferences.cuisines.includes(cuisine.id)
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleArrayToggle('cuisines', cuisine.id)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{cuisine.icon}</span>
-                        <span className="text-sm">{cuisine.name}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          
+          {/* Progress Bar */}
+          <div className="w-full bg-white/20 rounded-full h-2">
+            <div 
+              className="bg-white h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+            />
           </div>
-        )}
+        </div>
 
-        {/* Step 3: Restrictions & Notes */}
-        {currentStep === 3 && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Badge variant="secondary">⚠️</Badge>
-                  {t('nutritionPrefs.avoid.title')}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {t('nutritionPrefs.avoid.subtitle')}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  {avoidOptions.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                        preferences.dinnerPreferences.avoid.includes(item.id)
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleArrayToggle('avoid', item.id)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{item.icon}</span>
-                        <span className="text-sm">{item.name}</span>
+        <div className="p-4 space-y-6">
+          {/* Step 1: Protein Preferences */}
+          {currentStep === 1 && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-red-500" />
+                    {t('nutritionPrefs.protein.title')}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {t('nutritionPrefs.protein.subtitle')}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    {proteinOptions.map((protein) => (
+                      <div
+                        key={protein.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                          preferences.proteinSources.includes(protein.id)
+                            ? 'border-green-500 bg-green-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleProteinToggle(protein.id)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{protein.icon}</span>
+                          <span className="text-sm">{protein.name}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('nutritionPrefs.notes.title')}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {t('nutritionPrefs.notes.subtitle')}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  placeholder={t('nutritionPrefs.notes.placeholder')}
-                  value={preferences.additionalNotes}
-                  onChange={(e) => setPreferences(prev => ({
-                    ...prev,
-                    additionalNotes: e.target.value
-                  }))}
-                  className="min-h-[100px]"
-                />
-              </CardContent>
-            </Card>
-
-            <Card className="bg-green-50 border-green-200">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                  <div>
-                    <h4 className="text-green-900 font-medium">{t('nutritionPrefs.complete')}</h4>
-                    <p className="text-sm text-green-700 mt-1">
-                      {t('nutritionPrefs.completeDesc')}
-                    </p>
+                    ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                </CardContent>
+              </Card>
 
-        {/* Navigation Buttons */}
-        <div className="flex gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={prevStep} className="flex-1">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {currentStep === 1 ? t('common.back') : t('nutritionPrefs.previous')}
-          </Button>
-          <Button 
-            onClick={nextStep} 
-            className="flex-1"
-            disabled={!canProceed()}
-          >
-            {currentStep === totalSteps ? t('nutritionPrefs.completeSetup') : t('common.next')}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Badge variant="destructive" className="w-fit">!</Badge>
+                    {t('nutritionPrefs.allergies.title')}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {t('nutritionPrefs.allergies.subtitle')}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {proteinOptions.map((protein) => (
+                      <div
+                        key={protein.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                          preferences.proteinAllergies.includes(protein.id)
+                            ? 'border-red-500 bg-red-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleProteinToggle(protein.id, true)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{protein.icon}</span>
+                          <span className="text-sm">{protein.name}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Step 2: Dinner Preferences */}
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Utensils className="w-5 h-5 text-orange-500" />
+                    {t('nutritionPrefs.dinner.title')}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {t('nutritionPrefs.dinner.subtitle')}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Portion Size */}
+                  <div>
+                    <Label className="text-sm font-medium">{t('nutritionPrefs.portionSize')}</Label>
+                    <RadioGroup 
+                      value={preferences.dinnerPreferences.portionSize}
+                      onValueChange={(value) => handleDinnerPreferenceChange('portionSize', value)}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="light" id="light" />
+                        <Label htmlFor="light">{t('nutritionPrefs.portionSize.light')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="moderate" id="moderate" />
+                        <Label htmlFor="moderate">{t('nutritionPrefs.portionSize.moderate')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="filling" id="filling" />
+                        <Label htmlFor="filling">{t('nutritionPrefs.portionSize.filling')}</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Prep Speed */}
+                  <div>
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      {t('nutritionPrefs.prepTime')}
+                    </Label>
+                    <RadioGroup 
+                      value={preferences.dinnerPreferences.prepSpeed}
+                      onValueChange={(value) => handleDinnerPreferenceChange('prepSpeed', value)}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="quick" id="quick" />
+                        <Label htmlFor="quick">{t('nutritionPrefs.prepTime.quick')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="normal" id="normal" />
+                        <Label htmlFor="normal">{t('nutritionPrefs.prepTime.normal')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="prep_ahead" id="prep_ahead" />
+                        <Label htmlFor="prep_ahead">{t('nutritionPrefs.prepTime.prepAhead')}</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Carb Level */}
+                  <div>
+                    <Label className="text-sm font-medium">{t('nutritionPrefs.carbs')}</Label>
+                    <RadioGroup 
+                      value={preferences.dinnerPreferences.carbLevel}
+                      onValueChange={(value) => handleDinnerPreferenceChange('carbLevel', value)}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no_carb" id="no_carb" />
+                        <Label htmlFor="no_carb">{t('nutritionPrefs.carbs.noCarb')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="low_carb" id="low_carb" />
+                        <Label htmlFor="low_carb">{t('nutritionPrefs.carbs.lowCarb')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="includes_carbs" id="includes_carbs" />
+                        <Label htmlFor="includes_carbs">{t('nutritionPrefs.carbs.includesCarbs')}</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('nutritionPrefs.cuisines')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {t('nutritionPrefs.cuisines.subtitle')}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {cuisineOptions.map((cuisine) => (
+                      <div
+                        key={cuisine.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                          preferences.dinnerPreferences.cuisines.includes(cuisine.id)
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleArrayToggle('cuisines', cuisine.id)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{cuisine.icon}</span>
+                          <span className="text-sm">{cuisine.name}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Step 3: Restrictions & Notes */}
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Badge variant="secondary">⚠️</Badge>
+                    {t('nutritionPrefs.avoid.title')}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {t('nutritionPrefs.avoid.subtitle')}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {avoidOptions.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                          preferences.dinnerPreferences.avoid.includes(item.id)
+                            ? 'border-red-500 bg-red-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleArrayToggle('avoid', item.id)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{item.icon}</span>
+                          <span className="text-sm">{item.name}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('nutritionPrefs.notes.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {t('nutritionPrefs.notes.subtitle')}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    placeholder={t('nutritionPrefs.notes.placeholder')}
+                    value={preferences.additionalNotes}
+                    onChange={(e) => setPreferences(prev => ({
+                      ...prev,
+                      additionalNotes: e.target.value
+                    }))}
+                    className="min-h-[100px]"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card className="bg-green-50 border-green-200">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                    <div>
+                      <h4 className="text-green-900 font-medium">{t('nutritionPrefs.complete')}</h4>
+                      <p className="text-sm text-green-700 mt-1">
+                        {t('nutritionPrefs.completeDesc')}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="flex gap-3 pt-4 border-t">
+            <motion.div
+              className="flex-1"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button variant="outline" onClick={prevStep} className="w-full">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                {currentStep === 1 ? t('common.back') : t('nutritionPrefs.previous')}
+              </Button>
+            </motion.div>
+            <motion.div
+              className="flex-1"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button 
+                onClick={nextStep} 
+                className="w-full"
+                disabled={!canProceed()}
+              >
+                {currentStep === totalSteps ? t('nutritionPrefs.completeSetup') : t('common.next')}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>

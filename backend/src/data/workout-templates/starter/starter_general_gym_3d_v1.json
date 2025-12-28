@@ -1,0 +1,75 @@
+{
+  "plan_id": "starter_general_gym_3d_v1",
+  "type": "starter",
+  "plan_version": "1.0",
+  "name_en": "Starter General Fitness - 3 Days (Gym)",
+  "name_ar": "اللياقة العامة للمبتدئين - 3 أيام (صالة رياضية)",
+  "description_en": "3-day balanced program for overall health and fitness",
+  "description_ar": "برنامج متوازن لمدة 3 أيام للصحة واللياقة العامة",
+  "goal": "general_fitness",
+  "location": "gym",
+  "training_days": 3,
+  "weeks": 12,
+  "blocks": [
+    {"block":1,"weeks":[1,2],"focus":"movement literacy","focus_ar":"معرفة الحركة","progression":"RPE 6"},
+    {"block":2,"weeks":[3,4],"focus":"balanced work capacity","focus_ar":"قدرة عمل متوازنة","progression":"volume +10%"},
+    {"block":3,"weeks":[5,6],"focus":"strength foundation","focus_ar":"أساس القوة","progression":"load +5%"},
+    {"block":4,"weeks":[7,8],"focus":"endurance + power","focus_ar":"قدرة تحمل وقوة","progression":"work:rest ratio"},
+    {"block":5,"weeks":[9,10],"focus":"peak fitness","focus_ar":"ذروة اللياقة","progression":"max capacity"},
+    {"block":6,"weeks":[11,12],"focus":"recovery","focus_ar":"الاسترداد","progression":"−30% volume"}
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "name_en": "Full Body Strength",
+      "name_ar": "قوة الجسم الكامل",
+      "work": [
+        {"ex_id":"back_squat","name_en":"Back Squat","name_ar":"سكوات خلفي","video_id":"vid_back_squat","equip":["barbell"],"muscles":["quads","glutes"],"sets":3,"reps":"8–10","rest_s":120,"rpe":6.5},
+        {"ex_id":"bench_press","name_en":"Bench Press","name_ar":"ضغط البنش","video_id":"vid_bench_press","equip":["barbell"],"muscles":["chest","triceps"],"sets":3,"reps":"8–10","rest_s":120,"rpe":6.5},
+        {"ex_id":"lat_pulldown","name_en":"Lat Pulldown","name_ar":"سحب عريض","video_id":"vid_lat_pulldown","equip":["machine"],"muscles":["lats"],"sets":3,"reps":"10–12","rest_s":90,"rpe":6.5},
+        {"ex_id":"plank","name_en":"Plank","name_ar":"بلانك","video_id":"vid_plank","equip":["bodyweight"],"muscles":["core"],"sets":3,"reps":"40s","rest_s":60}
+      ],
+      "conditioning":{"type":"steady","type_ar":"ثابت","protocol":"Bike 15 min","target_heart_rate":"65–75%","duration_min":15}
+    },
+    {
+      "day": 3,
+      "name_en": "Cardio + Core",
+      "name_ar":"كارديو + جذع",
+      "work":[
+        {"ex_id":"goblet_squat","name_en":"Goblet Squat","name_ar":"سكوات غوبلت","video_id":"vid_goblet_squat","equip":["dumbbell"],"muscles":["quads"],"sets":3,"reps":"12–15","rest_s":60,"rpe":6},
+        {"ex_id":"push_up","name_en":"Push-up","name_ar":"تمرين الضغط","video_id":"vid_push_up","equip":["bodyweight"],"muscles":["chest"],"sets":3,"reps":"10–12","rest_s":60,"rpe":6},
+        {"ex_id":"dead_bug","name_en":"Dead Bug","name_ar":"حشرة ميتة","video_id":"vid_dead_bug","equip":["bodyweight"],"muscles":["core"],"sets":3,"reps":"10/side","rest_s":45}
+      ],
+      "conditioning":{"type":"intervals","type_ar":"فواصل","protocol":"Rower 1min/1min × 10","target_heart_rate":"75–85%","duration_min":20}
+    },
+    {
+      "day": 5,
+      "name_en": "Full Body Power",
+      "name_ar": "قوة الجسم الكامل",
+      "work": [
+        {"ex_id":"deadlift","name_en":"Deadlift","name_ar":"رفعة ميتة","video_id":"vid_deadlift","equip":["barbell"],"muscles":["back","glutes"],"sets":3,"reps":"6–8","rest_s":150,"rpe":7},
+        {"ex_id":"incline_db_press","name_en":"Incline DB Press","name_ar":"ضغط دمبل مائل","video_id":"vid_incline_db_press","equip":["dumbbell"],"muscles":["chest"],"sets":3,"reps":"10–12","rest_s":90},
+        {"ex_id":"seated_row","name_en":"Seated Row","name_ar":"تجديف جالس","video_id":"vid_seated_row","equip":["machine"],"muscles":["back"],"sets":3,"reps":"10–12","rest_s":90},
+        {"ex_id":"bird_dog","name_en":"Bird Dog","name_ar":"كلب الطائر","video_id":"vid_bird_dog","equip":["bodyweight"],"muscles":["core"],"sets":3,"reps":"10/side","rest_s":45}
+      ],
+      "conditioning":{"type":"steady","type_ar":"ثابت","protocol":"Walk/Jog 20 min","target_heart_rate":"65–75%","duration_min":20}
+    }
+  ],
+  "fitness_score": {
+    "method": "weekly_projection",
+    "components": {"adherence": 0.40, "strength": 0.30, "cardio": 0.30},
+    "weekly_expected": [
+      {"week":1,"score":66},{"week":2,"score":68},{"week":3,"score":70},{"week":4,"score":72},
+      {"week":5,"score":74},{"week":6,"score":75},{"week":7,"score":77},{"week":8,"score":78},
+      {"week":9,"score":80},{"week":10,"score":81},{"week":11,"score":79},{"week":12,"score":82}
+    ]
+  },
+  "routing": {"injury_swaps": true, "equipment_swaps": true},
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "intake_level": "starter",
+    "intake_questions_required": 3,
+    "tags": ["general_fitness", "gym", "3_days", "balanced", "starter"]
+  }
+}

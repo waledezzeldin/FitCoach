@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { ArrowLeft, Play, Pause, RotateCcw, CheckCircle, Clock, Target, Plus, Minus, Eye, Calendar, AlertTriangle, Info, Clipboard, Video, RefreshCw } from 'lucide-react';
 import { UserProfile } from '../App';
 import { ExerciseDetailScreen } from './ExerciseDetailScreen';
-import { exerciseDatabase, getExerciseById } from './EnhancedExerciseDatabase';
+import { exerciseDatabase, getExerciseById, translateExercise } from './EnhancedExerciseDatabase';
 import { useLanguage } from './LanguageContext';
 import { findSafeAlternatives } from '../utils/injuryRules';
 import { Alert, AlertDescription } from './ui/alert';
@@ -18,7 +18,7 @@ import { WorkoutIntroScreen } from './WorkoutIntroScreen';
 
 interface WorkoutScreenProps {
   userProfile: UserProfile;
-  onNavigate: (screen: 'home' | 'nutrition' | 'coach' | 'store' | 'account') => void;
+  onNavigate: (screen: 'home' | 'nutrition' | 'coach' | 'store' | 'account', options?: { coachTab?: 'messages' | 'sessions' }) => void;
   onNavigateToSecondIntake?: () => void;
   onLogout?: () => void;
   isDemoMode: boolean;
@@ -199,6 +199,9 @@ export function WorkoutScreen({ userProfile, onNavigate, onNavigateToSecondIntak
     const newExerciseData = getExerciseById(newExerciseId);
     if (!newExerciseData) return;
 
+    // Translate the new exercise data
+    const translatedExercise = translateExercise(newExerciseData, t);
+
     const updatedWorkout = { ...workout };
     const currentExercise = updatedWorkout.exercises[currentExerciseIndex];
     
@@ -206,7 +209,7 @@ export function WorkoutScreen({ userProfile, onNavigate, onNavigateToSecondIntak
     updatedWorkout.exercises[currentExerciseIndex] = {
       ...currentExercise,
       exerciseId: newExerciseId,
-      name: newExerciseData.name,
+      name: translatedExercise.name,
       sets: newExerciseData.defaultSets,
       reps: newExerciseData.defaultReps,
       restTime: newExerciseData.defaultRestTime,
@@ -331,7 +334,7 @@ export function WorkoutScreen({ userProfile, onNavigate, onNavigateToSecondIntak
       <div className="min-h-screen bg-background relative">
         {/* Background Image */}
         <div 
-          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
           style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1759300642647-cfe1e9bf7225?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
         />
         
@@ -526,7 +529,7 @@ export function WorkoutScreen({ userProfile, onNavigate, onNavigateToSecondIntak
     <div className="min-h-screen bg-background relative">
       {/* Background Image */}
       <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-30"
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
         style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1717571209798-ac9312c2d3cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
       />
       
@@ -582,7 +585,7 @@ export function WorkoutScreen({ userProfile, onNavigate, onNavigateToSecondIntak
               variant="outline"
               onClick={() => {
                 setShowIntakePrompt(false);
-                onNavigate('coach');
+                onNavigate('coach', { coachTab: 'sessions' });
               }}
               className="gap-2"
             >
@@ -604,7 +607,7 @@ export function WorkoutScreen({ userProfile, onNavigate, onNavigateToSecondIntak
       </Dialog>
 
       {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4">
+      <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-primary-foreground p-4">
         <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Button 
             variant="ghost" 

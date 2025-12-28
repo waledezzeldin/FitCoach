@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Fitcoach</string>
+	<string>عاش - FitCoach+</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>fitcoach</string>
+	<string>FitCoach</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -41,9 +41,27 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Camera & Microphone Permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required for video calls with your coach</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access is required for video calls with your coach</string>
+	
+	<!-- Photo Library (Optional) -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is required to share progress photos</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Photo library access is required to save photos</string>
+	
+	<!-- Location (Optional - for future features) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location access is used to find nearby gyms and coaches</string>
 </dict>
 </plist>

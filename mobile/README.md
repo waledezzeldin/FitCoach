@@ -1,4 +1,4 @@
-# fitcoach
+# fitapp
 
 A new Flutter project.
 

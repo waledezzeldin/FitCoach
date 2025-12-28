@@ -5,9 +5,11 @@ import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { ArrowLeft, Search, Filter, Edit3, Ban, CheckCircle, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Edit3, Ban, CheckCircle, Mail, Phone, UserCheck } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { toast } from 'sonner@2.0.3';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
+import { Label } from '../ui/label';
 
 interface User {
   id: string;
@@ -18,6 +20,16 @@ interface User {
   status: 'active' | 'suspended' | 'inactive';
   joinDate: string;
   lastActive: string;
+  coachId?: string | null;
+  coachName?: string | null;
+}
+
+interface Coach {
+  id: string;
+  name: string;
+  specialization: string;
+  rating: number;
+  clientCount: number;
 }
 
 interface UserManagementScreenProps {
@@ -29,8 +41,43 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTier, setFilterTier] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showAssignCoachDialog, setShowAssignCoachDialog] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedCoachId, setSelectedCoachId] = useState<string>('');
 
-  const [users] = useState<User[]>([
+  // Demo coaches data
+  const [coaches] = useState<Coach[]>([
+    {
+      id: 'coach_1',
+      name: 'Sarah Johnson',
+      specialization: 'Strength Training',
+      rating: 4.8,
+      clientCount: 15
+    },
+    {
+      id: 'coach_2',
+      name: 'Mike Chen',
+      specialization: 'Weight Loss',
+      rating: 4.6,
+      clientCount: 12
+    },
+    {
+      id: 'coach_3',
+      name: 'Emily Davis',
+      specialization: 'Cardio & Endurance',
+      rating: 4.9,
+      clientCount: 18
+    },
+    {
+      id: 'coach_4',
+      name: 'Ahmed Al-Mansoori',
+      specialization: 'Sports Performance',
+      rating: 4.7,
+      clientCount: 10
+    }
+  ]);
+
+  const [users, setUsers] = useState<User[]>([
     {
       id: '1',
       name: 'Mina H.',
@@ -39,7 +86,9 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
       subscriptionTier: 'Smart Premium',
       status: 'active',
       joinDate: '2024-01-15',
-      lastActive: '2024-10-27'
+      lastActive: '2024-10-27',
+      coachId: 'coach_1',
+      coachName: 'Sarah Johnson'
     },
     {
       id: '2',
@@ -49,7 +98,9 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
       subscriptionTier: 'Premium',
       status: 'active',
       joinDate: '2024-02-20',
-      lastActive: '2024-10-26'
+      lastActive: '2024-10-26',
+      coachId: null,
+      coachName: null
     },
     {
       id: '3',
@@ -59,7 +110,9 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
       subscriptionTier: 'Freemium',
       status: 'inactive',
       joinDate: '2024-03-10',
-      lastActive: '2024-10-15'
+      lastActive: '2024-10-15',
+      coachId: null,
+      coachName: null
     }
   ]);
 
@@ -88,6 +141,29 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
     }
   };
 
+  const handleAssignCoach = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowAssignCoachDialog(true);
+  };
+
+  const handleSaveCoachAssignment = () => {
+    if (selectedUserId && selectedCoachId) {
+      const updatedUsers = users.map(user => {
+        if (user.id === selectedUserId) {
+          return {
+            ...user,
+            coachId: selectedCoachId,
+            coachName: coaches.find(coach => coach.id === selectedCoachId)?.name
+          };
+        }
+        return user;
+      });
+      setUsers(updatedUsers);
+      toast.success(t('admin.coachAssigned'));
+    }
+    setShowAssignCoachDialog(false);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4">
@@ -97,7 +173,7 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
           </Button>
           <div className="flex-1">
             <h1 className="text-xl font-semibold">{t('admin.userManagement')}</h1>
-            <p className="text-sm text-white/80">{filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'}</p>
+            <p className="text-sm text-white/80">{filteredUsers.length} {filteredUsers.length === 1 ? t('admin.user') : t('admin.users')}</p>
           </div>
         </div>
       </div>
@@ -157,6 +233,7 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
                     <TableHead>{t('admin.name')}</TableHead>
                     <TableHead>{t('admin.contact')}</TableHead>
                     <TableHead>{t('admin.subscription')}</TableHead>
+                    <TableHead>{t('admin.coach')}</TableHead>
                     <TableHead>{t('admin.status')}</TableHead>
                     <TableHead>{t('admin.joined')}</TableHead>
                     <TableHead className="text-right">{t('admin.actions')}</TableHead>
@@ -182,6 +259,16 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
                       <Badge>{user.subscriptionTier}</Badge>
                     </TableCell>
                     <TableCell>
+                      {user.coachId && user.coachName ? (
+                        <div className="flex items-center gap-2">
+                          <UserCheck className="w-3 h-3 text-green-600" />
+                          <span className="text-sm">{user.coachName}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Not assigned</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <Badge className={getStatusColor(user.status)}>
                         {user.status}
                       </Badge>
@@ -191,15 +278,18 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2 justify-end">
-                        <Button variant="outline" size="icon">
+                        <Button variant="outline" size="icon" onClick={() => handleAssignCoach(user.id)} title="Assign Coach">
+                          <UserCheck className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" title="Edit User">
                           <Edit3 className="w-4 h-4" />
                         </Button>
                         {user.status === 'active' ? (
-                          <Button variant="outline" size="icon" onClick={() => handleSuspendUser(user.id)}>
+                          <Button variant="outline" size="icon" onClick={() => handleSuspendUser(user.id)} title="Suspend User">
                             <Ban className="w-4 h-4 text-destructive" />
                           </Button>
                         ) : (
-                          <Button variant="outline" size="icon" onClick={() => handleActivateUser(user.id)}>
+                          <Button variant="outline" size="icon" onClick={() => handleActivateUser(user.id)} title="Activate User">
                             <CheckCircle className="w-4 h-4 text-green-600" />
                           </Button>
                         )}
@@ -213,6 +303,59 @@ export function UserManagementScreen({ onBack }: UserManagementScreenProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Assign Coach Dialog */}
+      <Dialog open={showAssignCoachDialog} onOpenChange={setShowAssignCoachDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{t('admin.assignCoach')}</DialogTitle>
+            <DialogDescription>
+              {t('admin.assignCoachDesc')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="coach">{t('admin.selectCoach')}</Label>
+              <Select value={selectedCoachId} onValueChange={setSelectedCoachId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('admin.chooseCoach')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {coaches.map(coach => (
+                    <SelectItem key={coach.id} value={coach.id}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{coach.name}</span>
+                        <Badge variant="outline" className="ml-2">{coach.specialization}</Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {selectedCoachId && (
+              <div className="bg-muted p-3 rounded-lg">
+                <p className="text-sm font-medium mb-1">{t('admin.coachDetails')}:</p>
+                <div className="text-xs space-y-1">
+                  {coaches.filter(c => c.id === selectedCoachId).map(coach => (
+                    <div key={coach.id}>
+                      <p>{t('admin.rating')}: {coach.rating} ⭐</p>
+                      <p>{t('admin.currentClients')}: {coach.clientCount}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssignCoachDialog(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="button" onClick={handleSaveCoachAssignment} disabled={!selectedCoachId}>
+              {t('admin.assignCoach')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

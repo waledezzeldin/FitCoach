@@ -1,0 +1,76 @@
+{
+  "plan_id": "starter_hypertrophy_home_3d_v1",
+  "type": "starter",
+  "plan_version": "1.0",
+  "name_en": "Starter Hypertrophy - 3 Days (Home)",
+  "name_ar": "التضخم للمبتدئين - 3 أيام (المنزل)",
+  "description_en": "3-day home muscle building program using dumbbells and bodyweight",
+  "description_ar": "برنامج بناء العضلات المنزلي لمدة 3 أيام باستخدام الدمبل ووزن الجسم",
+  "goal": "muscle_gain",
+  "location": "home",
+  "training_days": 3,
+  "weeks": 12,
+  "blocks": [
+    {"block":1,"weeks":[1,2],"focus":"bodyweight foundation","focus_ar":"أساس وزن الجسم","progression":"RPE 6.5"},
+    {"block":2,"weeks":[3,4],"focus":"progressive resistance","focus_ar":"مقاومة تقدمية","progression":"add DB load"},
+    {"block":3,"weeks":[5,6],"focus":"volume accumulation","focus_ar":"تراكم الحجم","progression":"+1 set"},
+    {"block":4,"weeks":[7,8],"focus":"time under tension","focus_ar":"الوقت تحت التوتر","progression":"3-1-3 tempo"},
+    {"block":5,"weeks":[9,10],"focus":"peak volume","focus_ar":"ذروة الحجم","progression":"max sets"},
+    {"block":6,"weeks":[11,12],"focus":"recovery","focus_ar":"الاسترداد","progression":"−25% volume"}
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "name_en": "Push",
+      "name_ar": "دفع",
+      "work": [
+        {"ex_id":"push_up","name_en":"Push-up","name_ar":"تمرين الضغط","video_id":"vid_push_up","equip":["bodyweight"],"muscles":["chest","triceps"],"sets":4,"reps":"12–15","rest_s":90,"rpe":7},
+        {"ex_id":"pike_push_up","name_en":"Pike Push-up","name_ar":"ضغط بايك","video_id":"vid_pike_push_up","equip":["bodyweight"],"muscles":["delts"],"sets":4,"reps":"10–12","rest_s":90,"rpe":7},
+        {"ex_id":"db_shoulder_press","name_en":"DB Shoulder Press","name_ar":"ضغط كتف بالدمبل","video_id":"vid_db_shoulder_press","equip":["dumbbell"],"muscles":["delts"],"sets":3,"reps":"10–12","rest_s":90,"rpe":7},
+        {"ex_id":"db_lateral_raise","name_en":"DB Lateral Raise","name_ar":"رفع جانبي","video_id":"vid_lateral_raise","equip":["dumbbell"],"muscles":["side_delts"],"sets":3,"reps":"12–15","rest_s":60,"rpe":6.5},
+        {"ex_id":"diamond_push_up","name_en":"Diamond Push-up","name_ar":"ضغط الماسة","video_id":"vid_diamond_push_up","equip":["bodyweight"],"muscles":["triceps"],"sets":3,"reps":"10–12","rest_s":75,"rpe":7}
+      ]
+    },
+    {
+      "day": 3,
+      "name_en": "Pull",
+      "name_ar": "سحب",
+      "work": [
+        {"ex_id":"pull_up","name_en":"Pull-up / Band-Assisted","name_ar":"عقلة / بمساعدة","video_id":"vid_pull_up","equip":["pullup_bar","band"],"muscles":["lats"],"sets":4,"reps":"6–10","rest_s":120,"rpe":7.5},
+        {"ex_id":"db_row","name_en":"Single Arm DB Row","name_ar":"تجديف دمبل","video_id":"vid_db_row","equip":["dumbbell"],"muscles":["back"],"sets":4,"reps":"10–12","rest_s":90,"rpe":7},
+        {"ex_id":"reverse_fly","name_en":"DB Reverse Fly","name_ar":"فتح عكسي","video_id":"vid_reverse_fly","equip":["dumbbell"],"muscles":["rear_delts"],"sets":3,"reps":"12–15","rest_s":60,"rpe":6.5},
+        {"ex_id":"db_curl","name_en":"DB Curl","name_ar":"تمرين البايسبس","video_id":"vid_db_curl","equip":["dumbbell"],"muscles":["biceps"],"sets":4,"reps":"10–12","rest_s":60,"rpe":7},
+        {"ex_id":"hammer_curl","name_en":"Hammer Curl","name_ar":"تمرين المطرقة","video_id":"vid_hammer_curl","equip":["dumbbell"],"muscles":["biceps"],"sets":3,"reps":"12–15","rest_s":60,"rpe":6.5}
+      ]
+    },
+    {
+      "day": 5,
+      "name_en": "Legs",
+      "name_ar": "ساق",
+      "work": [
+        {"ex_id":"goblet_squat","name_en":"Goblet Squat","name_ar":"سكوات غوبلت","video_id":"vid_goblet_squat","equip":["dumbbell"],"muscles":["quads","glutes"],"sets":4,"reps":"12–15","rest_s":120,"rpe":7},
+        {"ex_id":"bulgarian_split_squat","name_en":"Bulgarian Split Squat","name_ar":"سكوات بلغاري","video_id":"vid_bulgarian_split_squat","equip":["dumbbell","chair"],"muscles":["quads"],"sets":3,"reps":"10/leg","rest_s":90,"rpe":7},
+        {"ex_id":"romanian_deadlift","name_en":"DB Romanian Deadlift","name_ar":"رفعة رومانية","video_id":"vid_db_rdl","equip":["dumbbell"],"muscles":["hamstrings"],"sets":4,"reps":"10–12","rest_s":90,"rpe":7},
+        {"ex_id":"glute_bridge","name_en":"Single Leg Glute Bridge","name_ar":"جسر الأرداف","video_id":"vid_single_leg_bridge","equip":["bodyweight"],"muscles":["glutes"],"sets":3,"reps":"12/leg","rest_s":60,"rpe":6.5},
+        {"ex_id":"calf_raise","name_en":"Single Leg Calf Raise","name_ar":"رفع السمانة","video_id":"vid_single_leg_calf_raise","equip":["bodyweight"],"muscles":["calves"],"sets":4,"reps":"15–20/leg","rest_s":60,"rpe":7}
+      ]
+    }
+  ],
+  "fitness_score": {
+    "method": "weekly_projection",
+    "components": {"adherence": 0.45, "strength": 0.45, "cardio": 0.10},
+    "weekly_expected": [
+      {"week":1,"score":67},{"week":2,"score":69},{"week":3,"score":71},{"week":4,"score":72},
+      {"week":5,"score":74},{"week":6,"score":75},{"week":7,"score":77},{"week":8,"score":78},
+      {"week":9,"score":80},{"week":10,"score":81},{"week":11,"score":79},{"week":12,"score":82}
+    ]
+  },
+  "routing": {"injury_swaps": true, "equipment_swaps": true},
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "intake_level": "starter",
+    "intake_questions_required": 3,
+    "tags": ["hypertrophy", "muscle_gain", "home", "3_days", "push_pull_legs", "starter"]
+  }
+}

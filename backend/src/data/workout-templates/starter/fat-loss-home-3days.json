@@ -1,0 +1,89 @@
+{
+  "plan_id": "starter_fatloss_home_3d_v1",
+  "type": "starter",
+  "plan_version": "1.0",
+  "name_en": "Starter Fat Loss - 3 Days (Home)",
+  "name_ar": "حرق الدهون للمبتدئين - 3 أيام (المنزل)",
+  "description_en": "3-day home program for fat loss using minimal equipment - dumbbells, resistance bands, and bodyweight",
+  "description_ar": "برنامج منزلي 3 أيام لحرق الدهون باستخدام معدات بسيطة - دمبل، أحزمة مقاومة، ووزن الجسم",
+  "goal": "fat_loss",
+  "location": "home",
+  "training_days": 3,
+  "weeks": 12,
+  "blocks": [
+    {"block":1,"weeks":[1,2],"focus":"bodyweight mastery","focus_ar":"إتقان وزن الجسم","progression":"RPE 6→7"},
+    {"block":2,"weeks":[3,4],"focus":"add resistance","focus_ar":"إضافة المقاومة","progression":"introduce DBs + bands"},
+    {"block":3,"weeks":[5,6],"focus":"volume increase","focus_ar":"زيادة الحجم","progression":"+1 set each exercise"},
+    {"block":4,"weeks":[7,8],"focus":"metabolic boost","focus_ar":"تعزيز الأيض","progression":"shorter rest, supersets"},
+    {"block":5,"weeks":[9,10],"focus":"peak burn","focus_ar":"ذروة الحرق","progression":"circuits, HIIT emphasis"},
+    {"block":6,"weeks":[11,12],"focus":"recovery + maintain","focus_ar":"الاسترداد والمحافظة","progression":"−25% volume, RPE 6"}
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "name_en": "Full Body Strength A",
+      "name_ar": "قوة الجسم الكامل أ",
+      "work": [
+        {"ex_id":"goblet_squat","name_en":"Goblet Squat","name_ar":"سكوات غوبلت","video_id":"vid_goblet_squat","equip":["dumbbell"],"muscles":["quads","glutes"],"sets":4,"reps":"12–15","rest_s":75,"rpe":7,"notes_en":"Hold DB at chest","notes_ar":"امسك الدمبل عند الصدر"},
+        {"ex_id":"push_up","name_en":"Push-up","name_ar":"تمرين الضغط","video_id":"vid_push_up","equip":["bodyweight"],"muscles":["chest","triceps","core"],"sets":4,"reps":"10–15","rest_s":60,"rpe":7,"notes_en":"Modify on knees if needed","notes_ar":"عدّل على الركبتين إذا لزم الأمر"},
+        {"ex_id":"db_row","name_en":"Single Arm DB Row","name_ar":"تجديف دمبل بذراع واحدة","video_id":"vid_db_row","equip":["dumbbell"],"muscles":["back","biceps"],"sets":3,"reps":"12/arm","rest_s":60,"rpe":7,"notes_en":"Brace on chair","notes_ar":"استند على كرسي"},
+        {"ex_id":"reverse_lunge","name_en":"Reverse Lunge","name_ar":"طعنات خلفية","video_id":"vid_reverse_lunge","equip":["bodyweight","dumbbell"],"muscles":["quads","glutes"],"sets":3,"reps":"10/leg","rest_s":60,"rpe":6.5,"notes_en":"Add DBs for progression","notes_ar":"أضف دمبل للتقدم"},
+        {"ex_id":"band_pull_apart","name_en":"Band Pull Apart","name_ar":"شد الحزام","video_id":"vid_band_pull_apart","equip":["band"],"muscles":["rear_delts","upper_back"],"sets":3,"reps":"15–20","rest_s":45,"rpe":6,"notes_en":"Squeeze shoulder blades","notes_ar":"اضغط لوحي الكتف"},
+        {"ex_id":"plank","name_en":"Plank","name_ar":"بلانك","video_id":"vid_plank","equip":["bodyweight"],"muscles":["core"],"sets":3,"reps":"45–60s","rest_s":60,"rpe":6.5}
+      ],
+      "conditioning":{"type":"intervals","type_ar":"فواصل","protocol":"Jumping Jacks 30s ON / 30s OFF × 10","protocol_ar":"قفز جاكس 30 ثانية / 30 ثانية راحة × 10","duration_min":10}
+    },
+    {
+      "day": 2,
+      "name_en": "Full Body Strength B + Cardio",
+      "name_ar": "قوة الجسم الكامل ب + كارديو",
+      "work": [
+        {"ex_id":"bulgarian_split_squat","name_en":"Bulgarian Split Squat","name_ar":"سكوات بلغاري منفصل","video_id":"vid_bulgarian_split_squat","equip":["dumbbell","chair"],"muscles":["quads","glutes"],"sets":3,"reps":"10/leg","rest_s":90,"rpe":7,"notes_en":"Back foot elevated on chair","notes_ar":"القدم الخلفية مرفوعة على كرسي"},
+        {"ex_id":"incline_push_up","name_en":"Incline Push-up","name_ar":"ضغط مائل","video_id":"vid_incline_push_up","equip":["bench","chair"],"muscles":["chest","triceps"],"sets":4,"reps":"12–15","rest_s":60,"rpe":6.5,"notes_en":"Hands on elevated surface","notes_ar":"اليدان على سطح مرتفع"},
+        {"ex_id":"db_shoulder_press","name_en":"DB Shoulder Press","name_ar":"ضغط كتف بالدمبل","video_id":"vid_db_shoulder_press","equip":["dumbbell"],"muscles":["delts","triceps"],"sets":3,"reps":"10–12","rest_s":75,"rpe":7,"notes_en":"Press overhead","notes_ar":"اضغط فوق الرأس"},
+        {"ex_id":"romanian_deadlift","name_en":"DB Romanian Deadlift","name_ar":"رفعة رومانية بالدمبل","video_id":"vid_db_rdl","equip":["dumbbell"],"muscles":["hamstrings","glutes","lower_back"],"sets":3,"reps":"12–15","rest_s":75,"rpe":7,"notes_en":"Feel hamstring stretch","notes_ar":"اشعر بتمدد العضلة الخلفية"},
+        {"ex_id":"db_bicep_curl","name_en":"DB Bicep Curl","name_ar":"تمرين البايسبس بالدمبل","video_id":"vid_db_bicep_curl","equip":["dumbbell"],"muscles":["biceps"],"sets":3,"reps":"12–15","rest_s":60,"rpe":6.5},
+        {"ex_id":"mountain_climber","name_en":"Mountain Climbers","name_ar":"متسلق الجبال","video_id":"vid_mountain_climber","equip":["bodyweight"],"muscles":["core","cardio"],"sets":3,"reps":"20/leg","rest_s":45,"rpe":7,"notes_en":"Fast pace","notes_ar":"وتيرة سريعة"}
+      ],
+      "conditioning":{"type":"steady","type_ar":"ثابت","protocol":"Brisk Walk or Jog 20–25 min","protocol_ar":"مشي سريع أو هرولة 20-25 دقيقة","target_zone":"Zone 2","duration_min":22}
+    },
+    {
+      "day": 3,
+      "name_en": "Full Body Circuit + HIIT",
+      "name_ar": "دائرة الجسم الكامل + تدريب فاصل عالي الكثافة",
+      "work": [
+        {"ex_id":"squat_jump","name_en":"Squat Jump","name_ar":"قفزة السكوات","video_id":"vid_squat_jump","equip":["bodyweight"],"muscles":["quads","glutes","power"],"sets":4,"reps":"10–12","rest_s":60,"rpe":7.5,"notes_en":"Explosive jump","notes_ar":"قفزة انفجارية"},
+        {"ex_id":"burpee","name_en":"Burpee","name_ar":"بيربي","video_id":"vid_burpee","equip":["bodyweight"],"muscles":["full_body","cardio"],"sets":4,"reps":"8–10","rest_s":60,"rpe":8,"notes_en":"Full body power","notes_ar":"قوة الجسم بالكامل"},
+        {"ex_id":"db_thruster","name_en":"DB Thruster","name_ar":"دفعة الدمبل","video_id":"vid_db_thruster","equip":["dumbbell"],"muscles":["full_body"],"sets":3,"reps":"12–15","rest_s":75,"rpe":7,"notes_en":"Squat to overhead press","notes_ar":"من السكوات إلى الضغط فوق الرأس"},
+        {"ex_id":"renegade_row","name_en":"Renegade Row","name_ar":"تجديف المتمرد","video_id":"vid_renegade_row","equip":["dumbbell"],"muscles":["back","core"],"sets":3,"reps":"8/arm","rest_s":75,"rpe":7,"notes_en":"Plank position, row alternating","notes_ar":"وضعية البلانك، تجديف بالتناوب"},
+        {"ex_id":"db_swing","name_en":"DB Swing","name_ar":"أرجحة الدمبل","video_id":"vid_db_swing","equip":["dumbbell"],"muscles":["glutes","hamstrings","cardio"],"sets":3,"reps":"15–20","rest_s":60,"rpe":7,"notes_en":"Hip hinge power","notes_ar":"قوة حركة الورك"},
+        {"ex_id":"flutter_kick","name_en":"Flutter Kicks","name_ar":"ركلات رفرفة","video_id":"vid_flutter_kick","equip":["bodyweight"],"muscles":["core"],"sets":3,"reps":"30s","rest_s":45,"rpe":6.5}
+      ],
+      "conditioning":{"type":"hiit","type_ar":"تدريب فاصل عالي الكثافة","protocol":"Tabata: High Knees 20s / Rest 10s × 8 rounds","protocol_ar":"تاباتا: الركبتان العاليتان 20 ثانية / راحة 10 ثوانٍ × 8 جولات","duration_min":4}
+    }
+  ],
+  "fitness_score": {
+    "method": "weekly_projection",
+    "components": {
+      "adherence": 0.50,
+      "strength": 0.25,
+      "cardio": 0.25
+    },
+    "weekly_expected": [
+      {"week":1,"score":65},{"week":2,"score":67},{"week":3,"score":69},{"week":4,"score":71},
+      {"week":5,"score":73},{"week":6,"score":74},{"week":7,"score":76},{"week":8,"score":77},
+      {"week":9,"score":79},{"week":10,"score":80},{"week":11,"score":78},{"week":12,"score":81}
+    ]
+  },
+  "routing": {
+    "injury_swaps": true,
+    "equipment_swaps": true
+  },
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "intake_level": "starter",
+    "intake_questions_required": 3,
+    "tags": ["fat_loss", "home", "3_days", "minimal_equipment"]
+  }
+}
