@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -15,6 +16,8 @@ import '../nutrition/nutrition_screen.dart';
 import '../messaging/coach_messaging_screen.dart';
 import '../store/store_screen.dart';
 import '../account/account_screen.dart';
+import '../coach/coach_dashboard_screen.dart';
+import '../admin/admin_dashboard_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -127,6 +130,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               _buildSubscriptionBadge(lang, isArabic),
               
               const SizedBox(height: 24),
+
+              // Demo mode shortcuts
+              if (DemoConfig.isDemo) _buildDemoModeSection(lang),
+              if (DemoConfig.isDemo) const SizedBox(height: 24),
               
               // Quick stats
               _buildQuickStats(lang, isArabic),
@@ -582,6 +589,91 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           onTap: () {
             setState(() => _selectedIndex = 4);
           },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDemoModeSection(LanguageProvider lang) {
+    final authProvider = context.watch<AuthProvider>();
+    final role = authProvider.user?.role ?? 'user';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Demo Mode',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        CustomCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Switch role and open dashboards',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: const Text('User'),
+                    selected: role == 'user',
+                    onSelected: (_) => authProvider.setDemoRole('user'),
+                  ),
+                  ChoiceChip(
+                    label: const Text('Coach'),
+                    selected: role == 'coach',
+                    onSelected: (_) => authProvider.setDemoRole('coach'),
+                  ),
+                  ChoiceChip(
+                    label: const Text('Admin'),
+                    selected: role == 'admin',
+                    onSelected: (_) => authProvider.setDemoRole('admin'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const CoachDashboardScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text('Coach Dashboard'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AdminDashboardScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text('Admin Dashboard'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );

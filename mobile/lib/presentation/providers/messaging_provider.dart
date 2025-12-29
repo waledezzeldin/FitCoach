@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/config/demo_config.dart';
+import '../../data/demo/demo_data.dart';
 import '../../data/repositories/messaging_repository.dart';
 import '../../data/models/message.dart';
 
@@ -23,6 +25,18 @@ class MessagingProvider extends ChangeNotifier {
   String? get error => _error;
 
   Future<void> connect(String userId, String coachId) async {
+    if (DemoConfig.isDemo) {
+      currentChatId = '${userId}_$coachId';
+      _activeConversation = DemoData.demoConversation(
+        userId: userId,
+        coachId: coachId,
+      );
+      _messages = DemoData.chatMessages(conversationId: currentChatId);
+      _isConnected = true;
+      _error = null;
+      notifyListeners();
+      return;
+    }
     if (userId == 'invalid' || coachId == 'invalid') {
       _isConnected = false;
       _error = 'Invalid user or coach';
@@ -46,6 +60,9 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<void> _initializeSocket() async {
+    if (DemoConfig.isDemo) {
+      return;
+    }
     try {
       await _repository.connect();
       _repository.onMessageReceived((message) {
@@ -62,10 +79,18 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<void> connectSocket() async {
+    if (DemoConfig.isDemo) {
+      return;
+    }
     await _initializeSocket();
   }
 
   Future<void> disconnect() async {
+    if (DemoConfig.isDemo) {
+      _isConnected = false;
+      notifyListeners();
+      return;
+    }
     _repository.disconnect();
     _isConnected = false;
     notifyListeners();
@@ -81,6 +106,17 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<void> loadConversations() async {
+    if (DemoConfig.isDemo) {
+      final conversation = DemoData.demoConversation(
+        userId: 'demo-user',
+        coachId: 'demo-coach',
+      );
+      _activeConversation = conversation;
+      currentChatId = conversation.id;
+      _messages = DemoData.chatMessages(conversationId: conversation.id);
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -104,6 +140,16 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<void> loadConversation(String conversationId) async {
+    if (DemoConfig.isDemo) {
+      _activeConversation = DemoData.demoConversation(
+        userId: 'demo-user',
+        coachId: 'demo-coach',
+      );
+      currentChatId = conversationId;
+      _messages = DemoData.chatMessages(conversationId: conversationId);
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -144,6 +190,12 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<bool> sendMessage(String content, {MessageType type = MessageType.text}) async {
+    if (DemoConfig.isDemo) {
+      final message = _createLocalMessage(content, senderId: 'demo-user');
+      _messages.add(message);
+      notifyListeners();
+      return true;
+    }
     if (_activeConversation == null) {
       if (currentChatId.isEmpty) {
         _error = 'No active conversation';
@@ -184,6 +236,12 @@ class MessagingProvider extends ChangeNotifier {
     String filePath,
     MessageType type,
   ) async {
+    if (DemoConfig.isDemo) {
+      final message = _createLocalMessage(content, senderId: 'demo-user');
+      _messages.add(message);
+      notifyListeners();
+      return true;
+    }
     if (_activeConversation == null) {
       _error = 'No active conversation';
       notifyListeners();
@@ -244,6 +302,14 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<List<Conversation>> getConversations() async {
+    if (DemoConfig.isDemo) {
+      return [
+        DemoData.demoConversation(
+          userId: 'demo-user',
+          coachId: 'demo-coach',
+        ),
+      ];
+    }
     try {
       return await _repository.getConversations();
     } catch (e) {

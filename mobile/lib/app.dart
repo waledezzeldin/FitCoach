@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/language_provider.dart';
+import 'core/config/demo_config.dart';
 import 'presentation/screens/splash_screen.dart';
 import 'presentation/screens/language_selection_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';

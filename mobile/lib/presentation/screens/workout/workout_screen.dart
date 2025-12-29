@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/models/workout_plan.dart';
 import '../../providers/language_provider.dart';
@@ -7,6 +8,7 @@ import '../../providers/workout_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
+import '../intake/second_intake_screen.dart';
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -16,12 +18,38 @@ class WorkoutScreen extends StatefulWidget {
 }
 
 class _WorkoutScreenState extends State<WorkoutScreen> {
+  bool _promptedSecondIntake = false;
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       context.read<WorkoutProvider>().loadActivePlan();
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowSecondIntake();
+    });
+  }
+
+  void _maybeShowSecondIntake() {
+    if (_promptedSecondIntake) return;
+    if (!DemoConfig.isDemo) return;
+    final authProvider = context.read<AuthProvider>();
+    final user = authProvider.user;
+    if (user == null || user.hasCompletedSecondIntake) return;
+    _promptedSecondIntake = true;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SecondIntakeScreen(
+          onComplete: () {
+            if (mounted) {
+              Navigator.of(context).pop();
+              context.read<WorkoutProvider>().loadActivePlan();
+            }
+          },
+        ),
+      ),
+    );
   }
 
   @override

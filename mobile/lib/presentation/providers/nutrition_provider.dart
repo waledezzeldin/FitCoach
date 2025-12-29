@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/config/demo_config.dart';
+import '../../data/demo/demo_data.dart';
 import '../../data/repositories/nutrition_repository.dart';
 import '../../data/models/nutrition_plan.dart';
 
@@ -150,6 +152,13 @@ class NutritionProvider extends ChangeNotifier {
   }
 
   Future<void> loadActivePlan() async {
+    if (DemoConfig.isDemo) {
+      _activePlan = DemoData.nutritionPlan(userId: 'demo-user');
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _error = null;
     notifyListeners();
 
@@ -166,6 +175,13 @@ class NutritionProvider extends ChangeNotifier {
   }
 
   Future<void> checkTrialStatus() async {
+    if (DemoConfig.isDemo) {
+      _trialStartDate = DateTime.now().subtract(const Duration(days: 3));
+      _trialDaysRemaining = freemiumTrialDays - 3;
+      _hasTrialExpired = false;
+      notifyListeners();
+      return;
+    }
     try {
       final trialData = await _repository.getTrialStatus();
       _trialStartDate = trialData['startDate'] != null
@@ -205,6 +221,9 @@ class NutritionProvider extends ChangeNotifier {
   }
 
   Future<bool> logMeal(String mealId, Map<String, dynamic> data) async {
+    if (DemoConfig.isDemo) {
+      return true;
+    }
     try {
       await _repository.logMeal(mealId, data);
       return true;
@@ -216,6 +235,24 @@ class NutritionProvider extends ChangeNotifier {
   }
 
   Future<List<Map<String, dynamic>>> getNutritionHistory() async {
+    if (DemoConfig.isDemo) {
+      return [
+        {
+          'date': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+          'calories': 2150,
+          'protein': 140,
+          'carbs': 240,
+          'fat': 65,
+        },
+        {
+          'date': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
+          'calories': 2300,
+          'protein': 155,
+          'carbs': 255,
+          'fat': 70,
+        },
+      ];
+    }
     _isLoading = true;
     notifyListeners();
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
@@ -378,6 +380,13 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
     
     // Update user tier (would be done through provider in real app)
     final authProvider = context.read<AuthProvider>();
-    // authProvider.updateSubscriptionTier(targetTier);
+    if (DemoConfig.isDemo) {
+      final userProvider = context.read<UserProvider>();
+      userProvider.updateSubscription(targetTier).then((_) {
+        if (userProvider.profile != null) {
+          authProvider.updateUser(userProvider.profile!);
+        }
+      });
+    }
   }
 }

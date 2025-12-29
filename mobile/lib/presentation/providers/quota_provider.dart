@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/config/demo_config.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/models/quota_status.dart';
 
@@ -60,6 +61,23 @@ class QuotaProvider extends ChangeNotifier {
   
   // Load quota usage (new API)
   Future<void> loadQuota(String userId) async {
+    if (DemoConfig.isDemo) {
+      _messagesUsed = 6;
+      _messagesLimit = 200;
+      _videoCallsUsed = 1;
+      _videoCallsLimit = 4;
+      _messagePercentage = 3;
+      _callPercentage = 25;
+      _messageWarning = false;
+      _callWarning = false;
+      _subscriptionTier = 'Smart Premium';
+      _trialDaysRemaining = 11;
+      _quotaResetDate = DateTime.now().add(const Duration(days: 12));
+      _isLoading = false;
+      _error = null;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();

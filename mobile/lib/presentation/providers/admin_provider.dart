@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/config/demo_config.dart';
+import '../../data/demo/demo_data.dart';
 import '../../data/repositories/admin_repository.dart';
 import '../../data/models/admin_analytics.dart';
 import '../../data/models/admin_user.dart';
@@ -35,6 +37,13 @@ class AdminProvider extends ChangeNotifier {
 
   /// Load dashboard analytics
   Future<void> loadDashboardAnalytics() async {
+    if (DemoConfig.isDemo) {
+      _analytics = DemoData.adminAnalytics();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -57,6 +66,13 @@ class AdminProvider extends ChangeNotifier {
     String? status,
     String? coachId,
   }) async {
+    if (DemoConfig.isDemo) {
+      _users = DemoData.adminUsers();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -79,6 +95,14 @@ class AdminProvider extends ChangeNotifier {
 
   /// Load user by ID
   Future<void> loadUserById(String id) async {
+    if (DemoConfig.isDemo) {
+      _selectedUser = DemoData.adminUsers()
+          .firstWhere((user) => user.id == id, orElse: () => DemoData.adminUsers().first);
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -103,6 +127,28 @@ class AdminProvider extends ChangeNotifier {
     bool? isActive,
     String? coachId,
   }) async {
+    if (DemoConfig.isDemo) {
+      final index = _users.indexWhere((u) => u.id == id);
+      if (index != -1) {
+        final user = _users[index];
+        _users[index] = AdminUser(
+          id: user.id,
+          fullName: fullName ?? user.fullName,
+          email: email ?? user.email,
+          phoneNumber: user.phoneNumber,
+          profilePhotoUrl: user.profilePhotoUrl,
+          subscriptionTier: subscriptionTier ?? user.subscriptionTier,
+          isActive: isActive ?? user.isActive,
+          coachId: coachId ?? user.coachId,
+          coachName: user.coachName,
+          createdAt: user.createdAt,
+          lastLogin: user.lastLogin,
+        );
+        _selectedUser = _users[index];
+        notifyListeners();
+      }
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -141,6 +187,10 @@ class AdminProvider extends ChangeNotifier {
 
   /// Suspend user
   Future<bool> suspendUser(String id, String reason) async {
+    if (DemoConfig.isDemo) {
+      await loadUsers();
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -164,6 +214,11 @@ class AdminProvider extends ChangeNotifier {
 
   /// Delete user
   Future<bool> deleteUser(String id) async {
+    if (DemoConfig.isDemo) {
+      _users.removeWhere((u) => u.id == id);
+      notifyListeners();
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -191,6 +246,13 @@ class AdminProvider extends ChangeNotifier {
     String? status,
     String? approved,
   }) async {
+    if (DemoConfig.isDemo) {
+      _coaches = DemoData.adminCoaches();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -212,6 +274,10 @@ class AdminProvider extends ChangeNotifier {
 
   /// Approve coach
   Future<bool> approveCoach(String id) async {
+    if (DemoConfig.isDemo) {
+      await loadCoaches();
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -235,6 +301,10 @@ class AdminProvider extends ChangeNotifier {
 
   /// Suspend coach
   Future<bool> suspendCoach(String id, String reason) async {
+    if (DemoConfig.isDemo) {
+      await loadCoaches();
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -262,6 +332,13 @@ class AdminProvider extends ChangeNotifier {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
+    if (DemoConfig.isDemo) {
+      _revenueAnalytics = DemoData.revenueAnalytics();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -288,6 +365,13 @@ class AdminProvider extends ChangeNotifier {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
+    if (DemoConfig.isDemo) {
+      _auditLogs = DemoData.auditLogs();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();

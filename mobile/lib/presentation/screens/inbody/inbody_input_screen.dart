@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/repositories/workout_repository.dart';
 import '../../../data/models/inbody_model.dart';
@@ -579,9 +580,11 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
         ),
       );
       
-      // Save to backend
-      final repository = WorkoutRepository();
-      await repository.saveInBodyScan(scan);
+      if (!DemoConfig.isDemo) {
+        // Save to backend
+        final repository = WorkoutRepository();
+        await repository.saveInBodyScan(scan);
+      }
       
       // Success
       if (mounted) {

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/config/demo_config.dart';
+import '../../data/demo/demo_data.dart';
 import '../../data/repositories/workout_repository.dart';
 import '../../data/models/workout_plan.dart';
 
@@ -54,6 +56,14 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> loadActivePlan() async {
+    if (DemoConfig.isDemo) {
+      _activePlan = DemoData.workoutPlan(userId: 'demo-user');
+      _currentDayIndex = 0;
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _error = null;
     notifyListeners();
 
@@ -70,6 +80,13 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> loadExerciseLibrary() async {
+    if (DemoConfig.isDemo) {
+      _exerciseLibrary = DemoData.exerciseLibrary();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _error = null;
     notifyListeners();
 
@@ -100,6 +117,11 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<bool> completeExercise(String exerciseId) async {
+    if (DemoConfig.isDemo) {
+      _completedExercises[exerciseId] = true;
+      notifyListeners();
+      return true;
+    }
     try {
       await _repository.markExerciseComplete(exerciseId);
     } catch (e) {
@@ -114,6 +136,9 @@ class WorkoutProvider extends ChangeNotifier {
     String exerciseId,
     List<String> userInjuries,
   ) async {
+    if (DemoConfig.isDemo) {
+      return _exerciseLibrary.where((ex) => ex.id != exerciseId).toList();
+    }
     _isLoading = true;
     notifyListeners();
 
@@ -137,6 +162,11 @@ class WorkoutProvider extends ChangeNotifier {
     String originalExerciseId,
     String newExerciseId,
   ) async {
+    if (DemoConfig.isDemo) {
+      _error = null;
+      notifyListeners();
+      return true;
+    }
     try {
       await _repository.substituteExercise(
         originalExerciseId,
@@ -152,6 +182,9 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<bool> logWorkout(Map<String, dynamic> workoutData) async {
+    if (DemoConfig.isDemo) {
+      return true;
+    }
     try {
       await _repository.logWorkout(workoutData);
       return true;

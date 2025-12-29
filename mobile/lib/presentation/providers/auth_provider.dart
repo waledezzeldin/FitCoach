@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fitapp/core/config/demo_config.dart';
+import 'package:fitapp/data/demo/demo_data.dart';
 import 'package:fitapp/data/repositories/auth_repository.dart';
 import 'package:fitapp/data/models/user_profile.dart';
 
@@ -13,7 +15,9 @@ class AuthProvider extends ChangeNotifier {
   String? _lastPhoneNumber;
   
   AuthProvider(this._repository) {
-    _checkAuthStatus();
+    if (!DemoConfig.isDemo) {
+      _checkAuthStatus();
+    }
   }
   
   // Getters
@@ -26,6 +30,12 @@ class AuthProvider extends ChangeNotifier {
   
   // Check if user is already authenticated
   Future<void> _checkAuthStatus() async {
+    if (DemoConfig.isDemo) {
+      _isAuthenticated = false;
+      _user = null;
+      _token = null;
+      return;
+    }
     try {
       final storedToken = await _repository.getStoredToken();
       
@@ -52,6 +62,10 @@ class AuthProvider extends ChangeNotifier {
   
   // Request OTP
   Future<bool> requestOTP(String phoneNumber) async {
+    if (DemoConfig.isDemo) {
+      _enableDemoUser(role: 'user');
+      return true;
+    }
     _isLoading = true;
     _error = null;
     _lastPhoneNumber = phoneNumber;
@@ -72,6 +86,10 @@ class AuthProvider extends ChangeNotifier {
   
   // Verify OTP and login
   Future<bool> verifyOTP(String phoneNumber, String otp) async {
+    if (DemoConfig.isDemo) {
+      _enableDemoUser(role: 'user');
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -102,6 +120,10 @@ class AuthProvider extends ChangeNotifier {
     required String emailOrPhone,
     required String password,
   }) async {
+    if (DemoConfig.isDemo) {
+      _enableDemoUser(role: 'user');
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -137,6 +159,10 @@ class AuthProvider extends ChangeNotifier {
     required String phone,
     required String password,
   }) async {
+    if (DemoConfig.isDemo) {
+      _enableDemoUser(role: 'user');
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -169,6 +195,10 @@ class AuthProvider extends ChangeNotifier {
   
   // Social login (Google, Facebook, Apple)
   Future<bool> socialLogin(String provider) async {
+    if (DemoConfig.isDemo) {
+      _enableDemoUser(role: 'user');
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -196,6 +226,11 @@ class AuthProvider extends ChangeNotifier {
   
   // Refresh user data
   Future<void> refreshUser() async {
+    if (DemoConfig.isDemo) {
+      _user = DemoData.userProfile(role: _user?.role ?? 'user');
+      notifyListeners();
+      return;
+    }
     try {
       final userProfile = await _repository.getUserProfile();
       if (userProfile != null) {
@@ -210,6 +245,14 @@ class AuthProvider extends ChangeNotifier {
   
   // Logout
   Future<void> logout() async {
+    if (DemoConfig.isDemo) {
+      _isAuthenticated = false;
+      _user = null;
+      _token = null;
+      _error = null;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     notifyListeners();
     
@@ -235,10 +278,24 @@ class AuthProvider extends ChangeNotifier {
     _user = updatedUser;
     notifyListeners();
   }
+
+  void setDemoRole(String role) {
+    if (!DemoConfig.isDemo) return;
+    _enableDemoUser(role: role);
+  }
   
   // Clear error
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+  void _enableDemoUser({required String role}) {
+    _isLoading = false;
+    _error = null;
+    _token = 'demo-token';
+    _user = DemoData.userProfile(role: role);
+    _isAuthenticated = true;
     notifyListeners();
   }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/repositories/payment_repository.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
 
@@ -492,6 +494,28 @@ class _SubscriptionUpgradeScreenState extends State<SubscriptionUpgradeScreen> {
     });
     
     try {
+      if (DemoConfig.isDemo) {
+        final userProvider = context.read<UserProvider>();
+        final authProvider = context.read<AuthProvider>();
+        final tierLabel = _selectedTier == 'smart_premium' ? 'Smart Premium' : 'Premium';
+        final success = await userProvider.updateSubscription(tierLabel);
+        if (success && userProvider.profile != null) {
+          authProvider.updateUser(userProvider.profile!);
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isArabic
+                    ? 'تم تفعيل الاشتراك التجريبي بنجاح'
+                    : 'Demo subscription activated successfully',
+              ),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+        return;
+      }
       final repository = PaymentRepository();
       
       Map<String, dynamic> paymentResult;

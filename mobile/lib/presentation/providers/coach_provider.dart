@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/config/demo_config.dart';
+import '../../data/demo/demo_data.dart';
 import '../../data/repositories/coach_repository.dart';
 import '../../data/models/coach_client.dart';
 import '../../data/models/appointment.dart';
@@ -33,6 +35,13 @@ class CoachProvider extends ChangeNotifier {
 
   /// Load coach analytics
   Future<void> loadAnalytics(String coachId) async {
+    if (DemoConfig.isDemo) {
+      _analytics = DemoData.coachAnalytics();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -54,6 +63,13 @@ class CoachProvider extends ChangeNotifier {
     String? status,
     String? search,
   }) async {
+    if (DemoConfig.isDemo) {
+      _clients = DemoData.coachClients();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -78,6 +94,14 @@ class CoachProvider extends ChangeNotifier {
     required String coachId,
     required String clientId,
   }) async {
+    if (DemoConfig.isDemo) {
+      _selectedClient = DemoData.coachClients()
+          .firstWhere((client) => client.id == clientId, orElse: () => DemoData.coachClients().first);
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -103,6 +127,16 @@ class CoachProvider extends ChangeNotifier {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
+    if (DemoConfig.isDemo) {
+      _appointments = DemoData.coachAppointments(
+        coachId: coachId,
+        userId: 'demo-user',
+      );
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -132,6 +166,24 @@ class CoachProvider extends ChangeNotifier {
     required String type,
     String? notes,
   }) async {
+    if (DemoConfig.isDemo) {
+      _appointments.add(
+        Appointment(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          coachId: coachId,
+          userId: userId,
+          scheduledAt: scheduledAt.toIso8601String(),
+          durationMinutes: duration,
+          status: 'confirmed',
+          type: type,
+          notes: notes,
+          coachName: 'Coach Sam',
+          userName: 'Demo User',
+        ),
+      );
+      notifyListeners();
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -170,6 +222,21 @@ class CoachProvider extends ChangeNotifier {
     String? notes,
     String? status,
   }) async {
+    if (DemoConfig.isDemo) {
+      final index = _appointments.indexWhere((a) => a.id == appointmentId);
+      if (index != -1) {
+        final current = _appointments[index];
+        _appointments[index] = current.copyWith(
+          scheduledAt: scheduledAt?.toIso8601String(),
+          durationMinutes: duration,
+          type: type,
+          notes: notes,
+          status: status,
+        );
+      }
+      notifyListeners();
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -208,6 +275,13 @@ class CoachProvider extends ChangeNotifier {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
+    if (DemoConfig.isDemo) {
+      _earnings = DemoData.coachEarnings();
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -235,6 +309,32 @@ class CoachProvider extends ChangeNotifier {
     required int fitnessScore,
     String? notes,
   }) async {
+    if (DemoConfig.isDemo) {
+      final index = _clients.indexWhere((c) => c.id == clientId);
+      if (index != -1) {
+        final client = _clients[index];
+        _clients[index] = CoachClient(
+          id: client.id,
+          fullName: client.fullName,
+          email: client.email,
+          phoneNumber: client.phoneNumber,
+          profilePhotoUrl: client.profilePhotoUrl,
+          subscriptionTier: client.subscriptionTier,
+          goal: client.goal,
+          isActive: client.isActive,
+          assignedDate: client.assignedDate,
+          lastActivity: client.lastActivity,
+          fitnessScore: fitnessScore,
+          workoutPlanId: client.workoutPlanId,
+          workoutPlanName: client.workoutPlanName,
+          nutritionPlanId: client.nutritionPlanId,
+          nutritionPlanName: client.nutritionPlanName,
+          messageCount: client.messageCount,
+        );
+        notifyListeners();
+      }
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -281,6 +381,9 @@ class CoachProvider extends ChangeNotifier {
     String coachId,
     String clientId,
   ) async {
+    if (DemoConfig.isDemo) {
+      return DemoData.workoutPlan(userId: clientId);
+    }
     try {
       return await _repository.getClientWorkoutPlan(
         coachId: coachId,
@@ -300,6 +403,9 @@ class CoachProvider extends ChangeNotifier {
     Map<String, dynamic> planData,
     String notes,
   ) async {
+    if (DemoConfig.isDemo) {
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -328,6 +434,9 @@ class CoachProvider extends ChangeNotifier {
     String coachId,
     String clientId,
   ) async {
+    if (DemoConfig.isDemo) {
+      return DemoData.nutritionPlan(userId: clientId);
+    }
     try {
       return await _repository.getClientNutritionPlan(
         coachId: coachId,
@@ -349,6 +458,9 @@ class CoachProvider extends ChangeNotifier {
     Map<String, dynamic> mealPlan,
     String notes,
   ) async {
+    if (DemoConfig.isDemo) {
+      return true;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
