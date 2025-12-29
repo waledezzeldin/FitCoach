@@ -17,7 +17,7 @@ process.env.JWT_REFRESH_EXPIRES_IN = '7d';
 
 // Database test config
 process.env.DB_HOST = 'localhost';
-process.env.DB_PORT = '5432';
+process.env.DB_PORT = '5433';
 process.env.DB_NAME = 'fitcoach_test';
 process.env.DB_USER = 'postgres';
 process.env.DB_PASSWORD = 'postgres';

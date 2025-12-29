@@ -2,6 +2,9 @@ const db = require('../database');
 const logger = require('../utils/logger');
 const PDFDocument = require('pdfkit');
 
+const isValidUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+const allowedAppointmentTypes = new Set(['video', 'audio', 'in_person']);
+
 /**
  * Generate client report
  */
@@ -303,7 +306,9 @@ exports.getCoachClients = async (req, res) => {
     res.json({
       success: true,
       clients,
-      total: clients.length
+      total: clients.length,
+      limit: parseInt(limit),
+      offset: parseInt(offset)
     });
     
   } catch (error) {
@@ -393,6 +398,43 @@ exports.createAppointment = async (req, res) => {
   try {
     const coachId = req.params.id;
     const { userId, scheduledAt, duration, type, notes } = req.body;
+
+    if (!coachId || !userId || !scheduledAt || !duration || !type) {
+      return res.status(400).json({
+        success: false,
+        message: 'Required fields are missing'
+      });
+    }
+
+    if (!isValidUuid(coachId) || !isValidUuid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user or coach ID'
+      });
+    }
+
+    if (!allowedAppointmentTypes.has(type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment type'
+      });
+    }
+
+    const parsedDate = new Date(scheduledAt);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment date'
+      });
+    }
+
+    const parsedDuration = Number(duration);
+    if (!Number.isFinite(parsedDuration) || parsedDuration <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment duration'
+      });
+    }
     
     // Check authorization
     if (req.user.userId !== coachId && req.user.role !== 'admin') {
@@ -674,6 +716,13 @@ exports.assignFitnessScore = async (req, res) => {
     const { clientId } = req.params;
     const { fitnessScore, notes } = req.body;
     const coachId = req.user.userId;
+
+    if (!isValidUuid(clientId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid client ID'
+      });
+    }
     
     // Validate score
     if (fitnessScore < 0 || fitnessScore > 100) {

@@ -1,6 +1,9 @@
 const db = require('../database');
 const logger = require('../utils/logger');
 
+const isValidUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+const validSubscriptionTiers = new Set(['freemium', 'premium', 'smart_premium']);
+
 /**
  * Get platform analytics/dashboard stats
  */
@@ -171,6 +174,13 @@ exports.getUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!isValidUuid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
     
     const result = await db.query(
       `SELECT 
@@ -222,6 +232,27 @@ exports.updateUser = async (req, res) => {
       isActive,
       coachId 
     } = req.body;
+
+    if (!isValidUuid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (subscriptionTier && !validSubscriptionTiers.has(subscriptionTier)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid subscription tier'
+      });
+    }
+
+    if (coachId !== undefined && coachId !== null && !isValidUuid(coachId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid coach ID'
+      });
+    }
     
     const result = await db.query(
       `UPDATE users
@@ -295,6 +326,20 @@ exports.suspendUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
+
+    if (!isValidUuid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Suspension reason is required'
+      });
+    }
     
     const result = await db.query(
       `UPDATE users
@@ -337,6 +382,13 @@ exports.suspendUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!isValidUuid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
     
     const result = await db.query(
       `UPDATE users
@@ -453,6 +505,13 @@ exports.getCoaches = async (req, res) => {
 exports.approveCoach = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!isValidUuid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
     
     const result = await db.query(
       `UPDATE coaches
@@ -501,6 +560,20 @@ exports.suspendCoach = async (req, res) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
+
+    if (!isValidUuid(id)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Suspension reason is required'
+      });
+    }
     
     const result = await db.query(
       `UPDATE coaches
@@ -628,6 +701,14 @@ exports.getAuditLogs = async (req, res) => {
       limit = 100, 
       offset = 0 
     } = req.query;
+
+    if (userId && !isValidUuid(userId)) {
+      return res.json({
+        success: true,
+        logs: [],
+        total: 0
+      });
+    }
     
     let query = `
       SELECT 

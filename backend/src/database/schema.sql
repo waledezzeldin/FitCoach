@@ -79,12 +79,21 @@ CREATE TABLE users (
     
     -- Coach Assignment
     assigned_coach_id UUID,
-    
+
+    -- Fitness Score
+    fitness_score INTEGER,
+    fitness_score_updated_by VARCHAR(20),
+    fitness_score_last_updated TIMESTAMP,
+
     -- Tracking
     last_login TIMESTAMP,
     login_count INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
     is_verified BOOLEAN DEFAULT FALSE,
+    suspension_reason TEXT,
+    suspended_at TIMESTAMP,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    deleted_at TIMESTAMP,
     
     -- Timestamps
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -148,6 +157,9 @@ CREATE TABLE coaches (
     is_approved BOOLEAN DEFAULT FALSE,
     approved_by UUID REFERENCES users(id),
     approved_at TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    suspension_reason TEXT,
+    suspended_at TIMESTAMP,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -155,6 +167,184 @@ CREATE TABLE coaches (
 
 CREATE INDEX idx_coaches_user ON coaches(user_id);
 CREATE INDEX idx_coaches_available ON coaches(is_available);
+
+-- ============================================
+-- USER_COACHES TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS user_coaches (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    coach_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, coach_id)
+);
+
+CREATE INDEX idx_user_coaches_user ON user_coaches(user_id);
+CREATE INDEX idx_user_coaches_coach ON user_coaches(coach_id);
+CREATE INDEX idx_user_coaches_active ON user_coaches(is_active);
+
+-- ============================================
+-- APPOINTMENTS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS appointments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    coach_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    scheduled_at TIMESTAMP NOT NULL,
+    duration_minutes INTEGER NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    notes TEXT,
+    status VARCHAR(50) DEFAULT 'scheduled',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_appointments_coach ON appointments(coach_id);
+CREATE INDEX idx_appointments_user ON appointments(user_id);
+CREATE INDEX idx_appointments_status ON appointments(status);
+CREATE INDEX idx_appointments_scheduled_at ON appointments(scheduled_at);
+
+-- ============================================
+-- COACH_EARNINGS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS coach_earnings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    coach_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    coach_commission DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(50) DEFAULT 'paid',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_coach_earnings_coach ON coach_earnings(coach_id);
+CREATE INDEX idx_coach_earnings_status ON coach_earnings(status);
+
+-- ============================================
+-- COACH_RATINGS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS coach_ratings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    coach_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_coach_ratings_coach ON coach_ratings(coach_id);
+
+-- ============================================
+-- FITNESS_SCORE_HISTORY TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS fitness_score_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    coach_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    score INTEGER NOT NULL,
+    notes TEXT,
+    assigned_by VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_fitness_score_user ON fitness_score_history(user_id);
+CREATE INDEX idx_fitness_score_coach ON fitness_score_history(coach_id);
+
+-- ============================================
+-- COACH_CERTIFICATES TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS coach_certificates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    coach_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    issuer VARCHAR(255),
+    date_obtained DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_coach_certificates_coach ON coach_certificates(coach_id);
+
+-- ============================================
+-- COACH_EXPERIENCES TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS coach_experiences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    coach_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    company VARCHAR(255),
+    start_date DATE,
+    end_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_coach_experiences_coach ON coach_experiences(coach_id);
+
+-- ============================================
+-- COACH_ACHIEVEMENTS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS coach_achievements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    coach_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_coach_achievements_coach ON coach_achievements(coach_id);
+
+-- ============================================
+-- PAYMENTS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS payments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    currency VARCHAR(3) DEFAULT 'SAR',
+    status payment_status DEFAULT 'completed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_payments_user ON payments(user_id);
+CREATE INDEX idx_payments_status ON payments(status);
+
+-- ============================================
+-- SUBSCRIPTION_PLANS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS subscription_plans (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    currency VARCHAR(3) DEFAULT 'SAR',
+    duration_months INTEGER DEFAULT 1,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_subscription_plans_active ON subscription_plans(is_active);
+
+-- ============================================
+-- SYSTEM_SETTINGS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS system_settings (
+    key VARCHAR(100) PRIMARY KEY,
+    value TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- ============================================
 -- EXERCISES TABLE

@@ -4,6 +4,76 @@ const { authMiddleware, roleCheck } = require('../middleware/auth');
 const adminController = require('../controllers/adminController');
 
 /**
+ * @route   GET /api/v2/admin/analytics
+ * @desc    Get dashboard analytics
+ * @access  Private (Admin only)
+ */
+router.get('/analytics', authMiddleware, roleCheck('admin'), adminController.getDashboardAnalytics);
+
+/**
+ * @route   GET /api/v2/admin/users
+ * @desc    Get users with filters
+ * @access  Private (Admin only)
+ */
+router.get('/users', authMiddleware, roleCheck('admin'), adminController.getUsers);
+
+/**
+ * @route   GET /api/v2/admin/users/:id
+ * @desc    Get user by ID
+ * @access  Private (Admin only)
+ */
+router.get('/users/:id', authMiddleware, roleCheck('admin'), adminController.getUserById);
+
+/**
+ * @route   PUT /api/v2/admin/users/:id
+ * @desc    Update user details
+ * @access  Private (Admin only)
+ */
+router.put('/users/:id', authMiddleware, roleCheck('admin'), adminController.updateUser);
+
+/**
+ * @route   POST /api/v2/admin/users/:id/suspend
+ * @desc    Suspend user
+ * @access  Private (Admin only)
+ */
+router.post('/users/:id/suspend', authMiddleware, roleCheck('admin'), adminController.suspendUser);
+
+/**
+ * @route   DELETE /api/v2/admin/users/:id
+ * @desc    Delete user
+ * @access  Private (Admin only)
+ */
+router.delete('/users/:id', authMiddleware, roleCheck('admin'), adminController.deleteUser);
+
+/**
+ * @route   GET /api/v2/admin/coaches
+ * @desc    Get coaches with filters
+ * @access  Private (Admin only)
+ */
+router.get('/coaches', authMiddleware, roleCheck('admin'), adminController.getCoaches);
+
+/**
+ * @route   POST /api/v2/admin/coaches/:id/approve
+ * @desc    Approve coach
+ * @access  Private (Admin only)
+ */
+router.post('/coaches/:id/approve', authMiddleware, roleCheck('admin'), adminController.approveCoach);
+
+/**
+ * @route   POST /api/v2/admin/coaches/:id/suspend
+ * @desc    Suspend coach
+ * @access  Private (Admin only)
+ */
+router.post('/coaches/:id/suspend', authMiddleware, roleCheck('admin'), adminController.suspendCoach);
+
+/**
+ * @route   GET /api/v2/admin/revenue
+ * @desc    Get revenue analytics
+ * @access  Private (Admin only)
+ */
+router.get('/revenue', authMiddleware, roleCheck('admin'), adminController.getRevenueAnalytics);
+
+/**
  * @route   GET /api/v2/admin/audit-logs
  * @desc    Get audit logs
  * @access  Private (Admin only)
