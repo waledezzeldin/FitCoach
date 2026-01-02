@@ -82,9 +82,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                isArabic 
-                    ? 'لا توجد خطة تمرين نشطة'
-                    : 'No active workout plan',
+                languageProvider.t('no_active_workout_plan'),
                 style: const TextStyle(
                   fontSize: 18,
                   color: AppColors.textSecondary,
@@ -92,9 +90,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                isArabic
-                    ? 'سيقوم مدربك بإنشاء خطة لك قريباً'
-                    : 'Your coach will create a plan for you soon',
+                languageProvider.t('workout_plan_coming_soon'),
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textDisabled,
@@ -121,12 +117,111 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       ),
       body: Column(
         children: [
+          _buildWorkoutOverviewHeader(workoutProvider, languageProvider),
+
           // Weekly calendar
           _buildWeeklyCalendar(workoutProvider, languageProvider, isArabic),
           
           // Exercise list
           Expanded(
             child: _buildExerciseList(workoutProvider, languageProvider, isArabic),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorkoutOverviewHeader(
+    WorkoutProvider provider,
+    LanguageProvider lang,
+  ) {
+    final plan = provider.activePlan!;
+    final currentDay = provider.currentDay;
+
+    final totalExercises = currentDay?.exercises.length ?? 0;
+    final completedExercises = currentDay == null
+        ? 0
+        : currentDay.exercises.where((e) => provider.isExerciseCompleted(e.id)).length;
+    final progress = totalExercises == 0 ? 0.0 : completedExercises / totalExercises;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.headerGradientStart, AppColors.headerGradientEnd],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            lang.t('workout_overview'),
+            style: AppTextStyles.small.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            plan.name ?? lang.t('workout'),
+            style: AppTextStyles.h3.copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _buildHeaderPill(
+                icon: Icons.fitness_center,
+                label: '$totalExercises ${lang.t('exercises')}',
+              ),
+              const SizedBox(width: 8),
+              _buildHeaderPill(
+                icon: Icons.check_circle_outline,
+                label: '$completedExercises ${lang.t('completed')}',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: Colors.white.withValues(alpha: (0.2 * 255)),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            lang.t('workout_progress', args: {
+              'completed': '$completedExercises',
+              'total': '$totalExercises',
+            }),
+            style: AppTextStyles.small.copyWith(color: Colors.white70),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderPill({
+    required IconData icon,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: (0.14 * 255)),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: (0.12 * 255))),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTextStyles.small.copyWith(color: Colors.white),
           ),
         ],
       ),
@@ -170,7 +265,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    isArabic ? 'يوم ${day.dayNumber}' : 'Day ${day.dayNumber}',
+                    lang.t('workout_day', args: {'number': '${day.dayNumber}'}),
                     style: TextStyle(
                       fontSize: 12,
                       color: isSelected ? Colors.white : AppColors.textSecondary,
@@ -190,7 +285,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${day.exercises.length} ${isArabic ? 'تمارين' : 'ex'}',
+                    '${day.exercises.length} ${lang.t('exercises')}',
                     style: TextStyle(
                       fontSize: 12,
                       color: isSelected ? Colors.white.withValues(alpha: (0.8 * 255)) : AppColors.textDisabled,
@@ -213,8 +308,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final currentDay = provider.currentDay;
     
     if (currentDay == null) {
-      return const Center(
-        child: Text('Select a day to view exercises'),
+      return Center(
+        child: Text(lang.t('workout_select_day')),
       );
     }
     
@@ -360,12 +455,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   children: [
                     _buildInfoChip(
                       icon: Icons.repeat,
-                      label: '${exercise.sets} ${isArabic ? 'مجموعات' : 'sets'}',
+                      label: '${exercise.sets} ${lang.t('sets')}',
                     ),
                     const SizedBox(width: 8),
                     _buildInfoChip(
                       icon: Icons.fitness_center,
-                      label: '${exercise.reps} ${isArabic ? 'تكرارات' : 'reps'}',
+                      label: '${exercise.reps} ${lang.t('reps')}',
                     ),
                     if (exercise.restTime != null) ...[
                       const SizedBox(width: 8),
@@ -397,9 +492,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            isArabic
-                                ? 'قد يتعارض هذا التمرين مع إصابتك'
-                                : 'This exercise may conflict with your injury',
+                            lang.t('workout_injury_conflict'),
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.warning,
@@ -432,8 +525,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     Expanded(
                       child: CustomButton(
                         text: isCompleted
-                            ? (isArabic ? 'مكتمل' : 'Completed')
-                            : (isArabic ? 'أكمل' : 'Complete'),
+                            ? lang.t('completed')
+                            : lang.t('complete'),
                         onPressed: isCompleted
                             ? null
                             : () {
@@ -450,7 +543,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: CustomButton(
-                          text: isArabic ? 'بديل' : 'Substitute',
+                          text: lang.t('substitute'),
                           onPressed: () {
                             _showSubstituteDialog(exercise, provider, lang, isArabic);
                           },
@@ -563,7 +656,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 // Instructions
                 if (exercise.instructions != null) ...[
                   Text(
-                    isArabic ? 'التعليمات' : 'Instructions',
+                    lang.t('instructions'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -598,10 +691,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final authProvider = context.read<AuthProvider>();
     final userInjuries = authProvider.user?.injuries ?? [];
     
-    showDialog(
+      showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'استبدال التمرين' : 'Substitute Exercise'),
+        title: Text(lang.t('substitute_exercise')),
         content: FutureBuilder<List<Exercise>>(
           future: provider.getExerciseAlternatives(exercise.id, userInjuries),
           builder: (context, snapshot) {
@@ -611,9 +704,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             
             if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
               return Text(
-                isArabic 
-                    ? 'لا توجد بدائل متاحة'
-                    : 'No alternatives available',
+                lang.t('no_alternatives_available'),
               );
             }
             
@@ -641,9 +732,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              isArabic 
-                                  ? 'تم استبدال التمرين بنجاح'
-                                  : 'Exercise substituted successfully',
+                              lang.t('exercise_substituted_successfully'),
                             ),
                             backgroundColor: AppColors.success,
                           ),
@@ -659,7 +748,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(lang.t('cancel')),
           ),
         ],
       ),

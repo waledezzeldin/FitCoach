@@ -145,7 +145,6 @@ class InBodyScan {
   // Helper: Calculate body shape
   static String calculateBodyShape(double weight, double smm, double bodyFatMass) {
     final smmRatio = smm / weight;
-    final fatRatio = bodyFatMass / weight;
     
     if (smmRatio < 0.35) return 'C'; // Less muscle, more fat
     if (smmRatio > 0.42) return 'D'; // High muscle, lower fat (athletic)

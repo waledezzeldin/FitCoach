@@ -8,10 +8,11 @@ void main() {
   group('Screen Widget Tests', () {
     testWidgets('SplashScreen renders correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: SplashScreen(),
+        MaterialApp(
+          home: SplashScreen(onStart: () {}),
         ),
       );
+      await tester.pump(const Duration(milliseconds: 150));
 
       // Splash screen should render
       expect(find.byType(SplashScreen), findsOneWidget);

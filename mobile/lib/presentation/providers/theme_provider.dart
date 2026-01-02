@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/config/theme_config.dart';
 
 class ThemeProvider extends ChangeNotifier {
     bool _hasUserSetTheme = false;
@@ -17,39 +18,11 @@ class ThemeProvider extends ChangeNotifier {
 
     // Provide ThemeData for light and dark themes
     ThemeData getLightTheme() {
-      return ThemeData(
-        brightness: Brightness.light,
-        primaryColor: Colors.blue,
-        colorScheme: const ColorScheme.light(
-          primary: Colors.blue,
-          secondary: Colors.green,
-          surface: Colors.white,
-          onPrimary: Colors.white,
-          onSecondary: Colors.white,
-          onSurface: Colors.black,
-        ),
-        cardColor: Colors.white,
-        scaffoldBackgroundColor: Colors.white,
-        textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.black)),
-      );
+      return AppThemeConfig.getLightTheme();
     }
 
     ThemeData getDarkTheme() {
-      return ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: Colors.blueGrey,
-        colorScheme: ColorScheme.dark(
-          primary: Colors.blueGrey,
-          secondary: Colors.teal,
-          surface: Colors.grey[900]!,
-          onPrimary: Colors.white,
-          onSecondary: Colors.white,
-          onSurface: Colors.white,
-        ),
-        cardColor: Colors.grey[900],
-        scaffoldBackgroundColor: Colors.black,
-        textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.white)),
-      );
+      return AppThemeConfig.getDarkTheme();
     }
 
     // Get ThemeData for current mode

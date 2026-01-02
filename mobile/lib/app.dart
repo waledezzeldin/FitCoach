@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/language_provider.dart';
-import 'core/config/demo_config.dart';
 import 'presentation/screens/splash_screen.dart';
 import 'presentation/screens/language_selection_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
@@ -32,28 +31,22 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    _initializeApp();
   }
 
-  Future<void> _initializeApp() async {
-    // Show splash for 2 seconds
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (!mounted) return;
-    
+  void _completeSplash() {
     final languageProvider = context.read<LanguageProvider>();
     final authProvider = context.read<AuthProvider>();
-    
+
     setState(() {
       _showSplash = false;
-      
+
       // Determine initial screen
       if (!languageProvider.hasSelectedLanguage) {
         _currentScreen = 'language';
       } else if (!authProvider.isAuthenticated) {
         _currentScreen = 'onboarding';
-      } else if (authProvider.user != null && 
-                 !authProvider.user!.hasCompletedFirstIntake) {
+      } else if (authProvider.user != null &&
+          !authProvider.user!.hasCompletedFirstIntake) {
         _currentScreen = 'firstIntake';
       } else {
         _currentScreen = 'home';
@@ -70,7 +63,7 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     if (_showSplash) {
-      return const SplashScreen();
+      return SplashScreen(onStart: _completeSplash);
     }
 
     return Consumer<AuthProvider>(

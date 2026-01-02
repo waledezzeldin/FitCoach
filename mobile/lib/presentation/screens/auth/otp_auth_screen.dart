@@ -64,11 +64,12 @@ class _OTPAuthScreenState extends State<OTPAuthScreen> {
   
   Future<void> _requestOTP() async {
     final authProvider = context.read<AuthProvider>();
+    final languageProvider = context.read<LanguageProvider>();
     final phone = _phoneController.text.trim();
     
     // Validate phone number (+966 5X XXX XXXX)
     if (!_isValidSaudiPhone(phone)) {
-      _showError('Please enter a valid Saudi phone number');
+      _showError(languageProvider.t('otp_invalid_phone'));
       return;
     }
     
@@ -87,11 +88,12 @@ class _OTPAuthScreenState extends State<OTPAuthScreen> {
   
   Future<void> _verifyOTP() async {
     final authProvider = context.read<AuthProvider>();
+    final languageProvider = context.read<LanguageProvider>();
     final phone = _phoneController.text.trim();
     final otp = _otpControllers.map((c) => c.text).join();
     
     if (otp.length < 6) {
-      _showError('Please enter the complete OTP code');
+      _showError(languageProvider.t('otp_incomplete'));
       return;
     }
     
@@ -317,7 +319,7 @@ class _OTPAuthScreenState extends State<OTPAuthScreen> {
                         }
                       });
                     },
-                    child: const Text('Change phone number'),
+                    child: Text(languageProvider.t('change_phone')),
                   ),
                 ),
               ],

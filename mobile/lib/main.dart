@@ -144,7 +144,7 @@ class FitCoachApp extends StatelessWidget {
       child: Consumer2<LanguageProvider, ThemeProvider>(
         builder: (context, languageProvider, themeProvider, _) {
           return MaterialApp(
-            title: 'عاش - FitCoach+',
+            title: 'FitCoach+',
             debugShowCheckedModeBanner: false,
             
             // Localization

@@ -112,119 +112,365 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
   
   Widget _buildHomeTab(LanguageProvider lang, bool isArabic) {
-    return SafeArea(
-      child: RefreshIndicator(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with greeting
-              _buildHeader(lang, isArabic),
-              
-              const SizedBox(height: 24),
-              
-              // Subscription tier badge
-              _buildSubscriptionBadge(lang, isArabic),
-              
-              const SizedBox(height: 24),
-
-              // Demo mode shortcuts
-              if (DemoConfig.isDemo) _buildDemoModeSection(lang),
-              if (DemoConfig.isDemo) const SizedBox(height: 24),
-              
-              // Quick stats
-              _buildQuickStats(lang, isArabic),
-              
-              const SizedBox(height: 24),
-              
-              // Quota indicators
-              _buildQuotaSection(lang, isArabic),
-              
-              const SizedBox(height: 24),
-              
-              // Today's workout
-              _buildTodayWorkout(lang, isArabic),
-              
-              const SizedBox(height: 16),
-              
-              // Today's nutrition
-              _buildTodayNutrition(lang, isArabic),
-              
-              const SizedBox(height: 24),
-              
-              // Quick actions
-              _buildQuickActions(lang, isArabic),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildHeader(LanguageProvider lang, bool isArabic) {
-    final authProvider = context.watch<AuthProvider>();
-    final user = authProvider.user;
-    
-    final hour = DateTime.now().hour;
-    String greeting;
-    if (hour < 12) {
-      greeting = lang.t('good_morning');
-    } else if (hour < 18) {
-      greeting = lang.t('good_afternoon');
-    } else {
-      greeting = lang.t('good_evening');
-    }
-    
-    return Row(
+    return Stack(
       children: [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-          child: Text(
-            user?.name?.substring(0, 1).toUpperCase() ?? 'U',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.18,
+            child: Image.asset(
+              'assets/placeholders/welcome_screens/workout_hero_image_1200x800.jpg',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const SizedBox.shrink();
+              },
             ),
           ),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                greeting,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                user?.name ?? lang.t('welcome'),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
+        Positioned.fill(
+          child: Container(
+            color: AppColors.background.withOpacity(0.88),
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {
-            // Navigate to notifications
-          },
+        SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _loadData,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeroHeader(lang, isArabic),
+                  const SizedBox(height: 20),
+                  _buildNavigationGrid(lang, isArabic),
+                  const SizedBox(height: 20),
+                  if (DemoConfig.isDemo) _buildDemoModeSection(lang),
+                  if (DemoConfig.isDemo) const SizedBox(height: 20),
+                  _buildQuotaSection(lang, isArabic),
+                  const SizedBox(height: 24),
+                  _buildTodayWorkout(lang, isArabic),
+                  const SizedBox(height: 16),
+                  _buildTodayNutrition(lang, isArabic),
+                  const SizedBox(height: 24),
+                  _buildQuickActions(lang, isArabic),
+                ],
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
+
+  Widget _buildHeroHeader(LanguageProvider lang, bool isArabic) {
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.user;
+
+    final name = user?.name ?? lang.t('welcome');
+    final firstName = name.split(' ').first;
+    final tier = user?.subscriptionTier ?? 'Freemium';
+    final fitnessScore = user?.fitnessScore ?? (DemoConfig.isDemo ? 72 : 0);
+    final fitnessUpdatedBy = user?.fitnessScoreUpdatedBy;
+    final caloriesBurned = DemoConfig.isDemo ? 2850 : 0;
+    final caloriesConsumed = DemoConfig.isDemo ? 1950 : 0;
+    final workoutsCompleted = DemoConfig.isDemo ? 12 : 0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.headerGradientStart, AppColors.headerGradientEnd],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${lang.t('home_hello')}, $firstName!',
+                      style: AppTextStyles.h3.copyWith(color: Colors.white),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      lang.t('home_ready'),
+                      style: AppTextStyles.small.copyWith(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  tier,
+                  style: AppTextStyles.smallMedium.copyWith(color: Colors.white),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.person_outline, color: Colors.white),
+                onPressed: () => setState(() => _selectedIndex = 5),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lang.t('home_fitness_score'),
+                            style: AppTextStyles.small.copyWith(color: Colors.white70),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            fitnessUpdatedBy == 'coach'
+                                ? lang.t('home_updated_by_coach')
+                                : lang.t('home_auto_updated'),
+                            style: AppTextStyles.small.copyWith(color: Colors.white54),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          '$fitnessScore',
+                          style: AppTextStyles.h2.copyWith(color: Colors.white),
+                        ),
+                        Text(
+                          '/100',
+                          style: AppTextStyles.small.copyWith(color: Colors.white54),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: fitnessScore / 100,
+                    minHeight: 6,
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildHeroStat(
+                  icon: Icons.local_fire_department,
+                  value: '$caloriesBurned',
+                  label: lang.t('home_calories_burned'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildHeroStat(
+                  icon: Icons.fitness_center,
+                  value: '$workoutsCompleted',
+                  label: lang.t('home_workouts_completed'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildHeroStat(
+                  icon: Icons.local_dining,
+                  value: '$caloriesConsumed',
+                  label: lang.t('home_calories_consumed'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroStat({
+    required IconData icon,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: AppTextStyles.small.copyWith(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavigationGrid(LanguageProvider lang, bool isArabic) {
+    final authProvider = context.watch<AuthProvider>();
+    final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
+    final isFreemium = tier == 'Freemium';
+
+    final items = [
+      _HomeNavItem(
+        label: lang.t('home_workouts'),
+        description: lang.t('home_workouts_desc'),
+        icon: Icons.fitness_center,
+        color: AppColors.primary,
+        index: 1,
+      ),
+      _HomeNavItem(
+        label: lang.t('home_nutrition'),
+        description: lang.t('home_nutrition_desc'),
+        icon: Icons.restaurant,
+        color: AppColors.accent,
+        index: 2,
+        locked: isFreemium,
+        lockedLabel: lang.t('home_locked'),
+      ),
+      _HomeNavItem(
+        label: lang.t('home_coach'),
+        description: lang.t('home_coach_desc'),
+        icon: Icons.chat_bubble_outline,
+        color: AppColors.secondaryForeground,
+        index: 3,
+      ),
+      _HomeNavItem(
+        label: lang.t('home_store'),
+        description: lang.t('home_store_desc'),
+        icon: Icons.shopping_bag_outlined,
+        color: AppColors.accent,
+        index: 4,
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          lang.t('home_quick_access'),
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: items.map(_buildNavigationCard).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNavigationCard(_HomeNavItem item) {
+    return InkWell(
+      onTap: item.locked ? null : () => setState(() => _selectedIndex = item.index),
+      borderRadius: BorderRadius.circular(AppRadius.medium),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.medium),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: item.color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(item.icon, color: item.color, size: 20),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  item.label,
+                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item.description,
+                  style: AppTextStyles.small.copyWith(color: AppColors.textSecondary),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            if (item.locked)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    item.lockedLabel,
+                    style: AppTextStyles.small.copyWith(color: AppColors.error),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   
   Widget _buildSubscriptionBadge(LanguageProvider lang, bool isArabic) {
     final authProvider = context.watch<AuthProvider>();
@@ -698,4 +944,24 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   Widget _buildAccountTab() {
     return const AccountScreen();
   }
+}
+
+class _HomeNavItem {
+  final String label;
+  final String description;
+  final IconData icon;
+  final Color color;
+  final int index;
+  final bool locked;
+  final String lockedLabel;
+
+  const _HomeNavItem({
+    required this.label,
+    required this.description,
+    required this.icon,
+    required this.color,
+    required this.index,
+    this.locked = false,
+    this.lockedLabel = 'Locked',
+  });
 }

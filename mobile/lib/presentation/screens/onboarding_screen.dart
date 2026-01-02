@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
@@ -35,119 +37,213 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     final isArabic = languageProvider.isArabic;
     
-    final slides = _getSlides(isArabic);
+    final slides = _getSlides(languageProvider);
+    final currentSlide = slides[_currentPage];
     
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Skip button
-            Align(
-              alignment: isArabic ? Alignment.topLeft : Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: currentSlide.gradientColors,
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Skip button
+              Positioned(
+                top: 8,
+                right: isArabic ? null : 16,
+                left: isArabic ? 16 : null,
                 child: TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.small),
+                    ),
+                  ),
                   onPressed: widget.onComplete,
-                  child: Text(
-                    languageProvider.t('skip'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
+                  child: Text(languageProvider.t('skip')),
+                ),
+              ),
+              
+              // Page view
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 140),
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPage = index;
+                      });
+                    },
+                    itemCount: slides.length,
+                    itemBuilder: (context, index) {
+                      return _OnboardingSlide(
+                        slide: slides[index],
+                        isArabic: isArabic,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              
+              // Bottom navigation
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        border: Border(
+                          top: BorderSide(color: AppColors.border.withOpacity(0.8)),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Page indicator
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              slides.length,
+                              (index) => _PageIndicator(
+                                isActive: index == _currentPage,
+                                accentColor: currentSlide.accentColor,
+                                label: languageProvider.t('onboarding_go_to_slide', args: {
+                                  'index': '${index + 1}',
+                                }),
+                                onTap: () {
+                                  _pageController.animateToPage(
+                                    index,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Navigation buttons
+                          Row(
+                            children: [
+                              OutlinedButton(
+                                onPressed: _currentPage == 0
+                                    ? null
+                                    : () {
+                                        _pageController.previousPage(
+                                          duration: const Duration(milliseconds: 300),
+                                          curve: Curves.easeInOut,
+                                        );
+                                      },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.all(12),
+                                  minimumSize: const Size(48, 48),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppRadius.small),
+                                  ),
+                                ),
+                                child: Icon(
+                                  isArabic ? Icons.chevron_right : Icons.chevron_left,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: currentSlide.accentColor,
+                                    minimumSize: const Size(0, 48),
+                                  ),
+                                  onPressed: () {
+                                    if (_currentPage < slides.length - 1) {
+                                      _pageController.nextPage(
+                                        duration: const Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut,
+                                      );
+                                    } else {
+                                      widget.onComplete();
+                                    }
+                                  },
+                                  child: Text(
+                                    _currentPage < slides.length - 1
+                                        ? languageProvider.t('next')
+                                        : languageProvider.t('get_started'),
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            
-            // Page view
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                itemCount: slides.length,
-                itemBuilder: (context, index) {
-                  return _OnboardingSlide(
-                    slide: slides[index],
-                    isArabic: isArabic,
-                  );
-                },
-              ),
-            ),
-            
-            // Page indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                slides.length,
-                (index) => _PageIndicator(
-                  isActive: index == _currentPage,
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 32),
-            
-            // Next/Get Started button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_currentPage < slides.length - 1) {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    } else {
-                      widget.onComplete();
-                    }
-                  },
-                  child: Text(
-                    _currentPage < slides.length - 1
-                        ? languageProvider.t('next')
-                        : languageProvider.t('get_started'),
-                  ),
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 32),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
   
-  List<OnboardingSlideData> _getSlides(bool isArabic) {
+  List<OnboardingSlideData> _getSlides(LanguageProvider lang) {
     return [
       OnboardingSlideData(
-        title: isArabic ? 'مرحباً بك في عاش' : 'Welcome to FitCoach+',
-        description: isArabic
-            ? 'رحلتك نحو اللياقة البدنية تبدأ هنا مع مدربين محترفين'
-            : 'Your fitness journey starts here with professional coaches',
-        icon: Icons.fitness_center,
-        color: AppColors.primary,
+        title: lang.t('onboarding_coaching_title'),
+        description: lang.t('onboarding_coaching_desc'),
+        imagePath: 'assets/placeholders/coach_messaging/female_coach_1_400x400.jpg',
+        gradientColors: [
+          AppColors.secondaryForeground.withOpacity(0.2),
+          AppColors.primary.withOpacity(0.2),
+        ],
+        accentColor: AppColors.secondaryForeground,
       ),
       OnboardingSlideData(
-        title: isArabic ? 'خطط تمرين مخصصة' : 'Personalized Workout Plans',
-        description: isArabic
-            ? 'احصل على خطط تمرين مصممة خصيصاً لأهدافك وحالتك'
-            : 'Get workout plans tailored to your goals and condition',
-        icon: Icons.calendar_today,
-        color: AppColors.secondary,
+        title: lang.t('onboarding_nutrition_title'),
+        description: lang.t('onboarding_nutrition_desc'),
+        imagePath: 'assets/placeholders/splash_onboarding/slide_2_nutrition_tracking_1080x1920.jpg',
+        gradientColors: [
+          AppColors.accent.withOpacity(0.2),
+          AppColors.primary.withOpacity(0.2),
+        ],
+        accentColor: AppColors.accent,
       ),
       OnboardingSlideData(
-        title: isArabic ? 'تواصل مع مدربك' : 'Connect with Your Coach',
-        description: isArabic
-            ? 'تواصل مباشر مع مدربك للحصول على الإرشادات والدعم'
-            : 'Direct communication with your coach for guidance and support',
-        icon: Icons.chat_bubble_outline,
-        color: AppColors.accent,
+        title: lang.t('onboarding_workouts_title'),
+        description: lang.t('onboarding_workouts_desc'),
+        imagePath: 'assets/placeholders/splash_onboarding/slide_1_personalized_workouts_1080x1920.jpg',
+        gradientColors: [
+          AppColors.primary.withOpacity(0.2),
+          AppColors.secondaryForeground.withOpacity(0.2),
+        ],
+        accentColor: AppColors.primary,
+      ),
+      OnboardingSlideData(
+        title: lang.t('onboarding_store_title'),
+        description: lang.t('onboarding_store_desc'),
+        imagePath: 'assets/placeholders/store_products/product_800x600.jpg',
+        gradientColors: [
+          AppColors.accent.withOpacity(0.2),
+          AppColors.secondaryForeground.withOpacity(0.2),
+        ],
+        accentColor: AppColors.accent,
       ),
     ];
   }
@@ -156,14 +252,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingSlideData {
   final String title;
   final String description;
-  final IconData icon;
-  final Color color;
+  final String imagePath;
+  final List<Color> gradientColors;
+  final Color accentColor;
   
   OnboardingSlideData({
     required this.title,
     required this.description,
-    required this.icon,
-    required this.color,
+    required this.imagePath,
+    required this.gradientColors,
+    required this.accentColor,
   });
 }
 
@@ -179,51 +277,87 @@ class _OnboardingSlide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Icon
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: slide.color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Image container
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 1,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Image.asset(
+                              slide.imagePath,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: AppColors.surface,
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    Icons.image_not_supported_outlined,
+                                    color: AppColors.textDisabled,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: -12,
+                          right: -12,
+                          child: _BlurAccent(color: slide.accentColor, size: 96),
+                        ),
+                        Positioned(
+                          bottom: -16,
+                          left: -16,
+                          child: _BlurAccent(color: slide.accentColor, size: 120),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Title
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      slide.title,
+                      style: AppTextStyles.h1.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                      textAlign: isArabic ? TextAlign.right : TextAlign.left,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Description
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      slide.description,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: isArabic ? TextAlign.right : TextAlign.left,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Icon(
-              slide.icon,
-              size: 60,
-              color: slide.color,
-            ),
-          ),
-          
-          const SizedBox(height: 48),
-          
-          // Title
-          Text(
-            slide.title,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Description
-          Text(
-            slide.description,
-            style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -231,21 +365,57 @@ class _OnboardingSlide extends StatelessWidget {
 
 class _PageIndicator extends StatelessWidget {
   final bool isActive;
+  final Color accentColor;
+  final String label;
+  final VoidCallback onTap;
   
   const _PageIndicator({
     required this.isActive,
+    required this.accentColor,
+    required this.label,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 4.0),
-      width: isActive ? 24 : 8,
-      height: 8,
+    return Semantics(
+      label: label,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          width: isActive ? 32 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: isActive ? accentColor : AppColors.border,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BlurAccent extends StatelessWidget {
+  final Color color;
+  final double size;
+
+  const _BlurAccent({
+    required this.color,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primary : AppColors.border,
-        borderRadius: BorderRadius.circular(4),
+        color: color.withOpacity(0.2),
+        shape: BoxShape.circle,
       ),
     );
   }

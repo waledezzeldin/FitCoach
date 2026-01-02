@@ -54,6 +54,9 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  static const Color headerGradientStart = Color(0xFF334155);
+  static const Color headerGradientEnd = Color(0xFF0F172A);
   
   static const LinearGradient accentGradient = LinearGradient(
     colors: [accent, accentLight],

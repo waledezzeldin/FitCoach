@@ -6,6 +6,7 @@ import '../../providers/language_provider.dart';
 import '../../providers/messaging_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/quota_provider.dart';
+import '../booking/video_booking_screen.dart';
 import '../../widgets/quota_indicator.dart';
 
 class CoachMessagingScreen extends StatefulWidget {
@@ -42,64 +43,154 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     final messagingProvider = context.watch<MessagingProvider>();
     final quotaProvider = context.watch<QuotaProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final isArabic = languageProvider.isArabic;
     final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
     final canAttach = tier == 'Smart Premium';
     
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(languageProvider.t('coach_messaging')),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.videocam),
-            onPressed: quotaProvider.canMakeVideoCall()
-                ? () => _requestVideoCall()
-                : null,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(languageProvider.t('coach_messaging')),
+              Text(
+                languageProvider.t('coach_messaging_subtitle'),
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Quota banner
-          const QuotaBanner(type: 'message'),
-          
-          // Message quota indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: AppColors.surface,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const QuotaIndicator(type: 'message', showDetails: false),
-                const SizedBox(width: 16),
-                const QuotaIndicator(type: 'videoCall', showDetails: false),
-              ],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.videocam),
+              onPressed: quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
+              tooltip: languageProvider.t('book_video_call'),
             ),
-          ),
-          
-          // Messages list
-          Expanded(
-            child: messagingProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : messagingProvider.messages.isEmpty
-                    ? _buildEmptyState(languageProvider, isArabic)
-                    : _buildMessagesList(
-                        messagingProvider,
-                        languageProvider,
-                        isArabic,
-                      ),
-          ),
-          
-          // Message input
-          _buildMessageInput(
-            languageProvider,
-            messagingProvider,
-            quotaProvider,
-            isArabic,
-            canAttach,
-          ),
-        ],
+          ],
+        ),
+        body: Column(
+          children: [
+            // Quota banner
+            const QuotaBanner(type: 'message'),
+            
+            // Message quota indicator
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: AppColors.surface,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const QuotaIndicator(type: 'message', showDetails: false),
+                  const SizedBox(width: 16),
+                  const QuotaIndicator(type: 'videoCall', showDetails: false),
+                ],
+              ),
+            ),
+            
+            // Tabs
+            Material(
+              color: Colors.white,
+              child: TabBar(
+                labelColor: AppColors.primary,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.primary,
+                tabs: [
+                  Tab(text: languageProvider.t('messages')),
+                  Tab(text: languageProvider.t('sessions')),
+                ],
+              ),
+            ),
+            
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildMessagesTab(
+                    languageProvider,
+                    messagingProvider,
+                    quotaProvider,
+                    canAttach,
+                  ),
+                  _buildSessionsTab(languageProvider, quotaProvider),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildMessagesTab(
+    LanguageProvider lang,
+    MessagingProvider messagingProvider,
+    QuotaProvider quotaProvider,
+    bool canAttach,
+  ) {
+    return Column(
+      children: [
+        Expanded(
+          child: messagingProvider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : messagingProvider.messages.isEmpty
+                  ? _buildEmptyState(lang, lang.isArabic)
+                  : _buildMessagesList(
+                      messagingProvider,
+                      lang,
+                      lang.isArabic,
+                    ),
+        ),
+        _buildMessageInput(
+          lang,
+          messagingProvider,
+          quotaProvider,
+          lang.isArabic,
+          canAttach,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSessionsTab(LanguageProvider lang, QuotaProvider quotaProvider) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.video_call,
+              size: 64,
+              color: AppColors.primary.withValues(alpha: (0.8 * 255)),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              lang.t('sessions'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              lang.t('book_video_call_hint'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
+                icon: const Icon(Icons.calendar_month),
+                label: Text(lang.t('book_video_call')),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openVideoBooking() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const VideoBookingScreen()),
     );
   }
   

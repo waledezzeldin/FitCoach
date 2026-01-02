@@ -104,7 +104,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
               
               // Meals
               Text(
-                isArabic ? 'وجبات اليوم' : 'Today\'s Meals',
+                languageProvider.t('todays_meals'),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -158,7 +158,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  isArabic ? 'فترة التجربة' : 'Trial Period',
+                  lang.t('trial_period'),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -170,9 +170,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            isArabic
-                ? 'لديك $daysRemaining ${daysRemaining == 1 ? 'يوم' : 'أيام'} متبقية من الوصول المجاني'
-                : 'You have $daysRemaining ${daysRemaining == 1 ? 'day' : 'days'} of free access remaining',
+            lang.t(
+              'trial_expiring',
+              args: {'days': daysRemaining.toString()},
+            ),
             style: TextStyle(
               fontSize: 14,
               color: Colors.white.withValues(alpha: (0.9 * 255)),
@@ -189,7 +190,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 backgroundColor: Colors.white,
                 foregroundColor: isExpiringSoon ? AppColors.warning : AppColors.primary,
               ),
-              child: Text(isArabic ? 'ترقية إلى Premium' : 'Upgrade to Premium'),
+              child: Text(lang.t('upgrade_to_premium')),
             ),
           ),
         ],
@@ -215,7 +216,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                isArabic ? 'انتهت فترة التجربة' : 'Trial Period Ended',
+                lang.t('trial_expired'),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -224,9 +225,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                isArabic
-                    ? 'انتهت فترة التجربة المجانية لمدة 14 يومًا. قم بالترقية إلى Premium للوصول غير المحدود إلى خطط التغذية'
-                    : 'Your 14-day free trial has ended. Upgrade to Premium for unlimited access to nutrition plans',
+                lang.t('upgrade_prompt'),
                 style: const TextStyle(
                   fontSize: 16,
                   color: AppColors.textSecondary,
@@ -241,7 +240,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   onPressed: () {
                     // Navigate to upgrade
                   },
-                  child: Text(isArabic ? 'ترقية إلى Premium' : 'Upgrade to Premium'),
+                  child: Text(lang.t('upgrade_to_premium')),
                 ),
               ),
             ],
@@ -267,9 +266,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              isArabic 
-                  ? 'لا توجد خطة تغذية نشطة'
-                  : 'No active nutrition plan',
+              lang.t('no_active_nutrition_plan'),
               style: const TextStyle(
                 fontSize: 18,
                 color: AppColors.textSecondary,
@@ -277,9 +274,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              isArabic
-                  ? 'سيقوم مدربك بإنشاء خطة لك قريباً'
-                  : 'Your coach will create a plan for you soon',
+              lang.t('nutrition_plan_coming_soon'),
               style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textDisabled,
@@ -301,7 +296,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
       children: [
         Expanded(
           child: _buildMacroRing(
-            label: isArabic ? 'بروتين' : 'Protein',
+            label: lang.t('protein'),
             value: 120,
             target: plan.macros?['protein'] ?? 0,
             color: AppColors.primary,
@@ -309,7 +304,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         ),
         Expanded(
           child: _buildMacroRing(
-            label: isArabic ? 'كربوهيدرات' : 'Carbs',
+            label: lang.t('carbs'),
             value: 200,
             target: plan.macros?['carbs'] ?? 0,
             color: AppColors.secondary,
@@ -317,7 +312,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         ),
         Expanded(
           child: _buildMacroRing(
-            label: isArabic ? 'دهون' : 'Fats',
+            label: lang.t('fats'),
             value: 50,
             target: plan.macros?['fats'] ?? 0,
             color: AppColors.accent,
@@ -401,7 +396,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isArabic ? 'السعرات الحرارية' : 'Calories',
+            lang.t('calories'),
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -423,7 +418,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     ),
                   ),
                   Text(
-                    isArabic ? 'مستهلك' : 'Consumed',
+                    lang.t('consumed'),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -443,7 +438,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     ),
                   ),
                   Text(
-                    isArabic ? 'متبقي' : 'Remaining',
+                    lang.t('remaining'),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -518,7 +513,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${meal.time} • ${meal.calories} ${isArabic ? 'سعرة' : 'cal'}',
+                      '${meal.time} • ${meal.calories} ${lang.t('cal_unit')}',
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -570,7 +565,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
             Padding(
               padding: const EdgeInsets.only(left: 20),
               child: Text(
-                '+ ${meal.foods.length - 3} ${isArabic ? 'أكثر' : 'more'}',
+                lang.t(
+                  'more_items',
+                  args: {'count': (meal.foods.length - 3).toString()},
+                ),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textDisabled,
@@ -677,7 +675,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${food.quantity}${food.unit} • ${food.calories} ${isArabic ? 'سعرة' : 'cal'}',
+                                '${food.quantity}${food.unit} • ${food.calories} ${lang.t('cal_unit')}',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: AppColors.textSecondary,
@@ -696,7 +694,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 // Instructions if available
                 if (meal.instructions != null) ...[
                   Text(
-                    isArabic ? 'التعليمات' : 'Instructions',
+                    lang.t('instructions'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

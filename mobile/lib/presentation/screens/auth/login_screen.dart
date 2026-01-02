@@ -59,15 +59,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Center(
-                      child: Text(
-                        'عاش',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          fontFamily: 'Cairo',
-                        ),
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/logo_primary.png',
+                        width: 56,
+                        height: 56,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
@@ -77,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 // Title
                 Text(
-                  isArabic ? 'مرحباً بعودتك' : 'Welcome Back',
+                  languageProvider.t('welcome_back'),
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -89,9 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
                 
                 Text(
-                  isArabic 
-                      ? 'تسجيل الدخول إلى حسابك'
-                      : 'Sign in to your account',
+                  languageProvider.t('sign_in_subtitle'),
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
@@ -100,13 +95,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 
                 const SizedBox(height: 40),
-                
+
                 // Email or Phone input
                 TextFormField(
                   controller: _emailOrPhoneController,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'البريد الإلكتروني أو رقم الهاتف' : 'Email or Phone',
-                    hintText: isArabic ? 'example@email.com أو +966...' : 'example@email.com or +966...',
+                                    labelText: languageProvider.t('email_or_phone'),
+                    hintText: languageProvider.t('email_or_phone_hint'),
                     prefixIcon: const Icon(Icons.person),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -115,21 +110,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return isArabic ? 'الرجاء إدخال البريد أو الهاتف' : 'Please enter email or phone';
+                      return languageProvider.t('email_or_phone');
                     }
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Password input
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'كلمة المرور' : 'Password',
-                    hintText: isArabic ? 'أدخل كلمة المرور' : 'Enter your password',
+                    labelText: languageProvider.t('password'),
+                    hintText: languageProvider.t('password_hint'),
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -147,14 +142,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return isArabic ? 'الرجاء إدخال كلمة المرور' : 'Please enter password';
+                      return languageProvider.t('password');
                     }
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Remember me & Forgot password
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -175,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          isArabic ? 'تذكرني' : 'Remember me',
+                          languageProvider.t('remember_me'),
                           style: const TextStyle(fontSize: 14),
                         ),
                       ],
@@ -186,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         _showForgotPasswordDialog(isArabic);
                       },
                       child: Text(
-                        isArabic ? 'نسيت كلمة المرور؟' : 'Forgot Password?',
+                        languageProvider.t('forgot_password'),
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.primary,
@@ -200,9 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 // Login button
                 CustomButton(
-                  text: authProvider.isLoading
-                      ? (isArabic ? 'جاري التسجيل...' : 'Signing in...')
-                      : (isArabic ? 'تسجيل الدخول' : 'Sign In'),
+                  text: authProvider.isLoading ? languageProvider.t('signing_in') : languageProvider.t('sign_in'),
                   onPressed: authProvider.isLoading ? null : () => _handleLogin(isArabic),
                   variant: ButtonVariant.primary,
                   size: ButtonSize.large,
@@ -218,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        isArabic ? 'أو' : 'OR',
+                        languageProvider.t('or'),
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 14,
@@ -236,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => _continueWithPhone(context),
                   icon: const Icon(Icons.phone, color: AppColors.primary),
                   label: Text(
-                    isArabic ? 'المتابعة برقم الهاتف' : 'Continue with Phone',
+                    languageProvider.t('continue_with_phone'),
                     style: const TextStyle(color: AppColors.primary),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -252,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 // Social login buttons
                 Text(
-                  isArabic ? 'أو المتابعة باستخدام' : 'Or continue with',
+                  languageProvider.t('or_continue_with'),
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
@@ -301,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      isArabic ? 'ليس لديك حساب؟' : 'Don\'t have an account?',
+                      languageProvider.t('dont_have_account'),
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
@@ -310,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: widget.onNavigateToSignup,
                       child: Text(
-                        isArabic ? 'إنشاء حساب' : 'Sign Up',
+                        languageProvider.t('sign_up'),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -396,22 +389,19 @@ class _LoginScreenState extends State<LoginScreen> {
   }
   
   void _showForgotPasswordDialog(bool isArabic) {
+    final languageProvider = context.read<LanguageProvider>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'استعادة كلمة المرور' : 'Forgot Password'),
+        title: Text(languageProvider.t('forgot_password_title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              isArabic
-                  ? 'أدخل بريدك الإلكتروني وسنرسل لك رابط الاستعادة'
-                  : 'Enter your email and we\'ll send you a reset link',
-            ),
+            Text(languageProvider.t('forgot_password_desc')),
             const SizedBox(height: 16),
             TextField(
               decoration: InputDecoration(
-                labelText: isArabic ? 'البريد الإلكتروني' : 'Email',
+                labelText: languageProvider.t('email'),
                 border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.emailAddress,
@@ -421,23 +411,19 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(languageProvider.t('cancel')),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    isArabic 
-                        ? 'تم إرسال رابط الاستعادة'
-                        : 'Reset link sent to your email',
-                  ),
+                  content: Text(languageProvider.t('reset_link_sent')),
                   backgroundColor: AppColors.success,
                 ),
               );
             },
-            child: Text(isArabic ? 'إرسال' : 'Send'),
+            child: Text(languageProvider.t('send')),
           ),
         ],
       ),
