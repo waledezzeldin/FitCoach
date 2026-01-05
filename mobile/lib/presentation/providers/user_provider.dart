@@ -95,11 +95,9 @@ class UserProvider extends ChangeNotifier {
       if (_profile != null) {
         _profile = _profile!.copyWith(
           hasCompletedFirstIntake: true,
-          workoutFrequency: data['workoutFrequency'] as int?,
-          workoutLocation: data['workoutLocation'] as String?,
-          experienceLevel: data['experienceLevel'] as String?,
+          gender: data['gender'] as String?,
           mainGoal: data['mainGoal'] as String?,
-          injuries: data['injuries'] as List<String>?,
+          workoutLocation: data['workoutLocation'] as String?,
         );
         notifyListeners();
       }
@@ -129,6 +127,12 @@ class UserProvider extends ChangeNotifier {
       if (_profile != null) {
         _profile = _profile!.copyWith(
           hasCompletedSecondIntake: true,
+          age: data['age'] as int?,
+          weight: data['weight'] as double?,
+          height: data['height'] as int?,
+          experienceLevel: data['experienceLevel'] as String?,
+          workoutFrequency: data['workoutFrequency'] as int?,
+          injuries: data['injuries'] as List<String>?,
         );
         notifyListeners();
       }

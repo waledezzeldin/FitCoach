@@ -5,7 +5,7 @@ import 'presentation/providers/language_provider.dart';
 import 'presentation/screens/splash_screen.dart';
 import 'presentation/screens/language_selection_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
-import 'presentation/screens/auth/otp_auth_screen.dart';
+import 'presentation/screens/auth/auth_screen.dart';
 import 'presentation/screens/intake/first_intake_screen.dart';
 import 'presentation/screens/intake/second_intake_screen.dart';
 import 'presentation/screens/home/home_dashboard_screen.dart';
@@ -94,7 +94,7 @@ class _AppState extends State<App> {
         );
       
       case 'auth':
-        return OTPAuthScreen(
+        return AuthScreen(
           onAuthenticated: () => _navigateToScreen('firstIntake'),
         );
       

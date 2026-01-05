@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">5.8% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>14/241</span>
+                <span class='fraction'>0/241</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">2.08% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/48</span>
+                <span class='fraction'>0/48</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.27% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>14/223</span>
+                <span class='fraction'>0/223</span>
             </div>
         
             
@@ -684,10 +684,10 @@
 <a name='L619'></a><a href='#L619'>619</a>
 <a name='L620'></a><a href='#L620'>620</a>
 <a name='L621'></a><a href='#L621'>621</a>
-<a name='L622'></a><a href='#L622'>622</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<a name='L622'></a><a href='#L622'>622</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -695,17 +695,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1303,12 +1303,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span></td><td class="text"><pre class="prettyprint lang-js">const fs = require('fs').promises;
-const path = require('path');
-const logger = require('../utils/logger');
-const injuryMappingService = require('./injuryMappingService');
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const fs = <span class="cstat-no" title="statement not covered" >require('fs').promises;</span>
+const path = <span class="cstat-no" title="statement not covered" >require('path');</span>
+const logger = <span class="cstat-no" title="statement not covered" >require('../utils/logger');</span>
+const injuryMappingService = <span class="cstat-no" title="statement not covered" >require('./injuryMappingService');</span>
 &nbsp;
 /**
  * Workout Template Service
@@ -1316,17 +1316,17 @@ const injuryMappingService = require('./injuryMappingService');
  * Supports two intake levels: starter (3 questions) and advanced (full intake)
  */
 &nbsp;
-const TEMPLATES_DIR = path.join(__dirname, '../data/workout-templates');
-const VALID_TYPES = ['starter', 'advanced'];
-const VALID_GOALS = ['fat_loss', 'muscle_gain', 'general_fitness', 'endurance', 'strength', 'hypertrophy'];
-const VALID_LOCATIONS = ['gym', 'home', 'outdoors', 'hybrid'];
-const VALID_EXPERIENCE_LEVELS = ['beginner', 'intermediate', 'advanced'];
+const TEMPLATES_DIR = <span class="cstat-no" title="statement not covered" >path.join(__dirname, '../data/workout-templates');</span>
+const VALID_TYPES = <span class="cstat-no" title="statement not covered" >['starter', 'advanced'];</span>
+const VALID_GOALS = <span class="cstat-no" title="statement not covered" >['fat_loss', 'muscle_gain', 'general_fitness', 'endurance', 'strength', 'hypertrophy'];</span>
+const VALID_LOCATIONS = <span class="cstat-no" title="statement not covered" >['gym', 'home', 'outdoors', 'hybrid'];</span>
+const VALID_EXPERIENCE_LEVELS = <span class="cstat-no" title="statement not covered" >['beginner', 'intermediate', 'advanced'];</span>
 &nbsp;
 class WorkoutTemplateService {
-  constructor() {
-    this.templates = new Map();
-    this.templatesByType = new Map(); // starter vs advanced
-    this.templatesByGoalLocation = new Map(); // goal + location combos
+<span class="fstat-no" title="function not covered" >  co</span>nstructor() {
+<span class="cstat-no" title="statement not covered" >    this.templates = new Map();</span>
+<span class="cstat-no" title="statement not covered" >    this.templatesByType = new Map(); </span>// starter vs advanced
+<span class="cstat-no" title="statement not covered" >    this.templatesByGoalLocation = new Map(); </span>// goal + location combos
   }
 &nbsp;
   /**
@@ -1924,16 +1924,16 @@ class WorkoutTemplateService {
 }
 &nbsp;
 // Singleton instance
-const workoutTemplateService = new WorkoutTemplateService();
+const workoutTemplateService = <span class="cstat-no" title="statement not covered" >new WorkoutTemplateService();</span>
 &nbsp;
-module.exports = workoutTemplateService;</pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >module.exports = workoutTemplateService;</span></pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-29T19:30:48.141Z
+                at 2025-12-30T20:53:57.737Z
             </div>
         <script src="../prettify.js"></script>
         <script>

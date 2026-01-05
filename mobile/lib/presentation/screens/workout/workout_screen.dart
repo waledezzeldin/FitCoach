@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/models/workout_plan.dart';
 import '../../providers/language_provider.dart';
@@ -9,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
 import '../intake/second_intake_screen.dart';
+import '../messaging/coach_messaging_screen.dart';
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -33,11 +33,132 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   void _maybeShowSecondIntake() {
     if (_promptedSecondIntake) return;
-    if (!DemoConfig.isDemo) return;
     final authProvider = context.read<AuthProvider>();
     final user = authProvider.user;
     if (user == null || user.hasCompletedSecondIntake) return;
     _promptedSecondIntake = true;
+    _showSecondIntakePrompt(user.subscriptionTier ?? 'Freemium');
+  }
+
+  void _showSecondIntakePrompt(String tier) {
+    final lang = context.read<LanguageProvider>();
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(lang.t('intake_prompt_title')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(lang.t('intake_prompt_description')),
+            const SizedBox(height: 16),
+            _buildPromptOption(
+              icon: Icons.assignment_turned_in,
+              title: lang.t('intake_prompt_option1_title'),
+              description: lang.t('intake_prompt_option1_desc'),
+              color: AppColors.primary,
+            ),
+            const SizedBox(height: 12),
+            _buildPromptOption(
+              icon: Icons.video_call,
+              title: lang.t('intake_prompt_option2_title'),
+              description: lang.t('intake_prompt_option2_desc'),
+              color: AppColors.secondary,
+              badgeText: tier == 'Freemium' ? lang.t('intake_prompt_free_call') : null,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(lang.t('intake_prompt_later')),
+          ),
+          TextButton.icon(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _openCoachSessions();
+            },
+            icon: const Icon(Icons.video_call),
+            label: Text(lang.t('intake_prompt_book_call')),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _openSecondIntake();
+            },
+            icon: const Icon(Icons.assignment_turned_in),
+            label: Text(lang.t('intake_prompt_complete')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPromptOption({
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+    String? badgeText,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                if (badgeText != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      badgeText,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openSecondIntake() {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => SecondIntakeScreen(
@@ -48,6 +169,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             }
           },
         ),
+      ),
+    );
+  }
+
+  void _openCoachSessions() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const CoachMessagingScreen(initialTabIndex: 1),
       ),
     );
   }

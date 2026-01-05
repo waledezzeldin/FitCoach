@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.27% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/97</span>
+                <span class='fraction'>0/97</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.7% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/54</span>
+                <span class='fraction'>0/54</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">16.66% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/6</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.27% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/97</span>
+                <span class='fraction'>0/97</span>
             </div>
         
             
@@ -440,10 +440,10 @@
 <a name='L375'></a><a href='#L375'>375</a>
 <a name='L376'></a><a href='#L376'>376</a>
 <a name='L377'></a><a href='#L377'>377</a>
-<a name='L378'></a><a href='#L378'>378</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<a name='L378'></a><a href='#L378'>378</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -454,11 +454,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -816,11 +816,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
-const db = require('../database');
-const logger = require('../utils/logger');
-const { v4: uuidv4 } = require('uuid');
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { RtcTokenBuilder, RtcRole } = <span class="cstat-no" title="statement not covered" >require('agora-access-token');</span>
+const db = <span class="cstat-no" title="statement not covered" >require('../database');</span>
+const logger = <span class="cstat-no" title="statement not covered" >require('../utils/logger');</span>
+const { v4: uuidv4 } = <span class="cstat-no" title="statement not covered" >require('uuid');</span>
 &nbsp;
 /**
  * Video Call Service using Agora
@@ -829,13 +829,13 @@ const { v4: uuidv4 } = require('uuid');
 &nbsp;
 class VideoCallService {
   
-  constructor() {
+<span class="fstat-no" title="function not covered" >  co</span>nstructor() {
     // Agora credentials from environment
-    this.appId = process.env.AGORA_APP_ID;
-    this.appCertificate = process.env.AGORA_APP_CERTIFICATE;
+<span class="cstat-no" title="statement not covered" >    this.appId = process.env.AGORA_APP_ID;</span>
+<span class="cstat-no" title="statement not covered" >    this.appCertificate = process.env.AGORA_APP_CERTIFICATE;</span>
     
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (!this.appId || <span class="branch-1 cbranch-no" title="branch not covered" >!this.appCertificate)</span> {
-      logger.warn('Agora credentials not configured. Video calls will not work.');
+<span class="cstat-no" title="statement not covered" >    if (!this.appId || !this.appCertificate) {</span>
+<span class="cstat-no" title="statement not covered" >      logger.warn('Agora credentials not configured. Video calls will not work.');</span>
     }
   }
 &nbsp;
@@ -1193,7 +1193,7 @@ class VideoCallService {
   }
 }
 &nbsp;
-module.exports = new VideoCallService();
+<span class="cstat-no" title="statement not covered" >module.exports = new VideoCallService();</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -1201,7 +1201,7 @@ module.exports = new VideoCallService();
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-29T19:30:48.141Z
+                at 2025-12-30T20:53:57.737Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>19/19</span>
+                <span class='fraction'>0/19</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>19/19</span>
+                <span class='fraction'>0/19</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -89,58 +89,58 @@
 <a name='L24'></a><a href='#L24'>24</a>
 <a name='L25'></a><a href='#L25'>25</a>
 <a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<a name='L27'></a><a href='#L27'>27</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = require('express');
-const router = express.Router();
-const { authMiddleware } = require('../middleware/auth');
-const { requirePremiumTier } = require('../middleware/premiumFeatureMiddleware');
-const inbodyController = require('../controllers/inbodyController');
-const upload = require('../middleware/upload');
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
+const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
+const { authMiddleware } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth');</span>
+const { requirePremiumTier } = <span class="cstat-no" title="statement not covered" >require('../middleware/premiumFeatureMiddleware');</span>
+const inbodyController = <span class="cstat-no" title="statement not covered" >require('../controllers/inbodyController');</span>
+const upload = <span class="cstat-no" title="statement not covered" >require('../middleware/upload');</span>
 &nbsp;
 // InBody scan management (all users)
-router.post('/', authMiddleware, inbodyController.saveInBodyScan);
-router.get('/', authMiddleware, inbodyController.getAllScans);
-router.get('/latest', authMiddleware, inbodyController.getLatestScan);
-router.get('/trends', authMiddleware, inbodyController.getTrends);
-router.get('/progress', authMiddleware, inbodyController.getProgress);
-router.get('/statistics', authMiddleware, inbodyController.getStatistics);
-router.get('/:id', authMiddleware, inbodyController.getScanById);
-router.put('/:id', authMiddleware, inbodyController.updateScan);
-router.delete('/:id', authMiddleware, inbodyController.deleteScan);
+<span class="cstat-no" title="statement not covered" >router.post('/', authMiddleware, inbodyController.saveInBodyScan);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/', authMiddleware, inbodyController.getAllScans);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/latest', authMiddleware, inbodyController.getLatestScan);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/trends', authMiddleware, inbodyController.getTrends);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/progress', authMiddleware, inbodyController.getProgress);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/statistics', authMiddleware, inbodyController.getStatistics);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/:id', authMiddleware, inbodyController.getScanById);</span>
+<span class="cstat-no" title="statement not covered" >router.put('/:id', authMiddleware, inbodyController.updateScan);</span>
+<span class="cstat-no" title="statement not covered" >router.delete('/:id', authMiddleware, inbodyController.deleteScan);</span>
 &nbsp;
 // Body composition goals
-router.post('/goals', authMiddleware, inbodyController.setGoals);
-router.get('/goals/current', authMiddleware, inbodyController.getGoals);
+<span class="cstat-no" title="statement not covered" >router.post('/goals', authMiddleware, inbodyController.setGoals);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/goals/current', authMiddleware, inbodyController.getGoals);</span>
 &nbsp;
 // AI extraction (Premium feature ONLY)
-router.post('/upload-image', authMiddleware, requirePremiumTier, upload.uploadImage.single('file'), inbodyController.uploadScanImage);
+<span class="cstat-no" title="statement not covered" >router.post('/upload-image', authMiddleware, requirePremiumTier, upload.uploadImage.single('file'), inbodyController.uploadScanImage);</span>
 &nbsp;
-module.exports = router;
+<span class="cstat-no" title="statement not covered" >module.exports = router;</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -148,7 +148,7 @@ module.exports = router;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-29T19:30:48.141Z
+                at 2025-12-30T20:53:57.737Z
             </div>
         <script src="../prettify.js"></script>
         <script>

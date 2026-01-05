@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_profile.dart';
 import '../../core/config/api_config.dart';
+import '../auth/social_auth_client.dart';
 
 abstract class AuthRepositoryBase {
   Future<void> requestOTP(String phoneNumber);
@@ -44,17 +45,19 @@ class AuthResponse {
 class AuthRepository implements AuthRepositoryBase {
   final Dio _dio;
   final FlutterSecureStorage _secureStorage;
+  final SocialAuthClient _socialAuthClient;
   
   static const String _tokenKey = 'fitcoach_auth_token';
   
-  AuthRepository()
+  AuthRepository({SocialAuthClient? socialAuthClient})
       : _dio = Dio(BaseOptions(
           baseUrl: ApiConfig.baseUrl,
           connectTimeout: ApiConfig.connectTimeout,
           receiveTimeout: ApiConfig.receiveTimeout,
           contentType: ApiConfig.contentType,
         )),
-        _secureStorage = const FlutterSecureStorage();
+        _secureStorage = const FlutterSecureStorage(),
+        _socialAuthClient = socialAuthClient ?? DefaultSocialAuthClient();
   
   // Request OTP
   Future<void> requestOTP(String phoneNumber) async {
@@ -146,18 +149,16 @@ class AuthRepository implements AuthRepositoryBase {
   // Social login (Google, Facebook, Apple)
   Future<AuthResponse> socialLogin(String provider) async {
     try {
-      // In production, this would integrate with:
-      // - google_sign_in package for Google
-      // - flutter_facebook_auth for Facebook
-      // - sign_in_with_apple for Apple
-      
-      // For now, simulate the flow
+      final socialAuth = await _socialAuthClient.signIn(provider);
       final response = await _dio.post(
         '/auth/social-login',
         data: {
-          'provider': provider,
-          // In real implementation, include the OAuth token from the social provider
-          // 'accessToken': socialAccessToken,
+          'provider': socialAuth.provider,
+          'accessToken': socialAuth.accessToken,
+          'socialId': socialAuth.socialId,
+          'email': socialAuth.email,
+          'name': socialAuth.name,
+          'profilePhoto': socialAuth.profilePhoto,
         },
       );
       

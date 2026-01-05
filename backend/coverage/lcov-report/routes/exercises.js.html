@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -79,46 +79,46 @@
 <a name='L14'></a><a href='#L14'>14</a>
 <a name='L15'></a><a href='#L15'>15</a>
 <a name='L16'></a><a href='#L16'>16</a>
-<a name='L17'></a><a href='#L17'>17</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<a name='L17'></a><a href='#L17'>17</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span></td><td class="text"><pre class="prettyprint lang-js">const express = require('express');
-const router = express.Router();
-const { authMiddleware, roleCheck } = require('../middleware/auth');
-const exerciseController = require('../controllers/exerciseController');
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
+const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
+const { authMiddleware, roleCheck } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth');</span>
+const exerciseController = <span class="cstat-no" title="statement not covered" >require('../controllers/exerciseController');</span>
 &nbsp;
 // Public routes (require auth)
-router.get('/', authMiddleware, exerciseController.getAllExercises);
-router.get('/muscle-group/:muscleGroup', authMiddleware, exerciseController.getExercisesByMuscleGroup);
-router.get('/stats', authMiddleware, roleCheck('admin'), exerciseController.getExerciseStats);
-router.get('/:id', authMiddleware, exerciseController.getExerciseById);
+<span class="cstat-no" title="statement not covered" >router.get('/', authMiddleware, exerciseController.getAllExercises);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/muscle-group/:muscleGroup', authMiddleware, exerciseController.getExercisesByMuscleGroup);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/stats', authMiddleware, roleCheck('admin'), exerciseController.getExerciseStats);</span>
+<span class="cstat-no" title="statement not covered" >router.get('/:id', authMiddleware, exerciseController.getExerciseById);</span>
 &nbsp;
 // User favorites
-router.get('/favorites/list', authMiddleware, exerciseController.getUserFavorites);
-router.post('/favorites', authMiddleware, exerciseController.addToFavorites);
-router.delete('/favorites/:exerciseId', authMiddleware, exerciseController.removeFromFavorites);
+<span class="cstat-no" title="statement not covered" >router.get('/favorites/list', authMiddleware, exerciseController.getUserFavorites);</span>
+<span class="cstat-no" title="statement not covered" >router.post('/favorites', authMiddleware, exerciseController.addToFavorites);</span>
+<span class="cstat-no" title="statement not covered" >router.delete('/favorites/:exerciseId', authMiddleware, exerciseController.removeFromFavorites);</span>
 &nbsp;
-module.exports = router;</pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >module.exports = router;</span></pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-29T19:30:48.141Z
+                at 2025-12-30T20:53:57.737Z
             </div>
         <script src="../prettify.js"></script>
         <script>

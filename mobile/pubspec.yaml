@@ -51,6 +51,9 @@ dependencies:
   url_launcher: ^6.2.2
   image_picker: ^1.0.5
   path_provider: ^2.1.1
+  google_sign_in: ^6.2.1
+  flutter_facebook_auth: ^6.0.4
+  sign_in_with_apple: ^6.1.1
 
   # Firebase
   firebase_core: ^4.3.0
@@ -85,6 +88,7 @@ flutter:
     - assets/animations/
     - assets/translations/
     - assets/placeholders/
+    - assets/placeholders/splash_onboarding/
   
   fonts:
     - family: Cairo

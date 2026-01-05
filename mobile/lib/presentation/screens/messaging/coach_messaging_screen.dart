@@ -10,7 +10,9 @@ import '../booking/video_booking_screen.dart';
 import '../../widgets/quota_indicator.dart';
 
 class CoachMessagingScreen extends StatefulWidget {
-  const CoachMessagingScreen({super.key});
+  final int initialTabIndex;
+
+  const CoachMessagingScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<CoachMessagingScreen> createState() => _CoachMessagingScreenState();
@@ -48,6 +50,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     
     return DefaultTabController(
       length: 2,
+      initialIndex: widget.initialTabIndex.clamp(0, 1),
       child: Scaffold(
         appBar: AppBar(
           title: Column(

@@ -8,10 +8,12 @@ import '../../providers/auth_provider.dart';
 
 class SecondIntakeScreen extends StatefulWidget {
   final VoidCallback onComplete;
-  
+  final VoidCallback? onBack;
+
   const SecondIntakeScreen({
     super.key,
     required this.onComplete,
+    this.onBack,
   });
 
   @override
@@ -20,72 +22,59 @@ class SecondIntakeScreen extends StatefulWidget {
 
 class _SecondIntakeScreenState extends State<SecondIntakeScreen> {
   int _currentStep = 0;
-  
+
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
-  final TextEditingController _bodyFatController = TextEditingController();
-  final TextEditingController _medicalController = TextEditingController();
-  
+  String? _selectedExperience;
+  int? _selectedFrequency;
+
   final List<String> _selectedInjuries = [];
-  
-  final List<String> _commonInjuries = [
-    'Lower Back',
-    'Knee',
-    'Shoulder',
-    'Wrist',
-    'Ankle',
-    'Neck',
-    'Elbow',
-    'Hip',
-  ];
-  
+  final List<int> _frequencies = [2, 3, 4, 5, 6];
+
   @override
   void dispose() {
     _ageController.dispose();
     _weightController.dispose();
     _heightController.dispose();
-    _bodyFatController.dispose();
-    _medicalController.dispose();
     super.dispose();
   }
-  
+
   Future<void> _submitIntake() async {
-    // Validate required fields
-    if (_ageController.text.isEmpty || 
-        _weightController.text.isEmpty || 
-        _heightController.text.isEmpty) {
-      _showError('Please complete all required fields');
+    if (_ageController.text.isEmpty ||
+        _weightController.text.isEmpty ||
+        _heightController.text.isEmpty ||
+        _selectedExperience == null ||
+        _selectedFrequency == null) {
+      _showError(context.read<LanguageProvider>().t('intake_incomplete'));
       return;
     }
-    
+
     final userProvider = context.read<UserProvider>();
     final authProvider = context.read<AuthProvider>();
-    
+
     final success = await userProvider.submitSecondIntake({
       'age': int.parse(_ageController.text),
       'weight': double.parse(_weightController.text),
-      'height': double.parse(_heightController.text),
-      'bodyFat': _bodyFatController.text.isNotEmpty 
-          ? double.parse(_bodyFatController.text) 
-          : null,
+      'height': int.parse(_heightController.text),
+      'experienceLevel': _selectedExperience,
+      'workoutFrequency': _selectedFrequency,
       'injuries': _selectedInjuries,
-      'medicalConditions': _medicalController.text.isNotEmpty 
-          ? _medicalController.text 
-          : null,
     });
-    
+
     if (success && mounted) {
-      // Update auth provider with new user data
       if (userProvider.profile != null) {
         authProvider.updateUser(userProvider.profile!);
       }
-      widget.onComplete();
+      await _showGeneratingPlan(context.read<LanguageProvider>());
+      if (mounted) {
+        widget.onComplete();
+      }
     } else if (userProvider.error != null && mounted) {
       _showError(userProvider.error!);
     }
   }
-  
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -95,380 +84,532 @@ class _SecondIntakeScreenState extends State<SecondIntakeScreen> {
     );
   }
 
+  Future<void> _showGeneratingPlan(LanguageProvider lang) async {
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (_, __, ___) => _GeneratingPlanScreen(lang: lang),
+      ),
+    );
+  }
+
+  bool _canProceedToNext() {
+    switch (_currentStep) {
+      case 0:
+        return _ageController.text.isNotEmpty;
+      case 1:
+        return _weightController.text.isNotEmpty && _heightController.text.isNotEmpty;
+      case 2:
+        return _selectedExperience != null;
+      case 3:
+        return _selectedFrequency != null;
+      default:
+        return true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final userProvider = context.watch<UserProvider>();
     final isArabic = languageProvider.isArabic;
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(languageProvider.t('additional_info')),
-        leading: IconButton(
-          icon: Icon(isArabic ? Icons.arrow_forward : Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Progress indicator
-            LinearProgressIndicator(
-              value: (_currentStep + 1) / 6,
-              backgroundColor: AppColors.surface,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.network(
+              'https://images.unsplash.com/photo-1680761827444-9214a9c3129f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+              fit: BoxFit.cover,
+              color: Colors.black.withOpacity(0.2),
+              colorBlendMode: BlendMode.darken,
             ),
-            
-            // Premium badge
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: AppColors.primary.withValues(alpha: 0.1),
-              child: Row(
-                children: [
-                  const Icon(Icons.star, color: AppColors.primary, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    isArabic 
-                        ? 'ميزة البريميوم - معلومات متقدمة لخطة أفضل'
-                        : 'Premium Feature - Advanced info for better plans',
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            Expanded(
+          ),
+          SafeArea(
+            child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: _buildCurrentStep(languageProvider, isArabic),
-              ),
-            ),
-            
-            // Navigation buttons
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Row(
-                children: [
-                  if (_currentStep > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          setState(() {
-                            _currentStep--;
-                          });
-                        },
-                        child: Text(languageProvider.t('back')),
-                      ),
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                  
-                  if (_currentStep > 0) const SizedBox(width: 16),
-                  
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: userProvider.isLoading ? null : () {
-                        if (_currentStep < 5) {
-                          setState(() {
-                            _currentStep++;
-                          });
-                        } else {
-                          _submitIntake();
-                        }
-                      },
-                      child: userProvider.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.auto_awesome, color: AppColors.secondaryForeground, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    languageProvider.t('intake_second_title'),
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            )
-                          : Text(
-                              _currentStep < 5
-                                  ? languageProvider.t('next')
-                                  : languageProvider.t('complete'),
                             ),
+                            Text(
+                              '${_currentStep + 1}/5',
+                              style: const TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          languageProvider.t('intake_second_subtitle'),
+                          style: const TextStyle(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 12),
+                        LinearProgressIndicator(
+                          value: (_currentStep + 1) / 5,
+                          backgroundColor: AppColors.surface,
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.secondaryForeground),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildCurrentStep(languageProvider),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  if (_currentStep > 0) {
+                                    setState(() => _currentStep--);
+                                  } else {
+                                    if (widget.onBack != null) {
+                                      widget.onBack!();
+                                    } else {
+                                      Navigator.of(context).pop();
+                                    }
+                                  }
+                                },
+                                child: Text(languageProvider.t('back')),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.secondaryForeground,
+                                ),
+                                onPressed: userProvider.isLoading
+                                    ? null
+                                    : () {
+                                        if (!_canProceedToNext()) {
+                                          _showError(languageProvider.t('intake_incomplete'));
+                                          return;
+                                        }
+                                        if (_currentStep < 4) {
+                                          setState(() => _currentStep++);
+                                        } else {
+                                          _submitIntake();
+                                        }
+                                      },
+                                child: userProvider.isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            _currentStep == 4
+                                                ? languageProvider.t('intake_second_complete')
+                                                : languageProvider.t('continue'),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Icon(
+                                            isArabic ? Icons.arrow_back : Icons.arrow_forward,
+                                            size: 18,
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-  
-  Widget _buildCurrentStep(LanguageProvider lang, bool isArabic) {
+
+  Widget _buildCurrentStep(LanguageProvider lang) {
     switch (_currentStep) {
       case 0:
-        return _buildAgeStep(lang, isArabic);
+        return _StepSection(
+          icon: Icons.calendar_month,
+          title: lang.t('intake_second_age_title'),
+          description: lang.t('intake_second_age_desc'),
+          children: [
+            TextField(
+              controller: _ageController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(3),
+              ],
+              decoration: InputDecoration(
+                labelText: lang.t('age'),
+                hintText: '28',
+                suffixText: lang.t('years'),
+                prefixIcon: const Icon(Icons.cake),
+              ),
+            ),
+          ],
+        );
       case 1:
-        return _buildWeightStep(lang, isArabic);
+        return _StepSection(
+          icon: Icons.monitor_weight,
+          title: lang.t('intake_second_body_metrics_title'),
+          description: lang.t('intake_second_body_metrics_desc'),
+          children: [
+            TextField(
+              controller: _weightController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+              ],
+              decoration: InputDecoration(
+                labelText: lang.t('weight'),
+                hintText: '78',
+                suffixText: lang.t('kg'),
+                prefixIcon: const Icon(Icons.monitor_weight_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _heightController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(3),
+              ],
+              decoration: InputDecoration(
+                labelText: lang.t('height'),
+                hintText: '178',
+                suffixText: lang.t('cm'),
+                prefixIcon: const Icon(Icons.height),
+              ),
+            ),
+          ],
+        );
       case 2:
-        return _buildHeightStep(lang, isArabic);
+        return _StepSection(
+          icon: Icons.fitness_center,
+          title: lang.t('experience_level_title'),
+          description: lang.t('experience_level_desc'),
+          children: [
+            _buildRadioOption(
+              title: lang.t('experience_beginner'),
+              subtitle: lang.t('experience_beginner_desc'),
+              isSelected: _selectedExperience == 'beginner',
+              onTap: () => setState(() => _selectedExperience = 'beginner'),
+            ),
+            const SizedBox(height: 12),
+            _buildRadioOption(
+              title: lang.t('experience_intermediate'),
+              subtitle: lang.t('experience_intermediate_desc'),
+              isSelected: _selectedExperience == 'intermediate',
+              onTap: () => setState(() => _selectedExperience = 'intermediate'),
+            ),
+            const SizedBox(height: 12),
+            _buildRadioOption(
+              title: lang.t('experience_advanced'),
+              subtitle: lang.t('experience_advanced_desc'),
+              isSelected: _selectedExperience == 'advanced',
+              onTap: () => setState(() => _selectedExperience = 'advanced'),
+            ),
+          ],
+        );
       case 3:
-        return _buildBodyFatStep(lang, isArabic);
+        return _StepSection(
+          icon: Icons.calendar_today,
+          title: lang.t('intake_second_frequency_title'),
+          description: lang.t('intake_second_frequency_desc'),
+          children: [
+            DropdownButtonFormField<int>(
+              value: _selectedFrequency,
+              decoration: InputDecoration(
+                labelText: lang.t('workout_frequency'),
+              ),
+              items: _frequencies
+                  .map(
+                    (value) => DropdownMenuItem<int>(
+                      value: value,
+                      child: Text('$value'),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) => setState(() => _selectedFrequency = value),
+            ),
+          ],
+        );
       case 4:
-        return _buildInjuriesStep(lang, isArabic);
-      case 5:
-        return _buildMedicalStep(lang, isArabic);
+        return _StepSection(
+          icon: Icons.warning_amber_rounded,
+          title: lang.t('intake_second_injuries_title'),
+          description: lang.t('intake_second_injuries_desc'),
+          children: [
+            _buildInjuryOption(lang.t('injury_shoulder'), 'shoulder'),
+            _buildInjuryOption(lang.t('injury_knee'), 'knee'),
+            _buildInjuryOption(lang.t('injury_lower_back'), 'lower_back'),
+            _buildInjuryOption(lang.t('injury_neck'), 'neck'),
+            _buildInjuryOption(lang.t('injury_ankle'), 'ankle'),
+            if (_selectedInjuries.isEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.success.withOpacity(0.2)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: AppColors.success, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        lang.t('intake_second_injuries_none'),
+                        style: const TextStyle(color: AppColors.success),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
       default:
         return const SizedBox();
     }
   }
-  
-  Widget _buildAgeStep(LanguageProvider lang, bool isArabic) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          isArabic ? 'كم عمرك؟' : 'What\'s your age?',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 32),
-        TextField(
-          controller: _ageController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(3),
-          ],
-          decoration: InputDecoration(
-            labelText: isArabic ? 'العمر' : 'Age',
-            hintText: '25',
-            suffixText: isArabic ? 'سنة' : 'years',
-            prefixIcon: const Icon(Icons.cake),
-          ),
-        ),
-      ],
+
+  Widget _buildInjuryOption(String label, String value) {
+    final isSelected = _selectedInjuries.contains(value);
+    return CheckboxListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      value: isSelected,
+      title: Text(label),
+      onChanged: (selected) {
+        setState(() {
+          if (selected == true) {
+            _selectedInjuries.add(value);
+          } else {
+            _selectedInjuries.remove(value);
+          }
+        });
+      },
     );
   }
-  
-  Widget _buildWeightStep(LanguageProvider lang, bool isArabic) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          isArabic ? 'كم وزنك؟' : 'What\'s your weight?',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+
+  Widget _buildRadioOption({
+    required String title,
+    String? subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.secondaryForeground.withOpacity(0.08) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.secondaryForeground : AppColors.border,
+            width: 1.5,
           ),
         ),
-        const SizedBox(height: 32),
-        TextField(
-          controller: _weightController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
-          ],
-          decoration: InputDecoration(
-            labelText: isArabic ? 'الوزن' : 'Weight',
-            hintText: '75.0',
-            suffixText: isArabic ? 'كجم' : 'kg',
-            prefixIcon: const Icon(Icons.monitor_weight),
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildHeightStep(LanguageProvider lang, bool isArabic) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          isArabic ? 'كم طولك؟' : 'What\'s your height?',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 32),
-        TextField(
-          controller: _heightController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(3),
-          ],
-          decoration: InputDecoration(
-            labelText: isArabic ? 'الطول' : 'Height',
-            hintText: '175',
-            suffixText: isArabic ? 'سم' : 'cm',
-            prefixIcon: const Icon(Icons.height),
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildBodyFatStep(LanguageProvider lang, bool isArabic) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          isArabic ? 'نسبة الدهون (اختياري)' : 'Body Fat % (Optional)',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          isArabic 
-              ? 'إذا كنت تعرف نسبة الدهون في جسمك'
-              : 'If you know your body fat percentage',
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 32),
-        TextField(
-          controller: _bodyFatController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
-          ],
-          decoration: InputDecoration(
-            labelText: isArabic ? 'نسبة الدهون' : 'Body Fat %',
-            hintText: '15.0',
-            suffixText: '%',
-            prefixIcon: const Icon(Icons.insights),
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildInjuriesStep(LanguageProvider lang, bool isArabic) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          isArabic ? 'هل لديك أي إصابات؟' : 'Do you have any injuries?',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          isArabic 
-              ? 'سنقوم بتعديل خطة التمرين لتجنب الإصابات'
-              : 'We\'ll adjust your workout plan to avoid injuries',
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 32),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: _commonInjuries.map((injury) {
-            final isSelected = _selectedInjuries.contains(injury);
-            return FilterChip(
-              label: Text(injury),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedInjuries.add(injury);
-                  } else {
-                    _selectedInjuries.remove(injury);
-                  }
-                });
-              },
-              selectedColor: AppColors.primary.withValues(alpha: 0.2),
-              checkmarkColor: AppColors.primary,
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          isArabic 
-              ? 'لا إصابات؟ رائع! تابع للأمام'
-              : 'No injuries? Great! Just continue',
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildMedicalStep(LanguageProvider lang, bool isArabic) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          isArabic ? 'أي حالات طبية؟ (اختياري)' : 'Any medical conditions? (Optional)',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          isArabic 
-              ? 'مثل: السكري، ضغط الدم، الربو، إلخ'
-              : 'e.g., Diabetes, High blood pressure, Asthma, etc.',
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 32),
-        TextField(
-          controller: _medicalController,
-          maxLines: 4,
-          decoration: InputDecoration(
-            labelText: isArabic ? 'الحالات الطبية' : 'Medical Conditions',
-            hintText: isArabic 
-                ? 'اكتب هنا أي حالات طبية...'
-                : 'Enter any medical conditions...',
-            alignLabelWithHint: true,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.warning.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.info_outline, color: AppColors.warning, size: 20),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  isArabic
-                      ? 'استشر طبيبك قبل البدء بأي برنامج تمرين'
-                      : 'Consult your doctor before starting any exercise program',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.warning,
+        child: Row(
+          children: [
+            Radio<bool>(
+              value: true,
+              groupValue: isSelected,
+              onChanged: (_) => onTap(),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StepSection extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+  final List<Widget> children;
+
+  const _StepSection({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Column(
+          children: [
+            Icon(icon, size: 56, color: AppColors.secondaryForeground),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              description,
+              style: const TextStyle(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        ...children,
+      ],
+    );
+  }
+}
+
+class _GeneratingPlanScreen extends StatefulWidget {
+  final LanguageProvider lang;
+
+  const _GeneratingPlanScreen({required this.lang});
+
+  @override
+  State<_GeneratingPlanScreen> createState() => _GeneratingPlanScreenState();
+}
+
+class _GeneratingPlanScreenState extends State<_GeneratingPlanScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF4E9FF), Color(0xFFE7F0FF)],
           ),
         ),
-      ],
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: const BoxDecoration(
+                    color: AppColors.secondaryForeground,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.fitness_center, color: Colors.white),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  widget.lang.t('intake_generating_title'),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.lang.t('intake_generating_desc'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 20),
+                const LinearProgressIndicator(
+                  value: 0.75,
+                  backgroundColor: AppColors.surface,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.secondaryForeground),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,12 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fitapp/data/repositories/auth_repository.dart';
+import 'package:fitapp/data/auth/social_auth_client.dart';
 
 void main() {
   group('AuthRepository Tests', () {
     late AuthRepository authRepository;
 
     setUp(() {
-      authRepository = AuthRepository();
+      authRepository = AuthRepository(
+        socialAuthClient: _FakeSocialAuthClient(),
+      );
     });
 
     test('should create AuthRepository instance', () {
@@ -40,4 +43,17 @@ void main() {
       expect(authRepository, isA<AuthRepository>());
     });
   });
+}
+
+class _FakeSocialAuthClient implements SocialAuthClient {
+  @override
+  Future<SocialAuthResult> signIn(String provider) async {
+    return SocialAuthResult(
+      provider: provider,
+      accessToken: 'token',
+      socialId: 'social-id',
+      email: 'user@fitcoach.com',
+      name: 'Demo User',
+    );
+  }
 }

@@ -208,7 +208,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       OnboardingSlideData(
         title: lang.t('onboarding_coaching_title'),
         description: lang.t('onboarding_coaching_desc'),
-        imagePath: 'assets/placeholders/coach_messaging/female_coach_1_400x400.jpg',
+        imagePath: 'assets/placeholders/splash_onboarding/coach_onboarding.png',
         gradientColors: [
           AppColors.secondaryForeground.withOpacity(0.2),
           AppColors.primary.withOpacity(0.2),
@@ -218,7 +218,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       OnboardingSlideData(
         title: lang.t('onboarding_nutrition_title'),
         description: lang.t('onboarding_nutrition_desc'),
-        imagePath: 'assets/placeholders/splash_onboarding/slide_2_nutrition_tracking_1080x1920.jpg',
+        imagePath: 'assets/placeholders/splash_onboarding/nuitration_onboarding.png',
         gradientColors: [
           AppColors.accent.withOpacity(0.2),
           AppColors.primary.withOpacity(0.2),
@@ -228,7 +228,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       OnboardingSlideData(
         title: lang.t('onboarding_workouts_title'),
         description: lang.t('onboarding_workouts_desc'),
-        imagePath: 'assets/placeholders/splash_onboarding/slide_1_personalized_workouts_1080x1920.jpg',
+        imagePath: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
         gradientColors: [
           AppColors.primary.withOpacity(0.2),
           AppColors.secondaryForeground.withOpacity(0.2),
@@ -238,7 +238,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       OnboardingSlideData(
         title: lang.t('onboarding_store_title'),
         description: lang.t('onboarding_store_desc'),
-        imagePath: 'assets/placeholders/store_products/product_800x600.jpg',
+        imagePath: 'assets/placeholders/splash_onboarding/store_onboarding.png',
         gradientColors: [
           AppColors.accent.withOpacity(0.2),
           AppColors.secondaryForeground.withOpacity(0.2),

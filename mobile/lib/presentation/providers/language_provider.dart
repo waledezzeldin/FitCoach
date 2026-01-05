@@ -5,11 +5,11 @@ class LanguageProvider with ChangeNotifier {
   Locale _locale = const Locale('ar');
   bool _hasSelectedLanguage = false;
   String _currentLanguage = 'ar';
-  
+
   LanguageProvider() {
     _loadLanguage();
   }
-  
+
   Locale get locale => _locale;
   bool get hasSelectedLanguage => _hasSelectedLanguage;
   bool get isArabic => _locale.languageCode == 'ar';
@@ -19,7 +19,7 @@ class LanguageProvider with ChangeNotifier {
   Future<void> _loadLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final languageCode = prefs.getString('fitcoach_language');
-    
+
     if (languageCode != null) {
       _locale = Locale(languageCode);
       _hasSelectedLanguage = true;
@@ -27,7 +27,7 @@ class LanguageProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<void> setLanguage(String languageCode) async {
     _locale = Locale(languageCode);
     _hasSelectedLanguage = true;
@@ -37,7 +37,6 @@ class LanguageProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Toggle between Arabic and English
   Future<void> toggleLanguage() async {
     if (_locale.languageCode == 'ar') {
       await setLanguage('en');
@@ -45,37 +44,34 @@ class LanguageProvider with ChangeNotifier {
       await setLanguage('ar');
     }
   }
-  
+
   String translate(String key, {Map<String, String>? args}) {
-    // Simple translation system - in production, use proper i18n
     String text;
     if (isArabic) {
       text = _arabicTranslations[key] ?? _englishTranslations[key] ?? key;
     } else {
       text = _englishTranslations[key] ?? key;
     }
-    
-    // Replace placeholders
+
     if (args != null) {
       args.forEach((key, value) {
         text = text.replaceAll('{$key}', value);
       });
     }
-    
+
     return text;
   }
-  
+
   String t(String key, {Map<String, String>? args}) => translate(key, args: args);
-  
+
   Map<String, String> _getTranslations() {
     if (isArabic) {
       return _arabicTranslations;
     }
     return _englishTranslations;
   }
-  
-  // English translations
-  static const Map<String, String> _englishTranslations = {
+
+static const Map<String, String> _englishTranslations = {
     'app_name': 'FitCoach+',
     'welcome': 'Welcome to FitCoach+',
     'select_language': 'Select your language',
@@ -94,6 +90,53 @@ class LanguageProvider with ChangeNotifier {
     'splash_start': 'Start / ابدأ',
     
     // Auth
+    'auth_app_name': 'FitCoach',
+    'auth_tagline': 'Your Fitness Journey Starts Here',
+    'auth_welcome': 'Welcome',
+    'auth_welcome_subtitle': 'Sign in to continue',
+    'auth_continue_with_email': 'Continue with Email',
+    'auth_continue_with_phone': 'Continue with Phone',
+    'auth_email_or_phone': 'Email or Phone',
+    'auth_email_or_phone_placeholder': 'name@example.com or +966...',
+    'auth_or_divider': 'OR',
+    'auth_phone_will_receive_otp': 'We will send a verification code to this number',
+    'auth_enter_otp': 'Enter verification code',
+    'auth_otp_sent': 'We sent a code to',
+    'auth_sign_in': 'Sign In',
+    'auth_sign_up': 'Sign Up',
+    'auth_back': 'Back',
+    'auth_no_account': 'Don\'t have an account?',
+    'auth_have_account': 'Already have an account?',
+    'auth_create_account': 'Create Account',
+    'auth_create_account_subtitle': 'Join FitCoach and start your journey',
+    'auth_full_name': 'Full Name',
+    'auth_email': 'Email',
+    'auth_email_placeholder': 'name@example.com',
+    'auth_password': 'Password',
+    'auth_password_placeholder': 'Enter your password',
+    'auth_forgot_password': 'Forgot Password?',
+    'auth_forgot_password_title': 'Forgot Password',
+    'auth_forgot_password_desc': 'Enter your email or phone and we will send a reset link',
+    'auth_reset_link_sent': 'Reset link sent',
+    'auth_send': 'Send',
+    'auth_cancel': 'Cancel',
+    'auth_confirm_password': 'Confirm Password',
+    'auth_confirm_password_placeholder': 'Re-enter your password',
+    'auth_missing_fields': 'Please fill in all required fields',
+    'auth_password_mismatch': 'Passwords do not match',
+    'auth_try_demo': 'Try Demo',
+    'auth_demo_unavailable': 'Demo mode is only available when built with DEMO_MODE',
+    'auth_demo_credentials': 'Demo credentials',
+    'auth_demo_user': 'Demo User',
+    'auth_demo_coach': 'Demo Coach',
+    'auth_demo_admin': 'Demo Admin',
+    'auth_phone': 'Phone Number',
+    'auth_phone_placeholder': '+966 5X XXX XXXX',
+    'auth_verify': 'Verify',
+    'auth_resend': 'Resend code',
+    'auth_resend_in': 'Resend in',
+    'auth_attempts_remaining': 'attempts remaining',
+    'auth_change_phone': 'Change phone number',
     'enter_phone': 'Enter your phone number',
     'phone_hint': '+966 5X XXX XXXX',
     'send_otp': 'Send OTP',
@@ -111,7 +154,52 @@ class LanguageProvider with ChangeNotifier {
     'muscle_gain': 'Muscle Gain',
     'general_fitness': 'General Fitness',
     'location': 'Where do you work out?',
+    'home': 'Home',
+    'home_location': 'Home',
     'gym': 'Gym',
+    'age': 'Age',
+    'years': 'years',
+    'weight': 'Weight',
+    'height': 'Height',
+    'kg': 'kg',
+    'cm': 'cm',
+    'complete': 'Complete',
+    'intake_incomplete': 'Please complete all required fields',
+    'intake_select_option': 'Please select an option',
+    'experience_level_title': 'What\'s your experience level?',
+    'experience_level_desc': 'This helps tailor your training plan',
+    'experience_beginner': 'Beginner',
+    'experience_beginner_desc': '0-6 months',
+    'experience_intermediate': 'Intermediate',
+    'experience_intermediate_desc': '6-24 months',
+    'experience_advanced': 'Advanced',
+    'experience_advanced_desc': '2+ years',
+    'intake_second_age_title': 'What\'s your age?',
+    'intake_second_age_desc': 'We use this to personalize your plan',
+    'intake_second_body_metrics_title': 'Body metrics',
+    'intake_second_body_metrics_desc': 'Enter your current weight and height',
+    'intake_second_frequency_title': 'Workout frequency',
+    'intake_second_frequency_desc': 'How many days per week can you train?',
+    'intake_second_injuries_title': 'Do you have any injuries?',
+    'intake_second_injuries_desc': 'We\'ll adjust your plan to stay safe',
+    'intake_second_injuries_none': 'No injuries? Great! Just continue',
+    'injury_shoulder': 'Shoulder',
+    'injury_knee': 'Knee',
+    'injury_lower_back': 'Lower Back',
+    'injury_neck': 'Neck',
+    'injury_ankle': 'Ankle',
+    'intake_prompt_title': 'Complete your workout intake',
+    'intake_prompt_description': 'Finish a short questionnaire to unlock a personalized plan or book a free call with your coach.',
+    'intake_prompt_option1_title': 'Customized workout plan',
+    'intake_prompt_option1_desc': 'Answer a few questions to tailor your training.',
+    'intake_prompt_option2_title': 'Free coach video call',
+    'intake_prompt_option2_desc': 'Get guidance and accountability from a coach.',
+    'intake_prompt_free_call': 'Free for you',
+    'intake_prompt_book_call': 'Book call',
+    'intake_prompt_complete': 'Complete intake',
+    'intake_prompt_later': 'Later',
+    'intake_generating_title': 'Generating your plan',
+    'intake_generating_desc': 'We\'re building your specialized workout plan now.',
     
     // Home
     'workout': 'Workout',
@@ -129,6 +217,7 @@ class LanguageProvider with ChangeNotifier {
     'workout_overview': 'Workout Overview',
     'workout_day': 'Day {number}',
     'workout_progress': '{completed} of {total} exercises completed',
+    'exercises': 'Exercises',
     'completed': 'Completed',
     'sets': 'sets',
     'reps': 'reps',
@@ -283,10 +372,77 @@ class LanguageProvider with ChangeNotifier {
     'forgot_password_title': 'Forgot Password',
     'forgot_password_desc': 'Enter your email and we\'ll send you a reset link',
     'reset_link_sent': 'Reset link sent to your email',
+    'other': 'Other',
+    'workout_frequency': 'Days per week',
+    'intake_first_title': 'Quick start intake',
+    'intake_first_subtitle': 'Just three quick steps to get started',
+    'intake_first_complete': 'Complete intake',
+    'intake_first_gender_title': 'Select your gender',
+    'intake_first_gender_desc': 'Help us tailor your experience',
+    'intake_first_goal_title': 'What\'s your main goal?',
+    'intake_first_goal_desc': 'Choose the focus of your plan',
+    'intake_first_fat_loss_desc': 'Burn fat and feel lighter',
+    'intake_first_muscle_gain_desc': 'Build strength and size',
+    'intake_first_fitness_desc': 'Improve overall health',
+    'intake_first_location_title': 'Where do you work out?',
+    'intake_first_location_desc': 'We tailor your workouts to your space',
+    'intake_first_gym_desc': 'Access full gym equipment',
+    'intake_first_home_desc': 'Train with minimal equipment',
+    'intake_second_title': 'Advanced intake',
+    'intake_second_subtitle': 'Tell us more for a personalized plan',
+    'intake_second_complete': 'Complete intake',
   };
   
   // Arabic translations
-  static const Map<String, String> _arabicTranslations = {
+
+static const Map<String, String> _arabicTranslations = {
+    'auth_app_name': 'فيت كوتش',
+    'auth_tagline': 'رحلتك الرياضية تبدأ هنا',
+    'auth_welcome': 'مرحباً',
+    'auth_welcome_subtitle': 'سجل الدخول للمتابعة',
+    'auth_continue_with_email': 'المتابعة بالبريد الإلكتروني',
+    'auth_continue_with_phone': 'المتابعة برقم الهاتف',
+    'auth_email_or_phone': 'البريد الإلكتروني أو رقم الهاتف',
+    'auth_email_or_phone_placeholder': 'name@example.com أو +966...',
+    'auth_or_divider': 'أو',
+    'auth_phone_will_receive_otp': 'سنرسل رمز التحقق إلى هذا الرقم',
+    'auth_enter_otp': 'أدخل رمز التحقق',
+    'auth_otp_sent': 'تم إرسال رمز إلى',
+    'auth_sign_in': 'تسجيل الدخول',
+    'auth_sign_up': 'إنشاء حساب',
+    'auth_back': 'رجوع',
+    'auth_no_account': 'ليس لديك حساب؟',
+    'auth_have_account': 'لديك حساب بالفعل؟',
+    'auth_create_account': 'إنشاء حساب',
+    'auth_create_account_subtitle': 'انضم إلى فيت كوتش وابدأ رحلتك',
+    'auth_full_name': 'الاسم الكامل',
+    'auth_email': 'البريد الإلكتروني',
+    'auth_email_placeholder': 'name@example.com',
+    'auth_password': 'كلمة المرور',
+    'auth_password_placeholder': 'أدخل كلمة المرور',
+    'auth_forgot_password': 'نسيت كلمة المرور؟',
+    'auth_forgot_password_title': 'نسيت كلمة المرور',
+    'auth_forgot_password_desc': 'أدخل البريد الإلكتروني أو رقم الهاتف لإرسال رابط إعادة التعيين',
+    'auth_reset_link_sent': 'تم إرسال رابط إعادة التعيين',
+    'auth_send': 'إرسال',
+    'auth_cancel': 'إلغاء',
+    'auth_confirm_password': 'تأكيد كلمة المرور',
+    'auth_confirm_password_placeholder': 'أعد إدخال كلمة المرور',
+    'auth_missing_fields': 'يرجى تعبئة جميع الحقول المطلوبة',
+    'auth_password_mismatch': 'كلمتا المرور غير متطابقتين',
+    'auth_try_demo': 'تجربة العرض',
+    'auth_demo_unavailable': 'وضع العرض متاح فقط عند البناء مع DEMO_MODE',
+    'auth_demo_credentials': 'بيانات الدخول التجريبية',
+    'auth_demo_user': 'مستخدم تجريبي',
+    'auth_demo_coach': 'مدرب تجريبي',
+    'auth_demo_admin': 'مدير تجريبي',
+    'auth_phone': 'رقم الهاتف',
+    'auth_phone_placeholder': '+966 5X XXX XXXX',
+    'auth_verify': 'تحقق',
+    'auth_resend': 'إعادة الإرسال',
+    'auth_resend_in': 'إعادة الإرسال خلال',
+    'auth_attempts_remaining': 'محاولات متبقية',
+    'auth_change_phone': 'تغيير رقم الهاتف',
     'splash_headline_en': 'Your Fitness Journey Starts Now',
     'splash_headline_ar': 'رحلتك الرياضية تبدأ الآن',
     'splash_start': 'Start / ابدأ',
@@ -313,7 +469,6 @@ class LanguageProvider with ChangeNotifier {
     'book_video_call': 'حجز مكالمة فيديو',
     'book_video_call_hint': 'جدول جلسة فيديو مع مدربك',
     'completed': 'مكتمل',
-    'complete': 'إكمال',
     'connect_with_coach': 'تواصل مع مدربك',
     'continue': 'متابعة',
     'continue_with_phone': 'متابعة عبر الهاتف',
@@ -482,5 +637,68 @@ class LanguageProvider with ChangeNotifier {
     'workout': 'التمارين',
     'workouts': 'التمارين',
     'your_progress': 'تقدمك',
+    'other': '\u0622\u062e\u0631',
+    'workout_frequency': '\u0639\u062f\u062f \u0627\u0644\u0623\u064a\u0627\u0645 \u0628\u0627\u0644\u0623\u0633\u0628\u0648\u0639',
+    'intake_first_title': '\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0623\u0633\u0627\u0633\u064a\u0629',
+    'intake_first_subtitle': '\u062b\u0644\u0627\u062b \u062e\u0637\u0648\u0627\u062a \u0633\u0631\u064a\u0639\u0629 \u0644\u0644\u0628\u062f\u0621',
+    'intake_first_complete': '\u0625\u0643\u0645\u0627\u0644 \u0627\u0644\u0627\u0633\u062a\u0628\u064a\u0627\u0646',
+    'intake_first_gender_title': '\u0627\u062e\u062a\u0631 \u0627\u0644\u062c\u0646\u0633',
+    'intake_first_gender_desc': '\u0644\u0645\u0633\u0627\u0639\u062f\u062a\u0646\u0627 \u0639\u0644\u0649 \u062a\u062e\u0635\u064a\u0635 \u0627\u0644\u062a\u062c\u0631\u0628\u0629',
+    'intake_first_goal_title': '\u0645\u0627 \u0647\u0648 \u0647\u062f\u0641\u0643 \u0627\u0644\u0623\u0633\u0627\u0633\u064a\u061f',
+    'intake_first_goal_desc': '\u0627\u062e\u062a\u0631 \u062a\u0631\u0643\u064a\u0632 \u062e\u0637\u062a\u0643',
+    'intake_first_fat_loss_desc': '\u062d\u0631\u0642 \u0627\u0644\u062f\u0647\u0648\u0646 \u0648\u0627\u0644\u0634\u0639\u0648\u0631 \u0628\u062e\u0641\u0629',
+    'intake_first_muscle_gain_desc': '\u0628\u0646\u0627\u0621 \u0627\u0644\u0642\u0648\u0629 \u0648\u0627\u0644\u0639\u0636\u0644\u0627\u062a',
+    'intake_first_fitness_desc': '\u062a\u062d\u0633\u064a\u0646 \u0627\u0644\u0635\u062d\u0629 \u0627\u0644\u0639\u0627\u0645\u0629',
+    'intake_first_location_title': '\u0623\u064a\u0646 \u062a\u062a\u0645\u0631\u0646\u061f',
+    'intake_first_location_desc': '\u0646\u062e\u0635\u0635 \u0627\u0644\u062a\u0645\u0631\u064a\u0646 \u062d\u0633\u0628 \u0645\u0643\u0627\u0646\u0643',
+    'intake_first_gym_desc': '\u062a\u0648\u0641\u0631 \u0643\u0627\u0645\u0644 \u0645\u0639\u062f\u0627\u062a \u0627\u0644\u062c\u064a\u0645',
+    'intake_first_home_desc': '\u062a\u0645\u0631\u064a\u0646 \u0628\u0645\u0639\u062f\u0627\u062a \u0628\u0633\u064a\u0637\u0629',
+    'intake_second_title': '\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0645\u062a\u0642\u062f\u0645\u0629',
+    'intake_second_subtitle': '\u0623\u062e\u0628\u0631\u0646\u0627 \u0627\u0644\u0645\u0632\u064a\u062f \u0644\u062e\u0637\u0629 \u0645\u062e\u0635\u0635\u0629',
+    'intake_second_complete': '\u0625\u0643\u0645\u0627\u0644 \u0627\u0644\u0627\u0633\u062a\u0628\u064a\u0627\u0646',
+    'home_location': '\u0627\u0644\u0645\u0646\u0632\u0644',
+    'age': '\u0627\u0644\u0639\u0645\u0631',
+    'years': '\u0633\u0646\u0629',
+    'weight': '\u0627\u0644\u0648\u0632\u0646',
+    'height': '\u0627\u0644\u0637\u0648\u0644',
+    'kg': '\u0643\u062c\u0645',
+    'cm': '\u0633\u0645',
+    'complete': '\u0625\u0643\u0645\u0627\u0644',
+    'intake_incomplete': '\u064a\u0631\u062c\u0649 \u0625\u0643\u0645\u0627\u0644 \u062c\u0645\u064a\u0639 \u0627\u0644\u062d\u0642\u0648\u0644 \u0627\u0644\u0645\u0637\u0644\u0648\u0628\u0629',
+    'intake_select_option': '\u064a\u0631\u062c\u0649 \u0627\u062e\u062a\u064a\u0627\u0631 \u062e\u064a\u0627\u0631',
+    'experience_level_title': '\u0645\u0627 \u0647\u0648 \u0645\u0633\u062a\u0648\u0649 \u062e\u0628\u0631\u062a\u0643\u061f',
+    'experience_level_desc': '\u064a\u0633\u0627\u0639\u062f\u0646\u0627 \u0647\u0630\u0627 \u0639\u0644\u0649 \u062a\u062e\u0635\u064a\u0635 \u062e\u0637\u0629 \u0627\u0644\u062a\u062f\u0631\u064a\u0628',
+    'experience_beginner': '\u0645\u0628\u062a\u062f\u0626',
+    'experience_beginner_desc': '0-6 \u0623\u0634\u0647\u0631',
+    'experience_intermediate': '\u0645\u062a\u0648\u0633\u0637',
+    'experience_intermediate_desc': '6-24 \u0634\u0647\u0631\u0627\u064b',
+    'experience_advanced': '\u0645\u062a\u0642\u062f\u0645',
+    'experience_advanced_desc': '\u0623\u0643\u062b\u0631 \u0645\u0646 \u0633\u0646\u062a\u064a\u0646',
+    'intake_second_age_title': '\u0645\u0627 \u0647\u0648 \u0639\u0645\u0631\u0643\u061f',
+    'intake_second_age_desc': '\u0646\u0633\u062a\u062e\u062f\u0645 \u0647\u0630\u0627 \u0644\u062a\u062e\u0635\u064a\u0635 \u062e\u0637\u062a\u0643',
+    'intake_second_body_metrics_title': '\u0627\u0644\u0645\u0642\u0627\u064a\u064a\u0633 \u0627\u0644\u062c\u0633\u0645\u064a\u0629',
+    'intake_second_body_metrics_desc': '\u0623\u062f\u062e\u0644 \u0648\u0632\u0646\u0643 \u0648\u0637\u0648\u0644\u0643 \u0627\u0644\u062d\u0627\u0644\u064a\u064a\u0646',
+    'intake_second_frequency_title': '\u0639\u062f\u062f \u0645\u0631\u0627\u062a \u0627\u0644\u062a\u0645\u0631\u064a\u0646',
+    'intake_second_frequency_desc': '\u0643\u0645 \u064a\u0648\u0645\u0627\u064b \u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u062a\u0645\u0631\u064a\u0646 \u0641\u064a \u0627\u0644\u0623\u0633\u0628\u0648\u0639\u061f',
+    'intake_second_injuries_title': '\u0647\u0644 \u0644\u062f\u064a\u0643 \u0623\u064a \u0625\u0635\u0627\u0628\u0627\u062a\u061f',
+    'intake_second_injuries_desc': '\u0633\u0646\u0639\u062f\u0644 \u0627\u0644\u062e\u0637\u0629 \u0644\u0644\u062d\u0641\u0627\u0638 \u0639\u0644\u0649 \u0633\u0644\u0627\u0645\u062a\u0643',
+    'intake_second_injuries_none': '\u0644\u0627 \u062a\u0648\u062c\u062f \u0625\u0635\u0627\u0628\u0627\u062a\u061f \u0631\u0627\u0626\u0639\u0021 \u0623\u0643\u0645\u0644',
+    'injury_shoulder': '\u0627\u0644\u0643\u062a\u0641',
+    'injury_knee': '\u0627\u0644\u0631\u0643\u0628\u0629',
+    'injury_lower_back': '\u0623\u0633\u0641\u0644 \u0627\u0644\u0638\u0647\u0631',
+    'injury_neck': '\u0627\u0644\u0631\u0642\u0628\u0629',
+    'injury_ankle': '\u0627\u0644\u0643\u0627\u062d\u0644',
+    'intake_prompt_title': '\u0623\u0643\u0645\u0644 \u0627\u0633\u062a\u0628\u064a\u0627\u0646 \u0627\u0644\u062a\u0645\u0631\u064a\u0646',
+    'intake_prompt_description': '\u0623\u0643\u0645\u0644 \u0628\u0639\u0636 \u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0644\u0641\u062a\u062d \u062e\u0637\u0629 \u0645\u062e\u0635\u0635\u0629 \u0623\u0648 \u0627\u062d\u062c\u0632 \u0645\u0643\u0627\u0644\u0645\u0629 \u0645\u062c\u0627\u0646\u064a\u0629 \u0645\u0639 \u0627\u0644\u0645\u062f\u0631\u0628\u002e',
+    'intake_prompt_option1_title': '\u062e\u0637\u0629 \u062a\u0645\u0631\u064a\u0646 \u0645\u062e\u0635\u0635\u0629',
+    'intake_prompt_option1_desc': '\u0623\u062c\u0628 \u0639\u0646 \u0623\u0633\u0626\u0644\u0629 \u0642\u0635\u064a\u0631\u0629 \u0644\u062a\u062e\u0635\u064a\u0635 \u062a\u062f\u0631\u064a\u0628\u0643\u002e',
+    'intake_prompt_option2_title': '\u0645\u0643\u0627\u0644\u0645\u0629 \u0641\u064a\u062f\u064a\u0648 \u0645\u062c\u0627\u0646\u064a\u0629 \u0645\u0639 \u0627\u0644\u0645\u062f\u0631\u0628',
+    'intake_prompt_option2_desc': '\u0627\u062d\u0635\u0644 \u0639\u0644\u0649 \u0625\u0631\u0634\u0627\u062f \u0648\u0645\u062a\u0627\u0628\u0639\u0629 \u0645\u0646 \u0645\u062f\u0631\u0628\u002e',
+    'intake_prompt_free_call': '\u0645\u062c\u0627\u0646\u064b\u0627 \u0644\u0643',
+    'intake_prompt_book_call': '\u0627\u062d\u062c\u0632 \u0645\u0643\u0627\u0644\u0645\u0629',
+    'intake_prompt_complete': '\u0623\u0643\u0645\u0644 \u0627\u0644\u0627\u0633\u062a\u0628\u064a\u0627\u0646',
+    'intake_prompt_later': '\u0644\u0627\u062d\u0642\u0627',
+    'intake_generating_title': '\u062c\u0627\u0631\u064d \u0625\u0646\u0634\u0627\u0621 \u062e\u0637\u062a\u0643',
+    'intake_generating_desc': '\u0646\u0642\u0648\u0645 \u0627\u0644\u0622\u0646 \u0628\u0625\u0646\u0634\u0627\u0621 \u062e\u0637\u0629 \u062a\u0645\u0631\u064a\u0646 \u0645\u062e\u0635\u0635\u0629 \u0644\u0643\u002e',
   };
 }
