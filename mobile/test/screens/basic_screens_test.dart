@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fitapp/presentation/screens/onboarding_screen.dart';
 import 'package:fitapp/presentation/screens/splash_screen.dart';
 import 'package:fitapp/presentation/screens/language_selection_screen.dart';
+import 'package:fitapp/presentation/providers/language_provider.dart';
 
 void main() {
   group('Screen Widget Tests', () {
@@ -30,10 +33,14 @@ void main() {
     });
 
     testWidgets('LanguageSelectionScreen renders correctly', (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(
-        MaterialApp(
-          home: LanguageSelectionScreen(
-            onLanguageSelected: () {},
+        ChangeNotifierProvider(
+          create: (_) => LanguageProvider(),
+          child: MaterialApp(
+            home: LanguageSelectionScreen(
+              onLanguageSelected: () {},
+            ),
           ),
         ),
       );

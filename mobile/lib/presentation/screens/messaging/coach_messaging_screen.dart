@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/models/message.dart';
 import '../../providers/language_provider.dart';
@@ -8,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/quota_provider.dart';
 import '../booking/video_booking_screen.dart';
 import '../../widgets/quota_indicator.dart';
+import 'coach_intro_screen.dart';
 
 class CoachMessagingScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -21,10 +23,13 @@ class CoachMessagingScreen extends StatefulWidget {
 class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _showIntro = false;
+  bool _introLoaded = false;
   
   @override
   void initState() {
     super.initState();
+    _loadIntroFlag();
     Future.microtask(() {
       final provider = context.read<MessagingProvider>();
       provider.loadConversations();
@@ -39,6 +44,27 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     super.dispose();
   }
 
+  Future<void> _loadIntroFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seenIntro = prefs.getBool('coach_intro_seen') ?? false;
+    if (mounted) {
+      setState(() {
+        _showIntro = !seenIntro;
+        _introLoaded = true;
+      });
+    }
+  }
+
+  Future<void> _completeIntro() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('coach_intro_seen', true);
+    if (mounted) {
+      setState(() {
+        _showIntro = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
@@ -47,73 +73,149 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     final authProvider = context.watch<AuthProvider>();
     final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
     final canAttach = tier == 'Smart Premium';
+    final isArabic = languageProvider.isArabic;
+
+    if (!_introLoaded) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_showIntro) {
+      return CoachIntroScreen(onGetStarted: _completeIntro);
+    }
     
     return DefaultTabController(
       length: 2,
       initialIndex: widget.initialTabIndex.clamp(0, 1),
       child: Scaffold(
-        appBar: AppBar(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(languageProvider.t('coach_messaging')),
-              Text(
-                languageProvider.t('coach_messaging_subtitle'),
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.videocam),
-              onPressed: quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
-              tooltip: languageProvider.t('book_video_call'),
-            ),
-          ],
-        ),
-        body: Column(
+        body: Stack(
           children: [
-            // Quota banner
-            const QuotaBanner(type: 'message'),
-            
-            // Message quota indicator
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: AppColors.surface,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const QuotaIndicator(type: 'message', showDetails: false),
-                  const SizedBox(width: 16),
-                  const QuotaIndicator(type: 'videoCall', showDetails: false),
-                ],
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.8,
+                child: Image.asset(
+                  'assets/placeholders/splash_onboarding/coach_onboarding.png',
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-            
-            // Tabs
-            Material(
-              color: Colors.white,
-              child: TabBar(
-                labelColor: AppColors.primary,
-                unselectedLabelColor: AppColors.textSecondary,
-                indicatorColor: AppColors.primary,
-                tabs: [
-                  Tab(text: languageProvider.t('messages')),
-                  Tab(text: languageProvider.t('sessions')),
-                ],
-              ),
-            ),
-            
-            Expanded(
-              child: TabBarView(
+            SafeArea(
+              child: Column(
                 children: [
-                  _buildMessagesTab(
-                    languageProvider,
-                    messagingProvider,
-                    quotaProvider,
-                    canAttach,
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF4338CA), Color(0xFF6D28D9)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => Navigator.of(context).maybePop(),
+                              icon: Icon(
+                                isArabic ? Icons.arrow_forward : Icons.arrow_back,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    languageProvider.t('coach_messaging'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    languageProvider.t('coach_messaging_subtitle'),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.videocam, color: Colors.white),
+                              onPressed: quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
+                              tooltip: languageProvider.t('book_video_call'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        _buildCoachInfoCard(languageProvider, isArabic),
+                      ],
+                    ),
                   ),
-                  _buildSessionsTab(languageProvider, quotaProvider),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        const QuotaBanner(type: 'message'),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: (0.9 * 255)),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: const [
+                              QuotaIndicator(type: 'message', showDetails: false),
+                              SizedBox(width: 16),
+                              QuotaIndicator(type: 'videoCall', showDetails: false),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: (0.9 * 255)),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: TabBar(
+                            labelColor: AppColors.primary,
+                            unselectedLabelColor: AppColors.textSecondary,
+                            indicatorColor: AppColors.primary,
+                            indicatorWeight: 3,
+                            tabs: [
+                              Tab(text: languageProvider.t('messages')),
+                              Tab(text: languageProvider.t('sessions')),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildMessagesTab(
+                          languageProvider,
+                          messagingProvider,
+                          quotaProvider,
+                          canAttach,
+                        ),
+                        _buildSessionsTab(languageProvider, quotaProvider),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -154,38 +256,43 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   }
 
   Widget _buildSessionsTab(LanguageProvider lang, QuotaProvider quotaProvider) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.video_call,
-              size: 64,
-              color: AppColors.primary.withValues(alpha: (0.8 * 255)),
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.video_call,
+                  size: 64,
+                  color: AppColors.primary.withValues(alpha: (0.8 * 255)),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  lang.t('sessions'),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  lang.t('book_video_call_hint'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
+                    icon: const Icon(Icons.calendar_month),
+                    label: Text(lang.t('book_video_call')),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              lang.t('sessions'),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              lang.t('book_video_call_hint'),
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
-                icon: const Icon(Icons.calendar_month),
-                label: Text(lang.t('book_video_call')),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -196,7 +303,110 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       MaterialPageRoute(builder: (_) => const VideoBookingScreen()),
     );
   }
-  
+
+  Widget _buildCoachInfoCard(LanguageProvider lang, bool isArabic) {
+    final coachName = lang.t('coach_demo_name');
+    final coachInitials = lang.t('coach_demo_initials');
+    final specialties = [
+      lang.t('coach_specialty_strength'),
+      lang.t('coach_specialty_weight_loss'),
+      lang.t('coach_specialty_nutrition'),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: (0.12 * 255)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.white.withValues(alpha: (0.25 * 255)),
+                child: Text(
+                  coachInitials,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      coachName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 14, color: Color(0xFFFBBF24)),
+                        const SizedBox(width: 4),
+                        const Text(
+                          '4.9',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '8 ${lang.t('coach_years')}',
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: specialties
+                .map(
+                  (specialty) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: (0.2 * 255)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      specialty,
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.star, color: Colors.white, size: 16),
+              label: Text(
+                lang.t('coach_view_profile'),
+                style: const TextStyle(color: Colors.white),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white70),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEmptyState(LanguageProvider lang, bool isArabic) {
     return Center(
       child: Column(

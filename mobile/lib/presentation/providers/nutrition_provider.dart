@@ -202,10 +202,7 @@ class NutritionProvider extends ChangeNotifier {
   }
 
   bool canAccessNutrition(String subscriptionTier) {
-    if (subscriptionTier == 'Premium' || subscriptionTier == 'Smart Premium') {
-      return true;
-    }
-    return !_hasTrialExpired;
+    return subscriptionTier == 'Premium' || subscriptionTier == 'Smart Premium';
   }
 
   bool checkFreemiumAccess(String tier, DateTime trialStartDate) {

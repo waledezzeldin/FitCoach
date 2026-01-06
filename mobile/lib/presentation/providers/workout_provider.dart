@@ -137,6 +137,15 @@ class WorkoutProvider extends ChangeNotifier {
     List<String> userInjuries,
   ) async {
     if (DemoConfig.isDemo) {
+      final sourceExercise = _findExerciseById(exerciseId);
+      final alternativeIds = sourceExercise?.alternatives ?? const <String>[];
+      final alternatives = alternativeIds
+          .map(_findExerciseById)
+          .whereType<Exercise>()
+          .toList();
+      if (alternatives.isNotEmpty) {
+        return alternatives;
+      }
       return _exerciseLibrary.where((ex) => ex.id != exerciseId).toList();
     }
     _isLoading = true;
@@ -155,6 +164,20 @@ class WorkoutProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return [];
+    }
+  }
+
+  Exercise? _findExerciseById(String exerciseId) {
+    final fromLibrary = _exerciseLibrary.where((ex) => ex.id == exerciseId).toList();
+    if (fromLibrary.isNotEmpty) {
+      return fromLibrary.first;
+    }
+    final day = currentDay;
+    if (day == null) return null;
+    try {
+      return day.exercises.firstWhere((ex) => ex.id == exerciseId);
+    } catch (_) {
+      return null;
     }
   }
 

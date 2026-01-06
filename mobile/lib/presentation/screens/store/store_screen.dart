@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
+import 'store_intro_screen.dart';
 
 class StoreScreen extends StatefulWidget {
   const StoreScreen({super.key});
@@ -15,6 +17,8 @@ class StoreScreen extends StatefulWidget {
 class _StoreScreenState extends State<StoreScreen> {
   String _selectedCategory = 'all';
   String _searchQuery = '';
+  bool _showIntro = false;
+  bool _introLoaded = false;
 
   final List<Map<String, dynamic>> _cartItems = [];
   final List<String> _categories = [
@@ -134,9 +138,46 @@ class _StoreScreenState extends State<StoreScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadIntroFlag();
+  }
+
+  Future<void> _loadIntroFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seenIntro = prefs.getBool('store_intro_seen') ?? false;
+    if (mounted) {
+      setState(() {
+        _showIntro = !seenIntro;
+        _introLoaded = true;
+      });
+    }
+  }
+
+  Future<void> _completeIntro() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('store_intro_seen', true);
+    if (mounted) {
+      setState(() {
+        _showIntro = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final isArabic = languageProvider.isArabic;
+
+    if (!_introLoaded) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_showIntro) {
+      return StoreIntroScreen(onGetStarted: _completeIntro);
+    }
 
     final filteredProducts = _products.where((product) {
       final matchesSearch = product['nameEn']

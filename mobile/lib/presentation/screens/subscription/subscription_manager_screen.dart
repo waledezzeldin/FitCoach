@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
@@ -356,7 +357,7 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _processPlanChange(targetTier, isArabic);
+              _processPlanChange(targetTier, currentTier, isArabic);
             },
             child: Text(isArabic ? 'تأكيد' : 'Confirm'),
           ),
@@ -365,28 +366,36 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
     );
   }
   
-  void _processPlanChange(String targetTier, bool isArabic) {
+  void _processPlanChange(String targetTier, String currentTier, bool isArabic) async {
     // Simulate API call
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           isArabic
-              ? 'تم تغيير الاشتراك بنجاح'
+              ? '?? ????? ???????? ?????'
               : 'Subscription changed successfully',
         ),
         backgroundColor: AppColors.success,
       ),
     );
-    
+
     // Update user tier (would be done through provider in real app)
     final authProvider = context.read<AuthProvider>();
     if (DemoConfig.isDemo) {
       final userProvider = context.read<UserProvider>();
-      userProvider.updateSubscription(targetTier).then((_) {
-        if (userProvider.profile != null) {
-          authProvider.updateUser(userProvider.profile!);
-        }
-      });
+      await userProvider.updateSubscription(targetTier);
+      if (userProvider.profile != null) {
+        authProvider.updateUser(userProvider.profile!);
+      }
+    }
+
+    final isUpgradeFromFreemium = currentTier == 'Freemium' &&
+        (targetTier == 'Premium' || targetTier == 'Smart Premium');
+    if (isUpgradeFromFreemium) {
+      final userId = authProvider.user?.id ?? 'demo-user';
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pending_nutrition_intake_$userId', true);
+      await prefs.setBool('nutrition_preferences_completed_$userId', false);
     }
   }
 }

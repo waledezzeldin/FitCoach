@@ -89,6 +89,7 @@ flutter:
     - assets/translations/
     - assets/placeholders/
     - assets/placeholders/splash_onboarding/
+    - assets/placeholders/branding_logo/
   
   fonts:
     - family: Cairo

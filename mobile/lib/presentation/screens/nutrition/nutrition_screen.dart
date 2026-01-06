@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
+import 'dart:convert';
 import '../../../core/constants/colors.dart';
 import '../../../data/models/nutrition_plan.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/nutrition_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
+import 'nutrition_intro_screen.dart';
+import 'nutrition_preferences_intake_screen.dart';
+import '../subscription/subscription_manager_screen.dart';
 
 class NutritionScreen extends StatefulWidget {
   const NutritionScreen({super.key});
@@ -16,14 +21,74 @@ class NutritionScreen extends StatefulWidget {
 }
 
 class _NutritionScreenState extends State<NutritionScreen> {
+  bool _showIntro = false;
+  bool _introLoaded = false;
+  bool _showPreferencesIntake = false;
+  bool _preferencesLoaded = false;
+
   @override
   void initState() {
     super.initState();
+    _loadIntroFlag();
+    _loadPreferencesFlag();
     Future.microtask(() {
       final provider = context.read<NutritionProvider>();
       provider.loadActivePlan();
       provider.checkTrialStatus();
     });
+  }
+
+  Future<void> _loadIntroFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seenIntro = prefs.getBool('nutrition_intro_seen') ?? false;
+    if (mounted) {
+      setState(() {
+        _showIntro = !seenIntro;
+        _introLoaded = true;
+      });
+    }
+  }
+
+  Future<void> _completeIntro() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('nutrition_intro_seen', true);
+    if (mounted) {
+      setState(() {
+        _showIntro = false;
+      });
+    }
+  }
+
+  Future<void> _loadPreferencesFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = context.read<AuthProvider>().user?.id ?? 'demo-user';
+    final pendingKey = 'pending_nutrition_intake_$userId';
+    final completedKey = 'nutrition_preferences_completed_$userId';
+    final pending = prefs.getBool(pendingKey) ?? false;
+    final completed = prefs.getBool(completedKey) ?? false;
+
+    if (mounted) {
+      setState(() {
+        _showPreferencesIntake = pending || !completed;
+        _preferencesLoaded = true;
+      });
+    }
+  }
+
+  Future<void> _completePreferences(Map<String, dynamic> preferences) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = context.read<AuthProvider>().user?.id ?? 'demo-user';
+    final pendingKey = 'pending_nutrition_intake_$userId';
+    final completedKey = 'nutrition_preferences_completed_$userId';
+    final prefsKey = 'nutrition_preferences_$userId';
+    await prefs.setString(prefsKey, jsonEncode(preferences));
+    await prefs.setBool(completedKey, true);
+    await prefs.setBool(pendingKey, false);
+    if (mounted) {
+      setState(() {
+        _showPreferencesIntake = false;
+      });
+    }
   }
 
   @override
@@ -33,10 +98,20 @@ class _NutritionScreenState extends State<NutritionScreen> {
     final authProvider = context.watch<AuthProvider>();
     final isArabic = languageProvider.isArabic;
     final subscriptionTier = authProvider.user?.subscriptionTier ?? 'Freemium';
+
+    if (!_introLoaded || !_preferencesLoaded) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_showIntro) {
+      return NutritionIntroScreen(onGetStarted: _completeIntro);
+    }
     
     // Check access
     final canAccess = nutritionProvider.canAccessNutrition(subscriptionTier);
-    
+
     if (nutritionProvider.isLoading) {
       return const Scaffold(
         body: Center(
@@ -45,9 +120,16 @@ class _NutritionScreenState extends State<NutritionScreen> {
       );
     }
     
-    // Show trial expired message for Freemium users
-    if (!canAccess && subscriptionTier == 'Freemium') {
-      return _buildTrialExpired(languageProvider, isArabic);
+    // Locked for non-premium tiers
+    if (!canAccess) {
+      return _buildLockedAccess(languageProvider, isArabic);
+    }
+
+    if (_showPreferencesIntake) {
+      return NutritionPreferencesIntakeScreen(
+        onComplete: _completePreferences,
+        onBack: () => setState(() => _showPreferencesIntake = false),
+      );
     }
     
     if (nutritionProvider.activePlan == null) {
@@ -282,6 +364,48 @@ class _NutritionScreenState extends State<NutritionScreen> {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLockedAccess(LanguageProvider lang, bool isArabic) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(lang.t('nutrition')),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.lock, size: 56, color: AppColors.textSecondary),
+              const SizedBox(height: 16),
+              Text(
+                lang.t('nutrition_locked_title'),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                lang.t('nutrition_locked_desc'),
+                style: const TextStyle(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SubscriptionManagerScreen()),
+                  ),
+                  icon: const Icon(Icons.workspace_premium),
+                  label: Text(lang.t('nutrition_unlock_button')),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
