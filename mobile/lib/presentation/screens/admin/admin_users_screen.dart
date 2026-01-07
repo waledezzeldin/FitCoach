@@ -467,10 +467,15 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   }
 
   void _showEditUserDialog(AdminUser user, bool isArabic) {
+    final adminProvider = context.read<AdminProvider>();
+    if (adminProvider.coaches.isEmpty) {
+      adminProvider.loadCoaches();
+    }
     final nameController = TextEditingController(text: user.fullName);
     final emailController = TextEditingController(text: user.email);
-    String selectedTier = user.subscriptionTier;
+    String selectedTier = _normalizeTier(user.subscriptionTier);
     bool isActive = user.isActive;
+    String? selectedCoachId = user.coachId;
 
     showDialog(
       context: context,
@@ -503,15 +508,45 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     labelText: isArabic ? 'الباقة' : 'Tier',
                     border: const OutlineInputBorder(),
                   ),
-                  items: ['freemium', 'premium', 'smart_premium'].map((tier) {
-                    return DropdownMenuItem(
-                      value: tier,
-                      child: Text(tier),
-                    );
-                  }).toList(),
+                  items: const ['Freemium', 'Premium', 'Smart Premium']
+                      .map(
+                        (tier) => DropdownMenuItem(
+                          value: tier,
+                          child: Text(_formatTierLabel(tier, isArabic)),
+                        ),
+                      )
+                      .toList(),
                   onChanged: (value) {
                     setState(() {
-                      selectedTier = value!;
+                      selectedTier = value ?? selectedTier;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String?>(
+                  value: selectedCoachId,
+                  decoration: InputDecoration(
+                    labelText: isArabic ? 'OU,U.O_OñO"' : 'Coach',
+                    border: const OutlineInputBorder(),
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: null,
+                      child: Text(isArabic ? 'O§USOñ U.O1USU+' : 'Not assigned'),
+                    ),
+                    ...context
+                        .watch<AdminProvider>()
+                        .coaches
+                        .map(
+                          (coach) => DropdownMenuItem(
+                            value: coach.id,
+                            child: Text(coach.fullName),
+                          ),
+                        ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      selectedCoachId = value;
                     });
                   },
                 ),
@@ -544,6 +579,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   email: emailController.text,
                   subscriptionTier: selectedTier,
                   isActive: isActive,
+                  coachId: selectedCoachId,
                 );
 
                 if (success && mounted) {
@@ -684,6 +720,29 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       case 'freemium':
       default:
         return AppColors.textSecondary;
+    }
+  }
+
+  String _normalizeTier(String tier) {
+    switch (tier.trim().toLowerCase()) {
+      case 'premium':
+        return 'Premium';
+      case 'smart premium':
+      case 'smart_premium':
+        return 'Smart Premium';
+      default:
+        return 'Freemium';
+    }
+  }
+
+  String _formatTierLabel(String tier, bool isArabic) {
+    switch (tier.toLowerCase()) {
+      case 'premium':
+        return isArabic ? 'بريميوم' : 'Premium';
+      case 'smart premium':
+        return isArabic ? 'سمارت بريميوم' : 'Smart Premium';
+      default:
+        return isArabic ? 'مجاني' : 'Freemium';
     }
   }
 }

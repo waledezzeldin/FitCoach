@@ -55,7 +55,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'تعديل الملف الشخصي' : 'Edit Profile'),
+        title: Text(languageProvider.t('edit_profile_title')),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -108,7 +108,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               
               // Basic information
               Text(
-                isArabic ? 'المعلومات الأساسية' : 'Basic Information',
+                languageProvider.t('edit_profile_basic_info'),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -120,7 +120,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: isArabic ? 'الاسم الكامل' : 'Full Name',
+                  labelText: languageProvider.t('edit_profile_full_name'),
                   prefixIcon: const Icon(Icons.person),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -128,7 +128,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return isArabic ? 'الرجاء إدخال الاسم' : 'Please enter name';
+                    return languageProvider.t('edit_profile_required');
                   }
                   return null;
                 },
@@ -140,7 +140,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: isArabic ? 'البريد الإلكتروني' : 'Email',
+                  labelText: languageProvider.t('auth_email'),
                   prefixIcon: const Icon(Icons.email),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -150,7 +150,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
                     if (!value.contains('@')) {
-                      return isArabic ? 'بريد إلكتروني غير صالح' : 'Invalid email';
+                      return languageProvider.t('edit_profile_invalid_email');
                     }
                   }
                   return null;
@@ -161,7 +161,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               
               // Physical information
               Text(
-                isArabic ? 'المعلومات الجسدية' : 'Physical Information',
+                languageProvider.t('edit_profile_physical_info'),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -175,7 +175,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isArabic ? 'الجنس' : 'Gender',
+                      languageProvider.t('gender'),
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
@@ -185,11 +185,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildGenderOption('male', isArabic ? 'ذكر' : 'Male', Icons.male),
+                          child: _buildGenderOption('male', languageProvider.t('male'), Icons.male),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _buildGenderOption('female', isArabic ? 'أنثى' : 'Female', Icons.female),
+                          child: _buildGenderOption('female', languageProvider.t('female'), Icons.female),
                         ),
                       ],
                     ),
@@ -206,8 +206,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     child: TextFormField(
                       controller: _ageController,
                       decoration: InputDecoration(
-                        labelText: isArabic ? 'العمر' : 'Age',
-                        suffixText: isArabic ? 'سنة' : 'yrs',
+                        labelText: languageProvider.t('age'),
+                        suffixText: languageProvider.t('years'),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -215,7 +215,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return isArabic ? 'مطلوب' : 'Required';
+                          return languageProvider.t('edit_profile_required');
                         }
                         return null;
                       },
@@ -226,7 +226,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     child: TextFormField(
                       controller: _weightController,
                       decoration: InputDecoration(
-                        labelText: isArabic ? 'الوزن' : 'Weight',
+                        labelText: languageProvider.t('weight'),
                         suffixText: 'kg',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -235,7 +235,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return isArabic ? 'مطلوب' : 'Required';
+                          return languageProvider.t('edit_profile_required');
                         }
                         return null;
                       },
@@ -246,7 +246,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     child: TextFormField(
                       controller: _heightController,
                       decoration: InputDecoration(
-                        labelText: isArabic ? 'الطول' : 'Height',
+                        labelText: languageProvider.t('height'),
                         suffixText: 'cm',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -255,7 +255,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return isArabic ? 'مطلوب' : 'Required';
+                          return languageProvider.t('edit_profile_required');
                         }
                         return null;
                       },
@@ -271,8 +271,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 width: double.infinity,
                 child: CustomButton(
                   text: _isSaving
-                      ? (isArabic ? 'جاري الحفظ...' : 'Saving...')
-                      : (isArabic ? 'حفظ التغييرات' : 'Save Changes'),
+                      ? languageProvider.t('edit_profile_saving')
+                      : languageProvider.t('edit_profile_save'),
                   onPressed: _isSaving ? null : () => _saveProfile(isArabic),
                   variant: ButtonVariant.primary,
                   size: ButtonSize.large,
@@ -330,6 +330,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
   
   void _showPhotoOptions(bool isArabic) {
+    final languageProvider = context.read<LanguageProvider>();
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -338,7 +339,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: Text(isArabic ? 'التقاط صورة' : 'Take Photo'),
+              title: Text(languageProvider.t('edit_profile_take_photo')),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Implement camera
@@ -346,7 +347,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: Text(isArabic ? 'اختيار من المعرض' : 'Choose from Gallery'),
+              title: Text(languageProvider.t('edit_profile_choose_gallery')),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Implement gallery
@@ -355,7 +356,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             ListTile(
               leading: const Icon(Icons.delete, color: AppColors.error),
               title: Text(
-                isArabic ? 'حذف الصورة' : 'Remove Photo',
+                languageProvider.t('edit_profile_remove_photo'),
                 style: const TextStyle(color: AppColors.error),
               ),
               onTap: () {
@@ -370,6 +371,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
   
   Future<void> _saveProfile(bool isArabic) async {
+    final languageProvider = context.read<LanguageProvider>();
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -401,7 +403,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isArabic ? 'تم حفظ التغييرات بنجاح' : 'Profile updated successfully',
+              languageProvider.t('edit_profile_saved'),
             ),
             backgroundColor: AppColors.success,
           ),

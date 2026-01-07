@@ -34,10 +34,10 @@ class _StoreScreenState extends State<StoreScreen> {
     {
       'id': '1',
       'nameEn': 'Whey Protein Isolate',
-      'nameAr': '?????? ??? ?????',
+      'nameAr': 'عزل بروتين مصل اللبن',
       'brand': 'FitNutrition',
       'descriptionEn': 'Premium whey protein isolate for muscle building.',
-      'descriptionAr': '?????? ??? ????? ???? ?????? ????? ???????.',
+      'descriptionAr': 'عزل بروتين مصل اللبن عالي الجودة لبناء العضلات.',
       'price': 59.99,
       'originalPrice': 69.99,
       'discount': 15,
@@ -51,10 +51,10 @@ class _StoreScreenState extends State<StoreScreen> {
     {
       'id': '2',
       'nameEn': 'Creatine Monohydrate',
-      'nameAr': '??????? ??????????',
+      'nameAr': 'كرياتين مونوهيدرات',
       'brand': 'PowerSupps',
       'descriptionEn': 'Pure creatine for increased strength.',
-      'descriptionAr': '??????? ??? ?????? ????? ???????.',
+      'descriptionAr': 'كرياتين نقي لزيادة القوة.',
       'price': 29.99,
       'category': 'Pre-Workout',
       'image': 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=400',
@@ -65,10 +65,10 @@ class _StoreScreenState extends State<StoreScreen> {
     {
       'id': '3',
       'nameEn': 'BCAA Recovery',
-      'nameAr': '????? ?????? ???????',
+      'nameAr': 'بي سي إيه إيه للتعافي',
       'brand': 'RecoverMax',
       'descriptionEn': 'BCAA blend for recovery.',
-      'descriptionAr': '???? ????? ?????? ??????? ??????.',
+      'descriptionAr': 'مزيج بي سي إيه إيه لدعم التعافي.',
       'price': 39.99,
       'category': 'Recovery',
       'image': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400',
@@ -79,10 +79,10 @@ class _StoreScreenState extends State<StoreScreen> {
     {
       'id': '4',
       'nameEn': 'Pre-Workout Boost',
-      'nameAr': '???? ??? ???????',
+      'nameAr': 'دفعة ما قبل التمرين',
       'brand': 'EnergyCore',
       'descriptionEn': 'High-energy pre-workout formula.',
-      'descriptionAr': '?????? ???? ????? ??? ???????.',
+      'descriptionAr': 'تركيبة عالية الطاقة لما قبل التمرين.',
       'price': 44.99,
       'originalPrice': 49.99,
       'discount': 10,
@@ -95,10 +95,10 @@ class _StoreScreenState extends State<StoreScreen> {
     {
       'id': '5',
       'nameEn': 'Multivitamin Complex',
-      'nameAr': '???? ????? ???????????',
+      'nameAr': 'مركب متعدد الفيتامينات',
       'brand': 'VitalHealth',
       'descriptionEn': 'Daily vitamin and mineral support.',
-      'descriptionAr': '??? ???? ???????????? ????????.',
+      'descriptionAr': 'دعم يومي للفيتامينات والمعادن.',
       'price': 24.99,
       'category': 'Vitamins',
       'image': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400',
@@ -109,10 +109,10 @@ class _StoreScreenState extends State<StoreScreen> {
     {
       'id': '6',
       'nameEn': 'Fat Burner Pro',
-      'nameAr': '???? ???? ???????',
+      'nameAr': 'حارق الدهون برو',
       'brand': 'LeanLife',
       'descriptionEn': 'Thermogenic formula for weight management.',
-      'descriptionAr': '?????? ?????? ?????? ?????.',
+      'descriptionAr': 'تركيبة حرارية لإدارة الوزن.',
       'price': 49.99,
       'category': 'Fat Burners',
       'image': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
@@ -528,7 +528,7 @@ class _StoreScreenState extends State<StoreScreen> {
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: Text(category == 'all' ? lang.t('store_all') : category),
+              label: Text(_categoryLabel(category, lang)),
               selected: isSelected,
               onSelected: (selected) {
                 setState(() {
@@ -699,6 +699,25 @@ class _StoreScreenState extends State<StoreScreen> {
         ],
       ),
     );
+  }
+
+  String _categoryLabel(String category, LanguageProvider lang) {
+    switch (category) {
+      case 'all':
+        return lang.t('store_all');
+      case 'Protein':
+        return lang.t('store_category_protein');
+      case 'Pre-Workout':
+        return lang.t('store_category_pre_workout');
+      case 'Recovery':
+        return lang.t('store_category_recovery');
+      case 'Vitamins':
+        return lang.t('store_category_vitamins');
+      case 'Fat Burners':
+        return lang.t('store_category_fat_burners');
+      default:
+        return category;
+    }
   }
 
   Widget _buildEmptyState(LanguageProvider lang, bool isArabic, {String? messageKey}) {

@@ -158,18 +158,18 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
                         const QuotaBanner(type: 'message'),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: (0.9 * 255)),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: AppColors.border),
                           ),
                           child: Row(
@@ -181,11 +181,11 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: (0.9 * 255)),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: AppColors.border),
                           ),
                           child: TabBar(
@@ -314,10 +314,10 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: (0.12 * 255)),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
       ),
       child: Column(
@@ -326,11 +326,11 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
           Row(
             children: [
               CircleAvatar(
-                radius: 24,
+                radius: 20,
                 backgroundColor: Colors.white.withValues(alpha: (0.25 * 255)),
                 child: Text(
                   coachInitials,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
                 ),
               ),
               const SizedBox(width: 12),
@@ -342,7 +342,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                       coachName,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -353,12 +353,12 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                         const SizedBox(width: 4),
                         const Text(
                           '4.9',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                          style: TextStyle(color: Colors.white70, fontSize: 11),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           '8 ${lang.t('coach_years')}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: const TextStyle(color: Colors.white70, fontSize: 11),
                         ),
                       ],
                     ),
@@ -367,27 +367,27 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: specialties
                 .map(
                   (specialty) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: (0.2 * 255)),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       specialty,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      style: const TextStyle(color: Colors.white, fontSize: 11),
                     ),
                   ),
                 )
                 .toList(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -395,10 +395,11 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               icon: const Icon(Icons.star, color: Colors.white, size: 16),
               label: Text(
                 lang.t('coach_view_profile'),
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white70),
+                padding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
           ),

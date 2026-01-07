@@ -326,8 +326,14 @@ class _WorkoutExerciseSessionScreenState extends State<WorkoutExerciseSessionScr
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () => widget.onShowSubstitute(currentExercise),
-                            icon: const Icon(Icons.warning_amber_rounded),
+                            icon: const Icon(Icons.warning_amber_rounded, color: Color(0xFFB91C1C)),
                             label: Text(lang.t('workouts_report_injury')),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFB91C1C),
+                              backgroundColor: const Color(0xFFFFF1F2),
+                              side: const BorderSide(color: Color(0xFFFCA5A5)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),

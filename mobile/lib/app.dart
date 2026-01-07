@@ -45,13 +45,29 @@ class _AppState extends State<App> {
         _currentScreen = 'language';
       } else if (!authProvider.isAuthenticated) {
         _currentScreen = 'onboarding';
-      } else if (authProvider.user != null &&
-          !authProvider.user!.hasCompletedFirstIntake) {
-        _currentScreen = 'firstIntake';
       } else {
-        _currentScreen = 'home';
+        _currentScreen = _resolvePostAuthScreen(authProvider);
       }
     });
+  }
+
+  String _resolvePostAuthScreen(AuthProvider authProvider) {
+    final role = authProvider.user?.role.toLowerCase();
+    if (role == 'coach') {
+      return 'coachDashboard';
+    }
+    if (role == 'admin') {
+      return 'adminDashboard';
+    }
+    if (authProvider.user != null && !authProvider.user!.hasCompletedFirstIntake) {
+      return 'firstIntake';
+    }
+    return 'home';
+  }
+
+  void _handlePostAuthNavigation() {
+    final authProvider = context.read<AuthProvider>();
+    _navigateToScreen(_resolvePostAuthScreen(authProvider));
   }
 
   void _navigateToScreen(String screen) {
@@ -76,7 +92,26 @@ class _AppState extends State<App> {
           Future.microtask(() => _navigateToScreen('auth'));
         }
 
-        return _buildCurrentScreen();
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 600),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+            final slide = Tween<Offset>(
+              begin: const Offset(0, 0.06),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
+            return FadeTransition(
+              opacity: fade,
+              child: SlideTransition(position: slide, child: child),
+            );
+          },
+          child: KeyedSubtree(
+            key: ValueKey<String>(_currentScreen),
+            child: _buildCurrentScreen(),
+          ),
+        );
       },
     );
   }
@@ -95,7 +130,7 @@ class _AppState extends State<App> {
       
       case 'auth':
         return AuthScreen(
-          onAuthenticated: () => _navigateToScreen('firstIntake'),
+          onAuthenticated: _handlePostAuthNavigation,
         );
       
       case 'firstIntake':

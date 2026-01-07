@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/animated_reveal.dart';
 
 class FeatureIntroScreen extends StatefulWidget {
   final String feature; // 'workout', 'nutrition', 'store', 'coach'
@@ -131,43 +132,51 @@ class _FeatureIntroScreenState extends State<FeatureIntroScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Icon
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: (slide['color'] as Color).withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              slide['icon'] as IconData,
-              size: 60,
-              color: slide['color'] as Color,
+          AnimatedReveal(
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: (slide['color'] as Color).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                slide['icon'] as IconData,
+                size: 60,
+                color: slide['color'] as Color,
+              ),
             ),
           ),
           
           const SizedBox(height: 48),
           
           // Title
-          Text(
-            slide['title'] as String,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
+          AnimatedReveal(
+            delay: const Duration(milliseconds: 120),
+            child: Text(
+              slide['title'] as String,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
           
           const SizedBox(height: 16),
           
           // Description
-          Text(
-            slide['description'] as String,
-            style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-              height: 1.5,
+          AnimatedReveal(
+            delay: const Duration(milliseconds: 200),
+            child: Text(
+              slide['description'] as String,
+              style: const TextStyle(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),

@@ -131,6 +131,14 @@ class AdminProvider extends ChangeNotifier {
       final index = _users.indexWhere((u) => u.id == id);
       if (index != -1) {
         final user = _users[index];
+        final resolvedCoachName = coachId == null
+            ? null
+            : DemoData.adminCoaches()
+                .firstWhere(
+                  (coach) => coach.id == coachId,
+                  orElse: () => DemoData.adminCoaches().first,
+                )
+                .fullName;
         _users[index] = AdminUser(
           id: user.id,
           fullName: fullName ?? user.fullName,
@@ -140,7 +148,7 @@ class AdminProvider extends ChangeNotifier {
           subscriptionTier: subscriptionTier ?? user.subscriptionTier,
           isActive: isActive ?? user.isActive,
           coachId: coachId ?? user.coachId,
-          coachName: user.coachName,
+          coachName: resolvedCoachName ?? user.coachName,
           createdAt: user.createdAt,
           lastLogin: user.lastLogin,
         );

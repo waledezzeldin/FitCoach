@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/language_provider.dart';
+import '../../widgets/animated_reveal.dart';
 
 class StoreIntroScreen extends StatelessWidget {
   final VoidCallback onGetStarted;
@@ -55,65 +56,85 @@ class StoreIntroScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          languageProvider.t('store_intro_title'),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
+                        AnimatedReveal(
+                          child: Text(
+                            languageProvider.t('store_intro_title'),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          languageProvider.t('store_intro_subtitle'),
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: (0.9 * 255)),
-                            fontSize: 18,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 100),
+                          child: Text(
+                            languageProvider.t('store_intro_subtitle'),
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: (0.9 * 255)),
+                              fontSize: 18,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
-                        _IntroFeatureCard(
-                          icon: Icons.shopping_bag_outlined,
-                          iconColor: const Color(0xFFF59E0B),
-                          title: languageProvider.t('store_intro_feature1_title'),
-                          description: languageProvider.t('store_intro_feature1_desc'),
-                          isArabic: isArabic,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 220),
+                          child: _IntroFeatureCard(
+                            icon: Icons.shopping_bag_outlined,
+                            iconColor: const Color(0xFFF59E0B),
+                            title: languageProvider.t('store_intro_feature1_title'),
+                            description: languageProvider.t('store_intro_feature1_desc'),
+                            isArabic: isArabic,
+                          ),
                         ),
                         const SizedBox(height: 12),
-                        _IntroFeatureCard(
-                          icon: Icons.auto_awesome,
-                          iconColor: const Color(0xFF3B82F6),
-                          title: languageProvider.t('store_intro_feature2_title'),
-                          description: languageProvider.t('store_intro_feature2_desc'),
-                          isArabic: isArabic,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 300),
+                          child: _IntroFeatureCard(
+                            icon: Icons.auto_awesome,
+                            iconColor: const Color(0xFF3B82F6),
+                            title: languageProvider.t('store_intro_feature2_title'),
+                            description: languageProvider.t('store_intro_feature2_desc'),
+                            isArabic: isArabic,
+                          ),
                         ),
                         const SizedBox(height: 12),
-                        _IntroFeatureCard(
-                          icon: Icons.local_shipping_outlined,
-                          iconColor: const Color(0xFF22C55E),
-                          title: languageProvider.t('store_intro_feature3_title'),
-                          description: languageProvider.t('store_intro_feature3_desc'),
-                          isArabic: isArabic,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 380),
+                          child: _IntroFeatureCard(
+                            icon: Icons.local_shipping_outlined,
+                            iconColor: const Color(0xFF22C55E),
+                            title: languageProvider.t('store_intro_feature3_title'),
+                            description: languageProvider.t('store_intro_feature3_desc'),
+                            isArabic: isArabic,
+                          ),
                         ),
                         const SizedBox(height: 12),
-                        _IntroFeatureCard(
-                          icon: Icons.inventory_2_outlined,
-                          iconColor: const Color(0xFF8B5CF6),
-                          title: languageProvider.t('store_intro_feature4_title'),
-                          description: languageProvider.t('store_intro_feature4_desc'),
-                          isArabic: isArabic,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 460),
+                          child: _IntroFeatureCard(
+                            icon: Icons.inventory_2_outlined,
+                            iconColor: const Color(0xFF8B5CF6),
+                            title: languageProvider.t('store_intro_feature4_title'),
+                            description: languageProvider.t('store_intro_feature4_desc'),
+                            isArabic: isArabic,
+                          ),
                         ),
                         const SizedBox(height: 20),
-                        SizedBox(
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: onGetStarted,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEA580C),
-                              foregroundColor: Colors.white,
-                              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 520),
+                          child: SizedBox(
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: onGetStarted,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFEA580C),
+                                foregroundColor: Colors.white,
+                                textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                              ),
+                              child: Text(languageProvider.t('store_intro_start_shopping')),
                             ),
-                            child: Text(languageProvider.t('store_intro_start_shopping')),
                           ),
                         ),
                       ],

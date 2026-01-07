@@ -9,9 +9,11 @@ import '../../providers/quota_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_stat_info_card.dart';
 import '../../widgets/quota_indicator.dart';
+import '../account/account_screen.dart';
 import 'coach_clients_screen.dart';
 import 'coach_calendar_screen.dart';
-import 'coach_earnings_screen.dart';
+import 'workout_plan_builder_screen.dart';
+import 'nutrition_plan_builder_screen.dart';
 
 class CoachDashboardScreen extends StatefulWidget {
   const CoachDashboardScreen({super.key});
@@ -68,8 +70,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
           _buildDashboardTab(languageProvider, authProvider, isArabic),
           const CoachClientsScreen(),
           const CoachCalendarScreen(),
-          _buildMessagesTab(isArabic),
-          const CoachEarningsScreen(),
+          _buildMessagesTab(languageProvider),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -85,23 +86,19 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.dashboard),
-            label: isArabic ? 'لوحة التحكم' : 'Dashboard',
+            label: languageProvider.t('coach_tab_dashboard'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.people),
-            label: isArabic ? 'العملاء' : 'Clients',
+            label: languageProvider.t('coach_tab_clients'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.calendar_month),
-            label: isArabic ? 'التقويم' : 'Calendar',
+            label: languageProvider.t('coach_tab_calendar'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.chat),
-            label: isArabic ? 'الرسائل' : 'Messages',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.account_balance_wallet),
-            label: isArabic ? 'الأرباح' : 'Earnings',
+            label: languageProvider.t('coach_tab_messages'),
           ),
         ],
       ),
@@ -116,6 +113,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     final coachProvider = context.watch<CoachProvider>();
     final analytics = coachProvider.analytics;
     final isLoading = coachProvider.isLoading;
+    final todayAppointmentCount = coachProvider.appointments.length;
 
     return SafeArea(
       child: RefreshIndicator(
@@ -158,7 +156,10 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isArabic ? 'مرحباً، {auth.user?.name ?? ''}' : 'Hello, {auth.user?.name ?? ''}',
+                          lang.t(
+                            'coach_greeting',
+                            args: {'name': auth.user?.name ?? ''},
+                          ),
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -166,7 +167,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          isArabic ? 'لوحة تحكم المدرب' : 'Coach Dashboard',
+                          lang.t('coach_dashboard_title'),
                           style: const TextStyle(
                             fontSize: 14,
                             color: AppColors.textSecondary,
@@ -175,12 +176,24 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () {
-                      _loadAnalytics();
-                      _loadQuota();
-                    },
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.account_circle),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AccountScreen()),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () {
+                          _loadAnalytics();
+                          _loadQuota();
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -204,7 +217,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                   children: [
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'عملاء نشطون' : 'Active Clients',
+                        title: lang.t('coach_metric_active_clients'),
                         value: '${analytics.activeClients}',
                         icon: Icons.people,
                         color: AppColors.primary,
@@ -213,10 +226,10 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'هذا الشهر' : 'This Month',
-                        value: '\$${analytics.monthEarnings.toStringAsFixed(0)}',
-                        icon: Icons.attach_money,
-                        color: AppColors.success,
+                        title: lang.t('coach_metric_upcoming'),
+                        value: '${analytics.upcomingAppointments}',
+                        icon: Icons.video_call,
+                        color: AppColors.secondary,
                       ),
                     ),
                   ],
@@ -228,19 +241,19 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                   children: [
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'مواعيد قادمة' : 'Upcoming',
-                        value: '${analytics.upcomingAppointments}',
-                        icon: Icons.video_call,
-                        color: AppColors.secondary,
+                        title: lang.t('coach_metric_new_messages'),
+                        value: '${analytics.unreadMessages}',
+                        icon: Icons.message,
+                        color: AppColors.accent,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'رسائل جديدة' : 'New Messages',
-                        value: '${analytics.unreadMessages}',
-                        icon: Icons.message,
-                        color: AppColors.accent,
+                        title: lang.t('coach_metric_today_sessions'),
+                        value: '$todayAppointmentCount',
+                        icon: Icons.today,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -254,7 +267,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    isArabic ? 'جدول اليوم' : 'Today\'s Schedule',
+                    lang.t('coach_schedule_today'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -266,7 +279,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                         _selectedIndex = 2; // Calendar tab
                       });
                     },
-                    child: Text(isArabic ? 'عرض الكل' : 'View All'),
+                    child: Text(lang.t('coach_view_all')),
                   ),
                 ],
               ),
@@ -275,13 +288,13 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
               if (isLoading)
                 const Center(child: CircularProgressIndicator())
               else
-                _buildTodaySchedule(coachProvider, isArabic),
+                _buildTodaySchedule(coachProvider, lang, isArabic),
               
               const SizedBox(height: 24),
               
               // Quick actions
               Text(
-                isArabic ? 'إجراءات سريعة' : 'Quick Actions',
+                lang.t('coach_quick_actions'),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -290,31 +303,53 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
               const SizedBox(height: 12),
               
               CustomInfoCard(
-                title: isArabic ? 'إنشاء خطة تمرين' : 'Create Workout Plan',
-                subtitle: isArabic ? 'إنشاء خطة جديدة لعميل' : 'Create a new plan for a client',
+                title: lang.t('coach_action_workout_plan'),
+                subtitle: lang.t('coach_action_workout_plan_desc'),
                 icon: Icons.fitness_center,
                 iconColor: AppColors.primary,
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WorkoutPlanBuilderScreen(
+                        clientId: 'demo-client',
+                        clientName: lang.t('auth_demo_user'),
+                      ),
+                    ),
+                  );
+                },
               ),
               
               const SizedBox(height: 12),
               
               CustomInfoCard(
-                title: isArabic ? 'إنشاء خطة تغذية' : 'Create Nutrition Plan',
-                subtitle: isArabic ? 'إنشاء خطة غذائية جديدة' : 'Create a new nutrition plan',
+                title: lang.t('coach_action_nutrition_plan'),
+                subtitle: lang.t('coach_action_nutrition_plan_desc'),
                 icon: Icons.restaurant,
                 iconColor: AppColors.secondary,
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => NutritionPlanBuilderScreen(
+                        clientId: 'demo-client',
+                        clientName: lang.t('auth_demo_user'),
+                      ),
+                    ),
+                  );
+                },
               ),
               
               const SizedBox(height: 12),
               
               CustomInfoCard(
-                title: isArabic ? 'جدولة جلسة' : 'Schedule Session',
-                subtitle: isArabic ? 'حجز جلسة فيديو مع عميل' : 'Book a video session with a client',
+                title: lang.t('coach_action_schedule_session'),
+                subtitle: lang.t('coach_action_schedule_session_desc'),
                 icon: Icons.video_call,
                 iconColor: AppColors.accent,
-                onTap: () {},
+                onTap: () {
+                  setState(() {
+                    _selectedIndex = 2; // Calendar tab
+                  });
+                },
               ),
             ],
           ),
@@ -328,6 +363,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     required String clientName,
     required String type,
     required bool isArabic,
+    required LanguageProvider lang,
   }) {
     return ListTile(
       leading: Container(
@@ -349,12 +385,16 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
-        child: Text(isArabic ? 'انضم' : 'Join'),
+        child: Text(lang.t('coach_join')),
       ),
     );
   }
   
-  Widget _buildTodaySchedule(CoachProvider coachProvider, bool isArabic) {
+  Widget _buildTodaySchedule(
+    CoachProvider coachProvider,
+    LanguageProvider lang,
+    bool isArabic,
+  ) {
     final today = DateTime.now();
     final todayAppointments = coachProvider.appointments.where((appointment) {
       DateTime? scheduledDate;
@@ -382,7 +422,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  isArabic ? 'لا توجد مواعيد اليوم' : 'No appointments today',
+                  lang.t('coach_no_appointments'),
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
@@ -418,6 +458,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 clientName: clientName,
                 type: typeDisplay,
                 isArabic: isArabic,
+                lang: lang,
               ),
               if (index < todayAppointments.length - 1) const Divider(),
             ],
@@ -440,10 +481,10 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     }
   }
   
-  Widget _buildMessagesTab(bool isArabic) {
+  Widget _buildMessagesTab(LanguageProvider lang) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'الرسائل' : 'Messages'),
+        title: Text(lang.t('coach_messages')),
       ),
       body: Center(
         child: Column(
@@ -456,7 +497,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              isArabic ? 'الرسائل قريباً' : 'Messages Coming Soon',
+              lang.t('coach_messages_coming_soon'),
               style: const TextStyle(
                 fontSize: 18,
                 color: AppColors.textSecondary,

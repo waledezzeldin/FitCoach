@@ -121,7 +121,7 @@ class AuthProvider extends ChangeNotifier {
     required String password,
   }) async {
     if (DemoConfig.isDemo) {
-      _enableDemoUser(role: 'user');
+      _enableDemoUser(role: _demoRoleForCredential(emailOrPhone));
       return true;
     }
     _isLoading = true;
@@ -160,7 +160,7 @@ class AuthProvider extends ChangeNotifier {
     required String password,
   }) async {
     if (DemoConfig.isDemo) {
-      _enableDemoUser(role: 'user');
+      _enableDemoUser(role: _demoRoleForCredential(email));
       return true;
     }
     _isLoading = true;
@@ -297,5 +297,12 @@ class AuthProvider extends ChangeNotifier {
     _user = DemoData.userProfile(role: role);
     _isAuthenticated = true;
     notifyListeners();
+  }
+
+  String _demoRoleForCredential(String credential) {
+    final normalized = credential.trim().toLowerCase();
+    if (normalized == 'coach@fitcoach.com') return 'coach';
+    if (normalized == 'admin@fitcoach.com') return 'admin';
+    return 'user';
   }
 }

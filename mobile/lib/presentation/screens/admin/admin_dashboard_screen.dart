@@ -5,10 +5,13 @@ import '../../providers/language_provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_stat_info_card.dart';
+import '../account/account_screen.dart';
 import 'admin_users_screen.dart';
 import 'admin_coaches_screen.dart';
 import 'admin_revenue_screen.dart';
 import 'admin_audit_logs_screen.dart';
+import 'store_management_screen.dart';
+import 'subscription_management_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -42,10 +45,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          _buildDashboardTab(isArabic),
+          _buildDashboardTab(languageProvider, isArabic),
           const AdminUsersScreen(),
           const AdminCoachesScreen(),
           const AdminRevenueScreen(),
+          const SubscriptionManagementScreen(),
+          const StoreManagementScreen(),
           const AdminAuditLogsScreen(),
         ],
       ),
@@ -62,30 +67,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.dashboard),
-            label: isArabic ? 'لوحة التحكم' : 'Dashboard',
+            label: languageProvider.t('admin_tab_dashboard'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.people),
-            label: isArabic ? 'المستخدمين' : 'Users',
+            label: languageProvider.t('admin_tab_users'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.sports),
-            label: isArabic ? 'المدربين' : 'Coaches',
+            label: languageProvider.t('admin_tab_coaches'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.attach_money),
-            label: isArabic ? 'الإيرادات' : 'Revenue',
+            label: languageProvider.t('admin_tab_revenue'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.credit_card),
+            label: languageProvider.t('admin_tab_subscriptions'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.store),
+            label: languageProvider.t('admin_tab_store'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.history),
-            label: isArabic ? 'السجلات' : 'Logs',
+            label: languageProvider.t('admin_tab_logs'),
           ),
         ],
       ),
     );
   }
   
-  Widget _buildDashboardTab(bool isArabic) {
+  Widget _buildDashboardTab(LanguageProvider languageProvider, bool isArabic) {
     final adminProvider = context.watch<AdminProvider>();
     final analytics = adminProvider.analytics;
     final isLoading = adminProvider.isLoading;
@@ -107,7 +120,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isArabic ? 'لوحة تحكم الإدارة' : 'Admin Dashboard',
+                          languageProvider.t('admin_dashboard_title'),
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -115,7 +128,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          isArabic ? 'مراقبة وإدارة النظام' : 'Monitor and manage the platform',
+                          languageProvider.t('admin_dashboard_subtitle'),
                           style: const TextStyle(
                             fontSize: 14,
                             color: AppColors.textSecondary,
@@ -124,9 +137,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: _loadDashboardData,
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.account_circle),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AccountScreen()),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: _loadDashboardData,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -141,7 +166,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'إجمالي المستخدمين' : 'Total Users',
+                        title: languageProvider.t('admin_metric_total_users'),
                         value: '${analytics.users.total}',
                         icon: Icons.people,
                         color: AppColors.primary,
@@ -153,7 +178,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'مستخدمون نشطون' : 'Active Users',
+                        title: languageProvider.t('admin_metric_active_users'),
                         value: '${analytics.users.active}',
                         icon: Icons.people_alt,
                         color: AppColors.success,
@@ -171,7 +196,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'إجمالي المدربين' : 'Total Coaches',
+                        title: languageProvider.t('admin_metric_total_coaches'),
                         value: '${analytics.coaches.total}',
                         icon: Icons.sports,
                         color: AppColors.secondary,
@@ -183,7 +208,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'مدربون نشطون' : 'Active Coaches',
+                        title: languageProvider.t('admin_metric_active_coaches'),
                         value: '${analytics.coaches.active}',
                         icon: Icons.fitness_center,
                         color: AppColors.accent,
@@ -201,7 +226,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'الإيرادات (30 يوم)' : 'Revenue (30d)',
+                        title: languageProvider.t('admin_metric_revenue_30d'),
                         value: '\$${analytics.revenue.last30Days.toStringAsFixed(0)}',
                         icon: Icons.attach_money,
                         color: AppColors.success,
@@ -213,7 +238,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: CustomStatCard(
-                        title: isArabic ? 'مستخدمون جدد (7 أيام)' : 'New Users (7d)',
+                        title: languageProvider.t('admin_metric_new_users_7d'),
                         value: '+${analytics.growth.newUsersLast7Days}',
                         icon: Icons.trending_up,
                         color: AppColors.warning,
@@ -226,7 +251,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 
                 // Subscription Distribution
                 Text(
-                  isArabic ? 'توزيع الاشتراكات' : 'Subscription Distribution',
+                  languageProvider.t('admin_subscription_distribution'),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -337,7 +362,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isArabic ? 'الجلسات اليوم' : 'Sessions Today',
+                                languageProvider.t('admin_sessions_today'),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: AppColors.textSecondary,

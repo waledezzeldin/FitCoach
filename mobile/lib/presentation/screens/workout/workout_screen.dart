@@ -480,12 +480,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       completedSteps++;
     }
 
-    final progress = completedSteps / totalSteps;
-
+    final isCompleted = completedSteps >= totalSteps;
+    final progress = isCompleted ? 1.0 : 0.3;
     final percent = (progress * 100).round();
 
     return CustomCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       color: const Color(0xFFF5F7FF),
       border: Border.all(color: const Color(0xFFBBD2FF)),
       child: Column(
@@ -544,9 +544,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            lang.t('intake_banner_benefits'),
-            style: const TextStyle(fontSize: 11, color: Color(0xFF2D4EB8)),
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              lang.t('intake_banner_benefits'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF2D4EB8)),
+            ),
           ),
           const SizedBox(height: 12),
           Row(

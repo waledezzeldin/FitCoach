@@ -42,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     
     return Scaffold(
       body: AnimatedContainer(
-        duration: const Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 700),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -127,7 +127,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 onTap: () {
                                   _pageController.animateToPage(
                                     index,
-                                    duration: const Duration(milliseconds: 300),
+                                    duration: const Duration(milliseconds: 500),
                                     curve: Curves.easeInOut,
                                   );
                                 },
@@ -145,7 +145,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     ? null
                                     : () {
                                         _pageController.previousPage(
-                                          duration: const Duration(milliseconds: 300),
+                                          duration: const Duration(milliseconds: 500),
                                           curve: Curves.easeInOut,
                                         );
                                       },
@@ -171,7 +171,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   onPressed: () {
                                     if (_currentPage < slides.length - 1) {
                                       _pageController.nextPage(
-                                        duration: const Duration(milliseconds: 300),
+                                        duration: const Duration(milliseconds: 500),
                                         curve: Curves.easeInOut,
                                       );
                                     } else {
@@ -265,14 +265,88 @@ class OnboardingSlideData {
   });
 }
 
-class _OnboardingSlide extends StatelessWidget {
+class _OnboardingSlide extends StatefulWidget {
   final OnboardingSlideData slide;
   final bool isArabic;
-  
+
   const _OnboardingSlide({
     required this.slide,
     required this.isArabic,
   });
+
+  @override
+  State<_OnboardingSlide> createState() => _OnboardingSlideState();
+}
+
+class _OnboardingSlideState extends State<_OnboardingSlide>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _imageFade;
+  late final Animation<Offset> _imageSlide;
+  late final Animation<double> _titleFade;
+  late final Animation<Offset> _titleSlide;
+  late final Animation<double> _descFade;
+  late final Animation<Offset> _descSlide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _imageFade = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.45, curve: Curves.easeOut),
+    );
+    _imageSlide = Tween<Offset>(
+      begin: const Offset(0, 0.06),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.45, curve: Curves.easeOut),
+    ));
+    _titleFade = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.25, 0.7, curve: Curves.easeOut),
+    );
+    _titleSlide = Tween<Offset>(
+      begin: const Offset(0, 0.04),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.25, 0.7, curve: Curves.easeOut),
+    ));
+    _descFade = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.4, 0.9, curve: Curves.easeOut),
+    );
+    _descSlide = Tween<Offset>(
+      begin: const Offset(0, 0.04),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.4, 0.9, curve: Curves.easeOut),
+    ));
+
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant _OnboardingSlide oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.slide.imagePath != widget.slide.imagePath) {
+      _controller.reset();
+      _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -286,71 +360,92 @@ class _OnboardingSlide extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Image container
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 320),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
-                            child: Image.asset(
-                              slide.imagePath,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: AppColors.surface,
-                                  alignment: Alignment.center,
-                                  child: Icon(
-                                    Icons.image_not_supported_outlined,
-                                    color: AppColors.textDisabled,
-                                  ),
-                                );
-                              },
+                  FadeTransition(
+                    opacity: _imageFade,
+                    child: SlideTransition(
+                      position: _imageSlide,
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 320),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            AspectRatio(
+                              aspectRatio: 1,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
+                                child: Image.asset(
+                                  widget.slide.imagePath,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: AppColors.surface,
+                                      alignment: Alignment.center,
+                                      child: Icon(
+                                        Icons.image_not_supported_outlined,
+                                        color: AppColors.textDisabled,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              top: -12,
+                              right: -12,
+                              child: _BlurAccent(
+                                color: widget.slide.accentColor,
+                                size: 96,
+                              ),
+                            ),
+                            Positioned(
+                              bottom: -16,
+                              left: -16,
+                              child: _BlurAccent(
+                                color: widget.slide.accentColor,
+                                size: 120,
+                              ),
+                            ),
+                          ],
                         ),
-                        Positioned(
-                          top: -12,
-                          right: -12,
-                          child: _BlurAccent(color: slide.accentColor, size: 96),
-                        ),
-                        Positioned(
-                          bottom: -16,
-                          left: -16,
-                          child: _BlurAccent(color: slide.accentColor, size: 120),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
-                  // Title
-                  SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                      slide.title,
-                      style: AppTextStyles.h1.copyWith(
-                        color: AppColors.textPrimary,
+
+                  FadeTransition(
+                    opacity: _titleFade,
+                    child: SlideTransition(
+                      position: _titleSlide,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          widget.slide.title,
+                          style: AppTextStyles.h1.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                          textAlign: widget.isArabic ? TextAlign.right : TextAlign.left,
+                        ),
                       ),
-                      textAlign: isArabic ? TextAlign.right : TextAlign.left,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
-                  // Description
-                  SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                      slide.description,
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondary,
+
+                  FadeTransition(
+                    opacity: _descFade,
+                    child: SlideTransition(
+                      position: _descSlide,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          widget.slide.description,
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: widget.isArabic ? TextAlign.right : TextAlign.left,
+                        ),
                       ),
-                      textAlign: isArabic ? TextAlign.right : TextAlign.left,
                     ),
                   ),
                 ],

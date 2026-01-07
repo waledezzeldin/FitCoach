@@ -38,7 +38,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadData();
+      }
+    });
   }
   
   Future<void> _loadData() async {
@@ -442,7 +446,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     Map<String, dynamic> workout,
   ) {
     return CustomCard(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -578,7 +582,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.2,
+      childAspectRatio: 1.3,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: items.map(_buildNavigationCardCompact).toList(),
@@ -596,13 +600,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           setState(() => _selectedIndex = item.index);
         }
       },
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: item.locked ? const Color(0xFFFFF7ED) : item.background ?? Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: item.locked ? const Color(0xFFFED7AA) : AppColors.border,
+            width: item.locked ? 2 : 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -629,7 +636,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                         ),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(Icons.workspace_premium, color: Colors.white, size: 20),
+                      child: const Icon(Icons.workspace_premium, color: Colors.white, size: 22),
                     ),
                   ),
                 if (item.badge != null)
@@ -637,7 +644,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     top: -2,
                     right: -2,
                     child: Container(
-                      padding: const EdgeInsets.all(4),
+                      constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       decoration: BoxDecoration(
                         color: AppColors.error,
                         borderRadius: BorderRadius.circular(10),
@@ -653,16 +661,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             const SizedBox(height: 8),
             Text(
               item.label,
-              style: AppTextStyles.smallMedium.copyWith(
-                color: AppColors.textPrimary,
+              style: const TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 2),
             Text(
               item.description,
-              style: AppTextStyles.small.copyWith(color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -827,7 +839,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
   Widget _buildRecentActivityCard(LanguageProvider lang, bool isArabic) {
     return CustomCard(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1196,7 +1208,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       onTap: item.locked ? null : () => setState(() => _selectedIndex = item.index),
       borderRadius: BorderRadius.circular(AppRadius.medium),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.medium),
@@ -1215,13 +1227,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: item.color.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(item.icon, color: item.color, size: 20),
+                  child: Icon(item.icon, color: item.color, size: 18),
                 ),
                 const SizedBox(height: 12),
                 Text(

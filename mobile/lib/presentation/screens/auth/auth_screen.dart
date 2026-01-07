@@ -762,7 +762,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 2),
                     const Text(
-                      'Email: user@fitcoach.com / Password: demo123',
+                      'Email: user@fitcoach.com / Password: any',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 12, color: Colors.white70),
                     ),
@@ -774,7 +774,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 2),
                     const Text(
-                      'Email: coach@fitcoach.com',
+                      'Email: coach@fitcoach.com / Password: any',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 12, color: Colors.white70),
                     ),
@@ -786,7 +786,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 2),
                     const Text(
-                      'Email: admin@fitcoach.com',
+                      'Email: admin@fitcoach.com / Password: any',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 12, color: Colors.white70),
                     ),

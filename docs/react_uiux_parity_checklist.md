@@ -151,3 +151,4 @@ from the React UI_UX codebase and SRS. Use it to drive Flutter parity.
 
 ## Progress Log
 - [ ] 2025-__-__: Checklist created from React UI_UX sources.
+- [x] 2026-01-06: Store Arabic content fixed, account actions wired to real screens, demo role routing updated, coach/admin labels centralized.

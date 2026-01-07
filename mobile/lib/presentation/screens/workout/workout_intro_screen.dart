@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
+import '../../widgets/animated_reveal.dart';
 
 class WorkoutIntroScreen extends StatelessWidget {
   final VoidCallback onGetStarted;
@@ -49,99 +50,125 @@ class WorkoutIntroScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(40),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: (0.35 * 255)),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.fitness_center,
-                      color: Colors.white,
-                      size: 40,
+                  AnimatedReveal(
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(40),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: (0.35 * 255)),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.fitness_center,
+                        color: Colors.white,
+                        size: 40,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text(
-                    languageProvider.t('workouts_intro_title'),
-                    style: AppTextStyles.h2.copyWith(color: Colors.white),
-                    textAlign: TextAlign.center,
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 80),
+                    child: Text(
+                      languageProvider.t('workouts_intro_title'),
+                      style: AppTextStyles.h2.copyWith(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    languageProvider.t('workouts_intro_subtitle'),
-                    style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
-                    textAlign: TextAlign.center,
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 140),
+                    child: Text(
+                      languageProvider.t('workouts_intro_subtitle'),
+                      style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Expanded(
                     child: ListView(
                       padding: EdgeInsets.zero,
                       children: [
-                        _FeatureCard(
-                          icon: Icons.track_changes,
-                          iconColor: const Color(0xFF7BA7FF),
-                          title: languageProvider.t('workouts_intro_feature1_title'),
-                          description: languageProvider.t('workouts_intro_feature1_desc'),
-                          isArabic: isArabic,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 220),
+                          child: _FeatureCard(
+                            icon: Icons.track_changes,
+                            iconColor: const Color(0xFF7BA7FF),
+                            title: languageProvider.t('workouts_intro_feature1_title'),
+                            description: languageProvider.t('workouts_intro_feature1_desc'),
+                            isArabic: isArabic,
+                          ),
                         ),
                         const SizedBox(height: 12),
-                        _FeatureCard(
-                          icon: Icons.check_circle_outline,
-                          iconColor: const Color(0xFF74E1A8),
-                          title: languageProvider.t('workouts_intro_feature2_title'),
-                          description: languageProvider.t('workouts_intro_feature2_desc'),
-                          isArabic: isArabic,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 300),
+                          child: _FeatureCard(
+                            icon: Icons.check_circle_outline,
+                            iconColor: const Color(0xFF74E1A8),
+                            title: languageProvider.t('workouts_intro_feature2_title'),
+                            description: languageProvider.t('workouts_intro_feature2_desc'),
+                            isArabic: isArabic,
+                          ),
                         ),
                         const SizedBox(height: 12),
-                        _FeatureCard(
-                          icon: Icons.trending_up,
-                          iconColor: const Color(0xFFC9A8FF),
-                          title: languageProvider.t('workouts_intro_feature3_title'),
-                          description: languageProvider.t('workouts_intro_feature3_desc'),
-                          isArabic: isArabic,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 380),
+                          child: _FeatureCard(
+                            icon: Icons.trending_up,
+                            iconColor: const Color(0xFFC9A8FF),
+                            title: languageProvider.t('workouts_intro_feature3_title'),
+                            description: languageProvider.t('workouts_intro_feature3_desc'),
+                            isArabic: isArabic,
+                          ),
                         ),
                         const SizedBox(height: 12),
-                        _FeatureCard(
-                          icon: Icons.calendar_today,
-                          iconColor: const Color(0xFFFFC48B),
-                          title: languageProvider.t('workouts_intro_feature4_title'),
-                          description: languageProvider.t('workouts_intro_feature4_desc'),
-                          isArabic: isArabic,
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 460),
+                          child: _FeatureCard(
+                            icon: Icons.calendar_today,
+                            iconColor: const Color(0xFFFFC48B),
+                            title: languageProvider.t('workouts_intro_feature4_title'),
+                            description: languageProvider.t('workouts_intro_feature4_desc'),
+                            isArabic: isArabic,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: onGetStarted,
-                      icon: Icon(
-                        isArabic ? Icons.arrow_back : Icons.arrow_forward,
-                        color: Colors.white,
-                      ),
-                      label: Text(languageProvider.t('workouts_get_started')),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 520),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: onGetStarted,
+                        icon: Icon(
+                          isArabic ? Icons.arrow_back : Icons.arrow_forward,
+                          color: Colors.white,
+                        ),
+                        label: Text(languageProvider.t('workouts_get_started')),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    languageProvider.t('workouts_intro_note'),
-                    style: AppTextStyles.small.copyWith(color: Colors.white60),
-                    textAlign: TextAlign.center,
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 600),
+                    child: Text(
+                      languageProvider.t('workouts_intro_note'),
+                      style: AppTextStyles.small.copyWith(color: Colors.white60),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),

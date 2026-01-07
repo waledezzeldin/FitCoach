@@ -136,77 +136,318 @@ class _NutritionScreenState extends State<NutritionScreen> {
       return _buildNoPlan(languageProvider, isArabic);
     }
     
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(nutritionProvider.activePlan!.name ?? ''),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              // Show nutrition history
-            },
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await nutritionProvider.loadActivePlan();
-          await nutritionProvider.checkTrialStatus();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Trial banner for Freemium users
-              if (subscriptionTier == 'Freemium' && !nutritionProvider.hasTrialExpired)
-                _buildTrialBanner(nutritionProvider, languageProvider, isArabic),
-              
-              if (subscriptionTier == 'Freemium' && !nutritionProvider.hasTrialExpired)
-                const SizedBox(height: 16),
-              
-              // Macro progress
-              _buildMacroProgress(
-                nutritionProvider.activePlan!,
-                languageProvider,
-                isArabic,
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Calorie counter
-              _buildCalorieCounter(
-                nutritionProvider.activePlan!,
-                languageProvider,
-                isArabic,
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Meals
-              Text(
-                languageProvider.t('todays_meals'),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+    final macroTargets = nutritionProvider.macroTargets;
+    final currentMacros = nutritionProvider.getCurrentMacros();
+    final calorieProgress = (currentMacros['calories'] as num) /
+        ((macroTargets['calories'] as num) == 0 ? 1 : (macroTargets['calories'] as num));
+
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.8,
+                child: Image.asset(
+                  'assets/placeholders/splash_onboarding/nuitration_onboarding.png',
+                  fit: BoxFit.cover,
                 ),
               ),
-              
-              const SizedBox(height: 16),
-              
-              _buildMealsList(
-                nutritionProvider.activePlan!,
-                languageProvider,
-                isArabic,
+            ),
+            SafeArea(
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF059669), Color(0xFF0F766E)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => Navigator.of(context).maybePop(),
+                              icon: Icon(
+                                isArabic ? Icons.arrow_forward : Icons.arrow_back,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    languageProvider.t('nutrition_title'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    languageProvider.t('nutrition_tracking'),
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.settings, color: Colors.white),
+                              onPressed: () => setState(() => _showPreferencesIntake = true),
+                              tooltip: languageProvider.t('nutrition_edit_preferences'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: (0.12 * 255)),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    languageProvider.t('nutrition_todays_progress'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: (0.2 * 255)),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '${(calorieProgress * 100).clamp(0, 100).round()}%',
+                                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                '${currentMacros['calories']?.toInt() ?? 0} / ${macroTargets['calories']}',
+                                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                              ),
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: LinearProgressIndicator(
+                                  value: calorieProgress.clamp(0, 1).toDouble(),
+                                  minHeight: 6,
+                                  backgroundColor: Colors.white.withValues(alpha: (0.2 * 255)),
+                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: TabBar(
+                        labelColor: AppColors.textPrimary,
+                        unselectedLabelColor: AppColors.textSecondary,
+                        labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                        indicator: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        tabs: [
+                          Tab(text: languageProvider.t('nutrition_tab_today')),
+                          Tab(text: languageProvider.t('nutrition_tab_meals')),
+                          Tab(text: languageProvider.t('nutrition_tab_tracking')),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildTodayTab(languageProvider, nutritionProvider, isArabic),
+                        _buildMealsTab(languageProvider, nutritionProvider, isArabic),
+                        _buildTrackingTab(languageProvider, nutritionProvider, isArabic),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
-  
+  Widget _buildTodayTab(
+    LanguageProvider lang,
+    NutritionProvider provider,
+    bool isArabic,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildMacroBreakdownGrid(lang, provider),
+          const SizedBox(height: 20),
+          Text(
+            lang.t('todays_meals'),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          ...((provider.activePlan?.meals ?? <Meal>[]).map(
+            (meal) => _buildMealCard(
+              meal,
+              lang,
+              isArabic,
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMealsTab(
+    LanguageProvider lang,
+    NutritionProvider provider,
+    bool isArabic,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            lang.t('todays_meals'),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          ...((provider.activePlan?.meals ?? <Meal>[]).map(
+            (meal) => _buildMealCard(
+              meal,
+              lang,
+              isArabic,
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrackingTab(
+    LanguageProvider lang,
+    NutritionProvider provider,
+    bool isArabic,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildMacroProgress(provider.activePlan!, lang, isArabic),
+          const SizedBox(height: 20),
+          _buildCalorieCounter(provider.activePlan!, lang, isArabic),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMacroBreakdownGrid(LanguageProvider lang, NutritionProvider provider) {
+    final targets = provider.macroTargets;
+    final current = provider.getCurrentMacros();
+
+    Widget buildCard(IconData icon, Color color, String label, int value, int target) {
+      final progress = target == 0 ? 0.0 : (value / target).clamp(0, 1).toDouble();
+      return CustomCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 8),
+            Text('$value', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+            Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            const SizedBox(height: 8),
+            LinearProgressIndicator(
+              value: progress,
+              minHeight: 4,
+              backgroundColor: AppColors.surface,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.1,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        buildCard(
+          Icons.egg_alt,
+          const Color(0xFFEF4444),
+          lang.t('protein'),
+          (current['protein'] as num).toInt(),
+          (targets['protein'] as num).toInt(),
+        ),
+        buildCard(
+          Icons.grass,
+          const Color(0xFFF59E0B),
+          lang.t('carbs'),
+          (current['carbs'] as num).toInt(),
+          (targets['carbs'] as num).toInt(),
+        ),
+        buildCard(
+          Icons.opacity,
+          const Color(0xFF3B82F6),
+          lang.t('fats'),
+          (current['fat'] as num).toInt(),
+          (targets['fat'] as num).toInt(),
+        ),
+        buildCard(
+          Icons.water_drop,
+          const Color(0xFF06B6D4),
+          lang.t('nutrition_water'),
+          (current['water'] as num?)?.toInt() ?? 0,
+          (targets['water'] as num?)?.toInt() ?? 3000,
+        ),
+      ],
+    );
+  }
+
   Widget _buildTrialBanner(
     NutritionProvider provider,
     LanguageProvider lang,
@@ -371,43 +612,120 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   Widget _buildLockedAccess(LanguageProvider lang, bool isArabic) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(lang.t('nutrition')),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.lock, size: 56, color: AppColors.textSecondary),
-              const SizedBox(height: 16),
-              Text(
-                lang.t('nutrition_locked_title'),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                lang.t('nutrition_locked_desc'),
-                style: const TextStyle(color: AppColors.textSecondary),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SubscriptionManagerScreen()),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            color: AppColors.primary,
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: Icon(
+                      isArabic ? Icons.arrow_forward : Icons.arrow_back,
+                      color: Colors.white,
+                    ),
                   ),
-                  icon: const Icon(Icons.workspace_premium),
-                  label: Text(lang.t('nutrition_unlock_button')),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          lang.t('nutrition_title'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          lang.t('nutrition_tracking'),
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: CustomCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFDE68A),
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        child: const Icon(Icons.lock, size: 36, color: Color(0xFFB45309)),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        lang.t('nutrition_locked_title'),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        lang.t('nutrition_locked_desc'),
+                        style: const TextStyle(color: AppColors.textSecondary),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Column(
+                        children: [
+                          _buildLockedFeatureRow(Icons.track_changes, lang.t('nutrition_feature1'), isArabic),
+                          const SizedBox(height: 8),
+                          _buildLockedFeatureRow(Icons.restaurant_menu, lang.t('nutrition_feature2'), isArabic),
+                          const SizedBox(height: 8),
+                          _buildLockedFeatureRow(Icons.trending_up, lang.t('nutrition_feature3'), isArabic),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const SubscriptionManagerScreen()),
+                          ),
+                          icon: const Icon(Icons.workspace_premium),
+                          label: Text(lang.t('nutrition_unlock_button')),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLockedFeatureRow(IconData icon, String label, bool isArabic) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF16A34A)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            textAlign: isArabic ? TextAlign.right : TextAlign.left,
           ),
         ),
-      ),
+      ],
     );
   }
   
@@ -596,9 +914,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
     final todayMeals = (plan.days != null && plan.days!.isNotEmpty) ? plan.days![0].meals : <Meal>[];
     
     return Column(
-      children: todayMeals.map((meal) {
-        return _buildMealCard(meal, lang, isArabic);
-      }).toList(),
+      children: todayMeals
+          .map<Widget>((meal) => _buildMealCard(meal, lang, isArabic))
+          .toList(),
     );
   }
   

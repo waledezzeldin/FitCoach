@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import '../../core/config/demo_config.dart';
 
 class SocialAuthResult {
   SocialAuthResult({
@@ -29,13 +30,10 @@ class DefaultSocialAuthClient implements SocialAuthClient {
   DefaultSocialAuthClient({
     GoogleSignIn? googleSignIn,
     FacebookAuth? facebookAuth,
-  })  : _googleSignIn = googleSignIn ??
-            GoogleSignIn(
-              scopes: const ['email', 'profile'],
-            ),
+  })  : _googleSignIn = googleSignIn,
         _facebookAuth = facebookAuth ?? FacebookAuth.instance;
 
-  final GoogleSignIn _googleSignIn;
+  GoogleSignIn? _googleSignIn;
   final FacebookAuth _facebookAuth;
 
   @override
@@ -53,7 +51,7 @@ class DefaultSocialAuthClient implements SocialAuthClient {
   }
 
   Future<SocialAuthResult> _signInWithGoogle() async {
-    final account = await _googleSignIn.signIn();
+    final account = await _getGoogleSignIn().signIn();
     if (account == null) {
       throw Exception('Google sign-in canceled');
     }
@@ -122,5 +120,28 @@ class DefaultSocialAuthClient implements SocialAuthClient {
       email: credential.email,
       name: fullName.isEmpty ? null : fullName,
     );
+  }
+
+  GoogleSignIn _getGoogleSignIn() {
+    if (_googleSignIn != null) {
+      return _googleSignIn!;
+    }
+    if (kIsWeb) {
+      const clientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID', defaultValue: '');
+      if (clientId.isEmpty) {
+        throw Exception(
+          DemoConfig.isDemo
+              ? 'Google sign-in is not configured for demo mode on web.'
+              : 'Google sign-in client ID missing for web.',
+        );
+      }
+      _googleSignIn = GoogleSignIn(
+        clientId: clientId,
+        scopes: const ['email', 'profile'],
+      );
+      return _googleSignIn!;
+    }
+    _googleSignIn = GoogleSignIn(scopes: const ['email', 'profile']);
+    return _googleSignIn!;
   }
 }
