@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 class AnimatedReveal extends StatefulWidget {
@@ -11,9 +13,9 @@ class AnimatedReveal extends StatefulWidget {
     super.key,
     required this.child,
     this.delay = Duration.zero,
-    this.duration = const Duration(milliseconds: 700),
-    this.offset = const Offset(0, 0.08),
-    this.curve = Curves.easeOut,
+    this.duration = const Duration(milliseconds: 900),
+    this.offset = const Offset(0, 0.12),
+    this.curve = Curves.easeOutCubic,
   });
 
   @override
@@ -22,15 +24,22 @@ class AnimatedReveal extends StatefulWidget {
 
 class _AnimatedRevealState extends State<AnimatedReveal> {
   bool _visible = false;
+  Timer? _delayTimer;
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(widget.delay, () {
+    _delayTimer = Timer(widget.delay, () {
       if (mounted) {
         setState(() => _visible = true);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _delayTimer?.cancel();
+    super.dispose();
   }
 
   @override

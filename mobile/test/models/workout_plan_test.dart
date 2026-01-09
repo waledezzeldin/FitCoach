@@ -9,11 +9,14 @@ void main() {
         'userId': 'user_456',
         'coachId': 'coach_789',
         'name': 'Muscle Building Plan',
+        'nameAr': 'خطة بناء العضلات',
         'description': '12-week muscle building program',
+        'descriptionAr': 'برنامج 12 أسبوعاً لبناء العضلات',
         'days': [
           {
             'id': 'day_1',
             'dayName': 'Monday',
+            'dayNameAr': 'الاثنين',
             'dayNumber': 1,
             'exercises': [
               {
@@ -57,8 +60,11 @@ void main() {
       expect(plan.userId, 'user_456');
       expect(plan.coachId, 'coach_789');
       expect(plan.name, 'Muscle Building Plan');
+      expect(plan.nameAr, 'خطة بناء العضلات');
       expect(plan.description, '12-week muscle building program');
+      expect(plan.descriptionAr, 'برنامج 12 أسبوعاً لبناء العضلات');
       expect(plan.days?.length, 1);
+      expect(plan.days?.first.dayNameAr, 'الاثنين');
       expect(plan.isActive, true);
       expect(plan.startDate?.year, 2024);
       expect(plan.endDate?.month, 3);
@@ -79,6 +85,7 @@ void main() {
       final day = WorkoutDay(
         id: 'day_1',
         dayName: 'Monday',
+        dayNameAr: 'الأربعاء',
         dayNumber: 1,
         exercises: [exercise],
       );
@@ -88,6 +95,9 @@ void main() {
         userId: 'user_1',
         coachId: 'coach_1',
         name: 'Test Plan',
+        nameAr: 'خطة اختبار',
+        description: 'Short test plan',
+        descriptionAr: 'خطة اختبار قصيرة',
         days: [day],
         startDate: DateTime(2024, 1, 1),
         createdAt: DateTime(2024, 1, 1),
@@ -98,8 +108,11 @@ void main() {
 
       expect(json['id'], 'plan_1');
       expect(json['name'], 'Test Plan');
+      expect(json['nameAr'], 'خطة اختبار');
+      expect(json['descriptionAr'], 'خطة اختبار قصيرة');
       expect(json['days'], isA<List>());
       expect((json['days'] as List).length, 1);
+      expect((json['days'] as List).first['dayNameAr'], 'الأربعاء');
     });
 
     test('should handle null optional fields', () {
@@ -127,6 +140,7 @@ void main() {
       final json = {
         'id': 'day_1',
         'dayName': 'Tuesday',
+        'dayNameAr': 'الثلاثاء',
         'dayNumber': 2,
         'exercises': [],
         'notes': 'Pull day',
@@ -136,6 +150,7 @@ void main() {
 
       expect(day.id, 'day_1');
       expect(day.dayName, 'Tuesday');
+      expect(day.dayNameAr, 'الثلاثاء');
       expect(day.dayNumber, 2);
       expect(day.exercises, isEmpty);
       expect(day.notes, 'Pull day');
@@ -145,6 +160,7 @@ void main() {
       final day = WorkoutDay(
         id: 'day_1',
         dayName: 'Wednesday',
+        dayNameAr: 'الأربعاء',
         dayNumber: 3,
         exercises: [],
         notes: 'Leg day',
@@ -153,6 +169,7 @@ void main() {
       final json = day.toJson();
 
       expect(json['dayName'], 'Wednesday');
+      expect(json['dayNameAr'], 'الأربعاء');
       expect(json['dayNumber'], 3);
       expect(json['notes'], 'Leg day');
     });

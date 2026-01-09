@@ -65,6 +65,7 @@ class NutritionIntroScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 80),
+                    offset: Offset(isArabic ? -0.2 : 0.2, 0),
                     child: Text(
                       languageProvider.t('nutrition_intro_title'),
                       style: const TextStyle(
@@ -78,6 +79,7 @@ class NutritionIntroScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 140),
+                    offset: Offset(isArabic ? -0.18 : 0.18, 0),
                     child: Text(
                       languageProvider.t('nutrition_intro_subtitle'),
                       style: TextStyle(
@@ -93,8 +95,9 @@ class NutritionIntroScreen extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       children: [
                         AnimatedReveal(
-                          delay: const Duration(milliseconds: 220),
-                          child: _IntroFeatureCard(
+                            delay: const Duration(milliseconds: 220),
+                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                            child: _IntroFeatureCard(
                             icon: Icons.track_changes,
                             iconColor: const Color(0xFF22C55E),
                             title: languageProvider.t('nutrition_intro_feature1_title'),
@@ -104,8 +107,9 @@ class NutritionIntroScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         AnimatedReveal(
-                          delay: const Duration(milliseconds: 300),
-                          child: _IntroFeatureCard(
+                            delay: const Duration(milliseconds: 300),
+                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                            child: _IntroFeatureCard(
                             icon: Icons.restaurant_menu,
                             iconColor: const Color(0xFF2563EB),
                             title: languageProvider.t('nutrition_intro_feature2_title'),
@@ -115,8 +119,9 @@ class NutritionIntroScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         AnimatedReveal(
-                          delay: const Duration(milliseconds: 380),
-                          child: _IntroFeatureCard(
+                            delay: const Duration(milliseconds: 380),
+                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                            child: _IntroFeatureCard(
                             icon: Icons.trending_up,
                             iconColor: const Color(0xFF7C3AED),
                             title: languageProvider.t('nutrition_intro_feature3_title'),
@@ -126,8 +131,9 @@ class NutritionIntroScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         AnimatedReveal(
-                          delay: const Duration(milliseconds: 460),
-                          child: _IntroFeatureCard(
+                            delay: const Duration(milliseconds: 460),
+                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                            child: _IntroFeatureCard(
                             icon: Icons.local_florist,
                             iconColor: const Color(0xFFF97316),
                             title: languageProvider.t('nutrition_intro_feature4_title'),
@@ -140,8 +146,9 @@ class NutritionIntroScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   AnimatedReveal(
-                    delay: const Duration(milliseconds: 520),
-                    child: SizedBox(
+                      delay: const Duration(milliseconds: 520),
+                      offset: const Offset(0, 0.18),
+                      child: SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
@@ -165,6 +172,7 @@ class NutritionIntroScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 600),
+                    offset: Offset(isArabic ? -0.15 : 0.15, 0),
                     child: Text(
                       languageProvider.t('nutrition_intro_note'),
                       style: TextStyle(

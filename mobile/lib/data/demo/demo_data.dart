@@ -52,7 +52,7 @@ class DemoData {
           experienceLevel: 'intermediate',
           mainGoal: 'strength',
           injuries: const ['knee'],
-          subscriptionTier: 'Smart Premium',
+          subscriptionTier: 'Freemium',
           coachId: 'demo-coach',
           hasCompletedFirstIntake: false,
           hasCompletedSecondIntake: false,
@@ -67,7 +67,7 @@ class DemoData {
       Exercise(
         id: 'ex-squat',
         name: 'Barbell Squat',
-        nameAr: 'Barbell Squat',
+        nameAr: 'القرفصاء بالبار',
         nameEn: 'Barbell Squat',
         category: 'strength',
         muscleGroup: 'legs',
@@ -88,7 +88,7 @@ class DemoData {
       Exercise(
         id: 'ex-bench',
         name: 'Bench Press',
-        nameAr: 'Bench Press',
+        nameAr: 'الضغط على المقعد',
         nameEn: 'Bench Press',
         category: 'strength',
         muscleGroup: 'chest',
@@ -112,7 +112,7 @@ class DemoData {
       Exercise(
         id: 'ex-rows',
         name: 'Seated Row',
-        nameAr: 'Seated Row',
+        nameAr: 'السحب الجالس',
         nameEn: 'Seated Row',
         category: 'strength',
         muscleGroup: 'back',
@@ -133,7 +133,7 @@ class DemoData {
       Exercise(
         id: 'ex-press',
         name: 'Overhead Press',
-        nameAr: 'Overhead Press',
+        nameAr: 'الضغط فوق الرأس',
         nameEn: 'Overhead Press',
         category: 'strength',
         muscleGroup: 'shoulders',
@@ -157,17 +157,21 @@ class DemoData {
       id: 'demo-plan-1',
       userId: userId,
       name: 'Demo Strength Split',
+      nameAr: 'خطة القوة التجريبية',
       description: '4-day strength split',
+      descriptionAr: 'تقسيمة قوة لمدة 4 أيام',
       days: [
         WorkoutDay(
           id: 'day-1',
           dayName: 'Day 1 - Lower',
+          dayNameAr: 'اليوم 1 - الجزء السفلي',
           dayNumber: 1,
           exercises: exercisesDay1,
         ),
         WorkoutDay(
           id: 'day-2',
           dayName: 'Day 2 - Upper',
+          dayNameAr: 'اليوم 2 - الجزء العلوي',
           dayNumber: 2,
           exercises: exercisesDay2,
         ),
@@ -182,7 +186,7 @@ class DemoData {
       Exercise(
         id: 'ex-pushup',
         name: 'Push Up',
-        nameAr: 'Push Up',
+        nameAr: 'تمرين الضغط',
         nameEn: 'Push Up',
         category: 'strength',
         muscleGroup: 'chest',
@@ -200,7 +204,7 @@ class DemoData {
       Exercise(
         id: 'ex-lunge',
         name: 'Walking Lunge',
-        nameAr: 'Walking Lunge',
+        nameAr: 'اندفاع المشي',
         nameEn: 'Walking Lunge',
         category: 'strength',
         muscleGroup: 'legs',
@@ -219,7 +223,7 @@ class DemoData {
       Exercise(
         id: 'ex-goblet-squat',
         name: 'Goblet Squat',
-        nameAr: 'Goblet Squat',
+        nameAr: 'القرفصاء بالدَلْو',
         nameEn: 'Goblet Squat',
         category: 'strength',
         muscleGroup: 'legs',
@@ -237,7 +241,7 @@ class DemoData {
       Exercise(
         id: 'ex-leg-press',
         name: 'Leg Press',
-        nameAr: 'Leg Press',
+        nameAr: 'ضغط الأرجل',
         nameEn: 'Leg Press',
         category: 'strength',
         muscleGroup: 'legs',
@@ -255,7 +259,7 @@ class DemoData {
       Exercise(
         id: 'ex-dumbbell-press',
         name: 'Dumbbell Press',
-        nameAr: 'Dumbbell Press',
+        nameAr: 'ضغط الدمبل',
         nameEn: 'Dumbbell Press',
         category: 'strength',
         muscleGroup: 'chest',
@@ -273,7 +277,7 @@ class DemoData {
       Exercise(
         id: 'ex-band-row',
         name: 'Band Row',
-        nameAr: 'Band Row',
+        nameAr: 'سحب الحزام',
         nameEn: 'Band Row',
         category: 'strength',
         muscleGroup: 'back',
@@ -291,7 +295,7 @@ class DemoData {
       Exercise(
         id: 'ex-lat-pulldown',
         name: 'Lat Pulldown',
-        nameAr: 'Lat Pulldown',
+        nameAr: 'السحب الواسع',
         nameEn: 'Lat Pulldown',
         category: 'strength',
         muscleGroup: 'back',
@@ -309,7 +313,7 @@ class DemoData {
       Exercise(
         id: 'ex-landmine-press',
         name: 'Landmine Press',
-        nameAr: 'Landmine Press',
+        nameAr: 'ضغط اللاندماين',
         nameEn: 'Landmine Press',
         category: 'strength',
         muscleGroup: 'shoulders',
@@ -327,7 +331,7 @@ class DemoData {
       Exercise(
         id: 'ex-seated-db-press',
         name: 'Seated DB Press',
-        nameAr: 'Seated DB Press',
+        nameAr: 'ضغط الدمبل الجالس',
         nameEn: 'Seated DB Press',
         category: 'strength',
         muscleGroup: 'shoulders',
@@ -350,7 +354,7 @@ class DemoData {
       Meal(
         id: 'meal-1',
         name: 'Breakfast',
-        nameAr: 'Breakfast',
+        nameAr: 'الإفطار',
         nameEn: 'Breakfast',
         type: 'breakfast',
         time: '08:00',
@@ -358,7 +362,7 @@ class DemoData {
           FoodItem(
             id: 'food-oats',
             name: 'Oats',
-            nameAr: 'Oats',
+            nameAr: 'الشوفان',
             nameEn: 'Oats',
             quantity: 80,
             unit: 'g',
@@ -368,7 +372,7 @@ class DemoData {
           FoodItem(
             id: 'food-eggs',
             name: 'Eggs',
-            nameAr: 'Eggs',
+            nameAr: 'البيض',
             nameEn: 'Eggs',
             quantity: 2,
             unit: 'pcs',
@@ -382,7 +386,7 @@ class DemoData {
       Meal(
         id: 'meal-2',
         name: 'Lunch',
-        nameAr: 'Lunch',
+        nameAr: 'الغداء',
         nameEn: 'Lunch',
         type: 'lunch',
         time: '13:00',
@@ -390,7 +394,7 @@ class DemoData {
           FoodItem(
             id: 'food-chicken',
             name: 'Chicken Breast',
-            nameAr: 'Chicken Breast',
+            nameAr: 'صدر الدجاج',
             nameEn: 'Chicken Breast',
             quantity: 180,
             unit: 'g',
@@ -400,7 +404,7 @@ class DemoData {
           FoodItem(
             id: 'food-rice',
             name: 'Rice',
-            nameAr: 'Rice',
+            nameAr: 'الأرز',
             nameEn: 'Rice',
             quantity: 150,
             unit: 'g',
@@ -414,7 +418,7 @@ class DemoData {
       Meal(
         id: 'meal-3',
         name: 'Dinner',
-        nameAr: 'Dinner',
+        nameAr: 'العشاء',
         nameEn: 'Dinner',
         type: 'dinner',
         time: '19:30',
@@ -422,7 +426,7 @@ class DemoData {
           FoodItem(
             id: 'food-salmon',
             name: 'Salmon',
-            nameAr: 'Salmon',
+            nameAr: 'السلمون',
             nameEn: 'Salmon',
             quantity: 160,
             unit: 'g',
@@ -432,7 +436,7 @@ class DemoData {
           FoodItem(
             id: 'food-potato',
             name: 'Sweet Potato',
-            nameAr: 'Sweet Potato',
+            nameAr: 'البطاطا الحلوة',
             nameEn: 'Sweet Potato',
             quantity: 200,
             unit: 'g',

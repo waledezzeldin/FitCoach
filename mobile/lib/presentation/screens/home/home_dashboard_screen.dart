@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
@@ -8,9 +9,12 @@ import '../../providers/user_provider.dart';
 import '../../providers/workout_provider.dart';
 import '../../providers/nutrition_provider.dart';
 import '../../providers/quota_provider.dart';
+import '../../providers/appointment_provider.dart';
+import '../../providers/video_call_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_stat_info_card.dart';
 import '../../widgets/quota_indicator.dart';
+import '../../widgets/custom_button.dart';
 import '../workout/workout_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../messaging/coach_messaging_screen.dart';
@@ -19,10 +23,13 @@ import '../account/account_screen.dart';
 import '../coach/coach_dashboard_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../booking/video_booking_screen.dart';
+import '../booking/appointment_detail_screen.dart';
+import '../video_call/video_call_screen.dart';
 import '../exercise/exercise_library_screen.dart';
 import '../progress/progress_screen.dart';
 import '../inbody/inbody_input_screen.dart';
 import '../subscription/subscription_manager_screen.dart';
+import '../../../data/models/appointment.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -34,6 +41,7 @@ class HomeDashboardScreen extends StatefulWidget {
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   int _selectedIndex = 0;
   bool _quickAccessExpanded = false;
+  String? _joiningAppointmentId;
   
   @override
   void initState() {
@@ -50,6 +58,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final workoutProvider = context.read<WorkoutProvider>();
     final nutritionProvider = context.read<NutritionProvider>();
     final quotaProvider = context.read<QuotaProvider>();
+    final appointmentProvider = context.read<AppointmentProvider>();
+    final authProvider = context.read<AuthProvider>();
     
     final futures = <Future<void>>[
       userProvider.loadProfile(),
@@ -57,9 +67,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       nutritionProvider.loadActivePlan(),
       nutritionProvider.checkTrialStatus(),
     ];
-    final userId = userProvider.user?.id;
+    final userId = authProvider.user?.id ?? userProvider.user?.id;
     if (userId != null && userId.isNotEmpty) {
       futures.add(quotaProvider.loadQuota(userId));
+      futures.add(appointmentProvider.loadUserAppointments(userId: userId, refresh: true));
     }
     await Future.wait(futures);
   }
@@ -128,6 +139,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final firstName = (user?.name ?? lang.t('welcome')).split(' ').first;
     final fitnessScore = user?.fitnessScore ?? (DemoConfig.isDemo ? 72 : 0);
     final fitnessUpdatedBy = user?.fitnessScoreUpdatedBy;
+    final appointmentProvider = context.watch<AppointmentProvider>();
+    final nextSession = appointmentProvider.nextVideoCall;
+    final isAppointmentsLoading = appointmentProvider.isLoading && !appointmentProvider.hasLoaded;
 
     final stats = DemoConfig.isDemo
         ? {
@@ -189,6 +203,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (isAppointmentsLoading)
+                          _buildNextSessionLoadingCard(),
+                        if (isAppointmentsLoading) const SizedBox(height: 16),
+                        if (nextSession != null) ...[
+                          _buildNextSessionCardHome(
+                            lang,
+                            isArabic,
+                            nextSession,
+                            appointmentProvider,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                         if (tier != 'Smart Premium') _buildQuotaSection(lang, isArabic),
                         if (tier != 'Smart Premium') const SizedBox(height: 16),
                         if (todayWorkout != null) _buildTodayWorkoutCard(lang, isArabic, todayWorkout),
@@ -408,6 +434,151 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildNextSessionLoadingCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: (0.95 * 255)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: const [
+          CircularProgressIndicator(strokeWidth: 2),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Loading your upcoming sessions...',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNextSessionCardHome(
+    LanguageProvider lang,
+    bool isArabic,
+    Appointment appointment,
+    AppointmentProvider provider,
+  ) {
+    final dateLabel = _formatHomeSessionDate(appointment, isArabic);
+    final countdown = _formatHomeCountdown(appointment, isArabic);
+    final canJoin = provider.canJoin(appointment);
+    final isVideo = _homeIsVideoSession(appointment);
+    final isJoining = _joiningAppointmentId == appointment.id;
+    final joinHint = isArabic
+        ? 'يمكنك الانضمام قبل 10 دقائق من الموعد'
+        : 'Join becomes available 10 minutes before start';
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isArabic ? 'جلستك القادمة' : 'Your next session',
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            appointment.coachName ?? lang.t('coach'),
+            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            dateLabel,
+            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          if (countdown != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              countdown,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: CustomButton(
+                  text: lang.t('join_video_call'),
+                  onPressed: (isVideo && canJoin && !isJoining) ? () => _joinAppointmentFromHome(appointment) : null,
+                  isLoading: isJoining,
+                  size: ButtonSize.medium,
+                  fullWidth: true,
+                  variant: ButtonVariant.secondary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.white),
+                onPressed: () => _openAppointmentDetailsFromHome(appointment),
+                child: Text(isArabic ? 'التفاصيل' : 'Details'),
+              ),
+            ],
+          ),
+          if (!canJoin && isVideo)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                joinHint,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _formatHomeSessionDate(Appointment appointment, bool isArabic) {
+    final locale = isArabic ? 'ar' : 'en';
+    try {
+      final date = DateTime.parse(appointment.scheduledAt);
+      return DateFormat('EEE, MMM d • h:mm a', locale).format(date);
+    } catch (_) {
+      return appointment.scheduledAt;
+    }
+  }
+
+  String? _formatHomeCountdown(Appointment appointment, bool isArabic) {
+    try {
+      final date = DateTime.parse(appointment.scheduledAt);
+      final diff = date.difference(DateTime.now());
+      if (diff.isNegative) return null;
+      final hours = diff.inHours;
+      final minutes = diff.inMinutes.remainder(60);
+      if (hours <= 0 && minutes <= 0) {
+        return isArabic ? 'يبدأ الآن' : 'Starting now';
+      }
+      if (hours <= 0) {
+        return isArabic ? 'يبدأ بعد $minutes دقيقة' : 'Starts in $minutes min';
+      }
+      final minutesLabel = minutes > 0
+          ? (isArabic ? ' و $minutes دقيقة' : ' ${minutes}m')
+          : '';
+      return isArabic
+          ? 'يبدأ بعد $hours ساعة$minutesLabel'
+          : 'Starts in ${hours}h$minutesLabel';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _homeIsVideoSession(Appointment appointment) {
+    final type = (appointment.type ?? 'video').toLowerCase();
+    return type == 'video';
   }
 
   Widget _buildHeaderStat({
@@ -1420,6 +1591,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   
   Widget _buildTodayWorkout(LanguageProvider lang, bool isArabic) {
     final workoutProvider = context.watch<WorkoutProvider>();
+    final currentDay = workoutProvider.currentDay;
+    final dayLabel = isArabic
+        ? currentDay?.dayNameAr ?? currentDay?.dayName ?? lang.t('chest_day')
+        : currentDay?.dayName ?? lang.t('chest_day');
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1461,7 +1636,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                workoutProvider.currentDay?.dayName ?? lang.t('chest_day'),
+                                dayLabel,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -1723,6 +1898,57 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         ),
       ],
     );
+  }
+
+  void _openAppointmentDetailsFromHome(Appointment appointment) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AppointmentDetailScreen(appointment: appointment),
+      ),
+    );
+  }
+
+  Future<void> _joinAppointmentFromHome(Appointment appointment) async {
+    final videoCallProvider = context.read<VideoCallProvider>();
+    final languageProvider = context.read<LanguageProvider>();
+
+    setState(() => _joiningAppointmentId = appointment.id);
+
+    try {
+      final result = await videoCallProvider.canJoinCall(appointment.id);
+      if (result == null || result['canJoin'] != true) {
+        final message = result?['reason'] ?? languageProvider.t('cannot_join_call');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+        return;
+      }
+
+      if (!mounted) return;
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => VideoCallScreen(
+            appointmentId: appointment.id,
+            coachId: appointment.coachId,
+            coachName: appointment.coachName ?? languageProvider.t('coach'),
+            isCoach: false,
+          ),
+        ),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(languageProvider.t('error'))),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _joiningAppointmentId = null);
+      }
+    }
   }
   
   Widget _buildWorkoutTab() {

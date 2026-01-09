@@ -16,6 +16,8 @@ class CoachProvider extends ChangeNotifier {
 
   // State
   bool _isLoading = false;
+  bool _isAnalyticsLoading = false;
+  bool _isAppointmentsLoading = false;
   String? _error;
   
   List<CoachClient> _clients = [];
@@ -26,6 +28,8 @@ class CoachProvider extends ChangeNotifier {
 
   // Getters
   bool get isLoading => _isLoading;
+  bool get isAnalyticsLoading => _isAnalyticsLoading;
+  bool get isAppointmentsLoading => _isAppointmentsLoading;
   String? get error => _error;
   List<CoachClient> get clients => _clients;
   List<Appointment> get appointments => _appointments;
@@ -35,24 +39,24 @@ class CoachProvider extends ChangeNotifier {
 
   /// Load coach analytics
   Future<void> loadAnalytics(String coachId) async {
-    if (DemoConfig.isDemo) {
-      _analytics = DemoData.coachAnalytics();
-      _error = null;
-      _isLoading = false;
-      notifyListeners();
-      return;
-    }
-    _isLoading = true;
+    _isAnalyticsLoading = true;
     _error = null;
     notifyListeners();
 
+    if (DemoConfig.isDemo) {
+      _analytics = DemoData.coachAnalytics();
+      _isAnalyticsLoading = false;
+      notifyListeners();
+      return;
+    }
+
     try {
       _analytics = await _repository.getAnalytics(coachId: coachId);
-      _isLoading = false;
+      _isAnalyticsLoading = false;
       notifyListeners();
     } catch (e) {
       _error = e.toString();
-      _isLoading = false;
+      _isAnalyticsLoading = false;
       notifyListeners();
     }
   }
@@ -127,19 +131,19 @@ class CoachProvider extends ChangeNotifier {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
+    _isAppointmentsLoading = true;
+    _error = null;
+    notifyListeners();
+
     if (DemoConfig.isDemo) {
       _appointments = DemoData.coachAppointments(
         coachId: coachId,
         userId: 'demo-user',
       );
-      _error = null;
-      _isLoading = false;
+      _isAppointmentsLoading = false;
       notifyListeners();
       return;
     }
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
 
     try {
       _appointments = await _repository.getAppointments(
@@ -148,11 +152,11 @@ class CoachProvider extends ChangeNotifier {
         startDate: startDate,
         endDate: endDate,
       );
-      _isLoading = false;
+      _isAppointmentsLoading = false;
       notifyListeners();
     } catch (e) {
       _error = e.toString();
-      _isLoading = false;
+      _isAppointmentsLoading = false;
       notifyListeners();
     }
   }

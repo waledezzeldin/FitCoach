@@ -75,6 +75,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 80),
+                    offset: Offset(isArabic ? -0.2 : 0.2, 0),
                     child: Text(
                       languageProvider.t('workouts_intro_title'),
                       style: AppTextStyles.h2.copyWith(color: Colors.white),
@@ -84,6 +85,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 140),
+                    offset: Offset(isArabic ? -0.18 : 0.18, 0),
                     child: Text(
                       languageProvider.t('workouts_intro_subtitle'),
                       style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
@@ -97,6 +99,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                       children: [
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 220),
+                          offset: Offset(isArabic ? -0.14 : 0.14, 0),
                           child: _FeatureCard(
                             icon: Icons.track_changes,
                             iconColor: const Color(0xFF7BA7FF),
@@ -108,6 +111,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 300),
+                          offset: Offset(isArabic ? -0.14 : 0.14, 0),
                           child: _FeatureCard(
                             icon: Icons.check_circle_outline,
                             iconColor: const Color(0xFF74E1A8),
@@ -119,6 +123,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 380),
+                          offset: Offset(isArabic ? -0.14 : 0.14, 0),
                           child: _FeatureCard(
                             icon: Icons.trending_up,
                             iconColor: const Color(0xFFC9A8FF),
@@ -130,6 +135,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 460),
+                          offset: Offset(isArabic ? -0.14 : 0.14, 0),
                           child: _FeatureCard(
                             icon: Icons.calendar_today,
                             iconColor: const Color(0xFFFFC48B),
@@ -144,6 +150,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 520),
+                    offset: const Offset(0, 0.18),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -164,6 +171,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 600),
+                    offset: Offset(isArabic ? -0.15 : 0.15, 0),
                     child: Text(
                       languageProvider.t('workouts_intro_note'),
                       style: AppTextStyles.small.copyWith(color: Colors.white60),

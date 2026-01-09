@@ -13,8 +13,16 @@ class VideoCallProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  void setAuthToken(String token) {
+  void setAuthToken(String? token) {
     _authToken = token;
+  }
+
+  Map<String, String> _buildHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      if (_authToken != null && _authToken!.isNotEmpty)
+        'Authorization': 'Bearer $_authToken',
+    };
   }
 
   /// Start a video call for an appointment
@@ -26,10 +34,7 @@ class VideoCallProvider with ChangeNotifier {
 
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/video-calls/$appointmentId/start'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
+        headers: _buildHeaders(),
       );
 
       final data = json.decode(response.body);
@@ -61,10 +66,7 @@ class VideoCallProvider with ChangeNotifier {
 
       final response = await http.get(
         Uri.parse('${ApiConfig.baseUrl}/video-calls/$appointmentId/token'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
+        headers: _buildHeaders(),
       );
 
       final data = json.decode(response.body);
@@ -92,10 +94,7 @@ class VideoCallProvider with ChangeNotifier {
     try {
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/video-calls/$appointmentId/end'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
+        headers: _buildHeaders(),
         body: json.encode({
           'duration': durationMinutes,
         }),
@@ -122,10 +121,7 @@ class VideoCallProvider with ChangeNotifier {
     try {
       final response = await http.get(
         Uri.parse('${ApiConfig.baseUrl}/video-calls/$appointmentId/can-join'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
+        headers: _buildHeaders(),
       );
 
       final data = json.decode(response.body);
@@ -146,10 +142,7 @@ class VideoCallProvider with ChangeNotifier {
     try {
       final response = await http.get(
         Uri.parse('${ApiConfig.baseUrl}/video-calls/$appointmentId/status'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
+        headers: _buildHeaders(),
       );
 
       final data = json.decode(response.body);

@@ -335,6 +335,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     completedExercises,
                     totalExercises,
                     workoutProgress,
+                    isArabic,
                   ),
                   const SizedBox(height: 16),
                   if (user != null && !user.hasCompletedSecondIntake)
@@ -345,6 +346,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     currentDay,
                     languageProvider,
                     workoutProgress,
+                    isArabic,
                   ),
                   const SizedBox(height: 16),
                   if (currentDay != null)
@@ -379,7 +381,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     int completedExercises,
     int totalExercises,
     double progress,
+    bool isArabic,
   ) {
+    final planTitle = _localizedPlanName(plan, lang, isArabic);
     final dayNumber = currentDay?.dayNumber ?? 1;
     final durationLabel = _estimateWorkoutDuration(currentDay);
 
@@ -405,7 +409,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      plan.name ?? lang.t('workout'),
+                      planTitle,
                       style: AppTextStyles.h3.copyWith(color: Colors.white),
                     ),
                     const SizedBox(height: 4),
@@ -582,12 +586,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     WorkoutDay? currentDay,
     LanguageProvider lang,
     double progress,
+    bool isArabic,
   ) {
     final totalExercises = currentDay?.exercises.length ?? 0;
     final durationLabel = _estimateWorkoutDuration(currentDay);
-    final difficultyLabel = (plan.description != null && plan.description!.isNotEmpty)
-        ? plan.description!
-        : lang.t('workout_difficulty_intermediate');
+    final planTitle = _localizedPlanName(plan, lang, isArabic);
+    final difficultyLabel = _localizedPlanDifficulty(plan, lang, isArabic);
 
     return CustomCard(
       padding: const EdgeInsets.all(16),
@@ -597,8 +601,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  plan.name ?? lang.t('workout'),
+                  child: Text(
+                    planTitle,
                   style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -701,6 +705,31 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     }
     final minutes = (exercisesCount * 6).clamp(20, 90);
     return '${minutes.toInt()} min';
+  }
+
+  String _localizedPlanName(WorkoutPlan plan, LanguageProvider lang, bool isArabic) {
+    final fallback = lang.t('workout');
+    if (isArabic) {
+      if (plan.nameAr?.isNotEmpty == true) {
+        return plan.nameAr!;
+      }
+      if (plan.name?.isNotEmpty == true) {
+        return plan.name!;
+      }
+      return fallback;
+    }
+    return plan.name ?? fallback;
+  }
+
+  String _localizedPlanDifficulty(WorkoutPlan plan, LanguageProvider lang, bool isArabic) {
+    final englishDescription = plan.description ?? lang.t('workout_difficulty_intermediate');
+    if (isArabic) {
+      if (plan.descriptionAr?.isNotEmpty == true) {
+        return plan.descriptionAr!;
+      }
+      return lang.t('workout_difficulty_intermediate');
+    }
+    return englishDescription;
   }
 
   Widget _buildExerciseList(

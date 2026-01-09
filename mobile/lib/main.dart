@@ -16,6 +16,8 @@ import 'presentation/providers/messaging_provider.dart';
 import 'presentation/providers/quota_provider.dart';
 import 'presentation/providers/coach_provider.dart';
 import 'presentation/providers/admin_provider.dart';
+import 'presentation/providers/video_call_provider.dart';
+import 'presentation/providers/appointment_provider.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/user_repository.dart';
 import 'data/repositories/workout_repository.dart';
@@ -23,6 +25,7 @@ import 'data/repositories/nutrition_repository.dart';
 import 'data/repositories/messaging_repository.dart';
 import 'data/repositories/coach_repository.dart';
 import 'data/repositories/admin_repository.dart';
+import 'data/repositories/appointment_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +79,9 @@ class FitCoachApp extends StatelessWidget {
         Provider<AdminRepository>(
           create: (_) => AdminRepository(),
         ),
+        Provider<AppointmentRepository>(
+          create: (_) => AppointmentRepository(),
+        ),
         
         // Providers
         ChangeNotifierProvider<LanguageProvider>(
@@ -90,6 +96,14 @@ class FitCoachApp extends StatelessWidget {
           ),
           update: (context, authRepo, previous) =>
               previous ?? AuthProvider(authRepo),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, VideoCallProvider>(
+          create: (_) => VideoCallProvider(),
+          update: (_, authProvider, videoCallProvider) {
+            final provider = videoCallProvider ?? VideoCallProvider();
+            provider.setAuthToken(authProvider.token);
+            return provider;
+          },
         ),
         ChangeNotifierProxyProvider<UserRepository, UserProvider>(
           create: (context) => UserProvider(
@@ -139,6 +153,13 @@ class FitCoachApp extends StatelessWidget {
           ),
           update: (context, adminRepo, previous) =>
               previous ?? AdminProvider(adminRepo),
+        ),
+        ChangeNotifierProxyProvider<AppointmentRepository, AppointmentProvider>(
+          create: (context) => AppointmentProvider(
+            context.read<AppointmentRepository>(),
+          ),
+          update: (context, repo, previous) =>
+              previous ?? AppointmentProvider(repo),
         ),
       ],
       child: Consumer2<LanguageProvider, ThemeProvider>(

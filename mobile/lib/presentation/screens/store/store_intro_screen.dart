@@ -57,6 +57,7 @@ class StoreIntroScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         AnimatedReveal(
+                          offset: Offset(isArabic ? -0.2 : 0.2, 0),
                           child: Text(
                             languageProvider.t('store_intro_title'),
                             style: const TextStyle(
@@ -64,23 +65,27 @@ class StoreIntroScreen extends StatelessWidget {
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                             ),
+                            textAlign: isArabic ? TextAlign.right : TextAlign.left,
                           ),
                         ),
                         const SizedBox(height: 8),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 100),
+                          offset: Offset(isArabic ? -0.18 : 0.18, 0),
                           child: Text(
                             languageProvider.t('store_intro_subtitle'),
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: (0.9 * 255)),
                               fontSize: 18,
                             ),
+                            textAlign: isArabic ? TextAlign.right : TextAlign.left,
                           ),
                         ),
                         const SizedBox(height: 20),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 220),
-                          child: _IntroFeatureCard(
+                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                            child: _IntroFeatureCard(
                             icon: Icons.shopping_bag_outlined,
                             iconColor: const Color(0xFFF59E0B),
                             title: languageProvider.t('store_intro_feature1_title'),
@@ -91,7 +96,8 @@ class StoreIntroScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 300),
-                          child: _IntroFeatureCard(
+                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                            child: _IntroFeatureCard(
                             icon: Icons.auto_awesome,
                             iconColor: const Color(0xFF3B82F6),
                             title: languageProvider.t('store_intro_feature2_title'),
@@ -102,7 +108,8 @@ class StoreIntroScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 380),
-                          child: _IntroFeatureCard(
+                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                            child: _IntroFeatureCard(
                             icon: Icons.local_shipping_outlined,
                             iconColor: const Color(0xFF22C55E),
                             title: languageProvider.t('store_intro_feature3_title'),
@@ -113,7 +120,8 @@ class StoreIntroScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 460),
-                          child: _IntroFeatureCard(
+                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                            child: _IntroFeatureCard(
                             icon: Icons.inventory_2_outlined,
                             iconColor: const Color(0xFF8B5CF6),
                             title: languageProvider.t('store_intro_feature4_title'),
@@ -124,7 +132,8 @@ class StoreIntroScreen extends StatelessWidget {
                         const SizedBox(height: 20),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 520),
-                          child: SizedBox(
+                            offset: const Offset(0, 0.18),
+                            child: SizedBox(
                             height: 56,
                             child: ElevatedButton(
                               onPressed: onGetStarted,

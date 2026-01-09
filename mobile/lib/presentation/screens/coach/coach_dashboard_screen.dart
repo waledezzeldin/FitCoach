@@ -1,19 +1,26 @@
 import '../../widgets/error_banner.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/coach_provider.dart';
 import '../../providers/quota_provider.dart';
+import '../../providers/video_call_provider.dart';
 import '../../widgets/custom_card.dart';
+import '../../widgets/animated_reveal.dart';
 import '../../widgets/custom_stat_info_card.dart';
 import '../../widgets/quota_indicator.dart';
+import '../../../data/models/appointment.dart';
 import '../account/account_screen.dart';
 import 'coach_clients_screen.dart';
 import 'coach_calendar_screen.dart';
 import 'workout_plan_builder_screen.dart';
 import 'nutrition_plan_builder_screen.dart';
+import '../video_call/video_call_screen.dart';
+
+enum _UpcomingFilter { all, video }
 
 class CoachDashboardScreen extends StatefulWidget {
   const CoachDashboardScreen({super.key});
@@ -24,6 +31,8 @@ class CoachDashboardScreen extends StatefulWidget {
 
 class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   int _selectedIndex = 0;
+  String? _joiningAppointmentId;
+  _UpcomingFilter _upcomingFilter = _UpcomingFilter.video;
 
   @override
   void initState() {
@@ -41,10 +50,11 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     if (authProvider.user?.id != null) {
       coachProvider.loadAnalytics(authProvider.user!.id);
       // Also load today's appointments for the schedule
+      final now = DateTime.now();
       coachProvider.loadAppointments(
         coachId: authProvider.user!.id,
-        startDate: DateTime.now(),
-        endDate: DateTime.now().add(const Duration(days: 1)),
+        startDate: now.subtract(const Duration(days: 1)),
+        endDate: now.add(const Duration(days: 14)),
       );
     }
   }
@@ -55,6 +65,37 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     if (authProvider.user?.id != null) {
       quotaProvider.loadQuota(authProvider.user!.id);
     }
+  }
+
+  Route _createSmoothRoute(Widget page) {
+    return PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 500),
+      reverseTransitionDuration: const Duration(milliseconds: 350),
+      pageBuilder: (_, __, ___) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        final offsetAnimation = Tween<Offset>(
+          begin: const Offset(0, 0.08),
+          end: Offset.zero,
+        ).animate(curved);
+        final fadeAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutQuad,
+          reverseCurve: Curves.easeInQuad,
+        );
+        return FadeTransition(
+          opacity: fadeAnimation,
+          child: SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -112,7 +153,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   ) {
     final coachProvider = context.watch<CoachProvider>();
     final analytics = coachProvider.analytics;
-    final isLoading = coachProvider.isLoading;
+    final isAnalyticsLoading = coachProvider.isAnalyticsLoading;
+    final isAppointmentsLoading = coachProvider.isAppointmentsLoading;
     final todayAppointmentCount = coachProvider.appointments.length;
 
     return SafeArea(
@@ -149,207 +191,376 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 },
               ),
               // Header
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              AnimatedReveal(
+                offset: const Offset(-0.12, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lang.t(
+                              'coach_greeting',
+                              args: {'name': auth.user?.name ?? ''},
+                            ),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            lang.t('coach_dashboard_title'),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
                       children: [
-                        Text(
-                          lang.t(
-                            'coach_greeting',
-                            args: {'name': auth.user?.name ?? ''},
-                          ),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.account_circle),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              _createSmoothRoute(const AccountScreen()),
+                            );
+                          },
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          lang.t('coach_dashboard_title'),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () {
+                            _loadAnalytics();
+                            _loadQuota();
+                          },
                         ),
                       ],
                     ),
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.account_circle),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const AccountScreen()),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () {
-                          _loadAnalytics();
-                          _loadQuota();
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               const SizedBox(height: 16),
               // Quota indicators
-              Row(
-                children: [
-                  Expanded(child: QuotaIndicator(type: 'message')),
-                  const SizedBox(width: 12),
-                  Expanded(child: QuotaIndicator(type: 'videoCall')),
-                ],
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 120),
+                offset: const Offset(0.1, 0.08),
+                child: Row(
+                  children: [
+                    Expanded(child: QuotaIndicator(type: 'message')),
+                    const SizedBox(width: 12),
+                    Expanded(child: QuotaIndicator(type: 'videoCall')),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
               
               // Quick stats
-              if (isLoading)
+              if (isAnalyticsLoading)
                 const Center(child: CircularProgressIndicator())
               else if (analytics != null) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomStatCard(
-                        title: lang.t('coach_metric_active_clients'),
-                        value: '${analytics.activeClients}',
-                        icon: Icons.people,
-                        color: AppColors.primary,
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 180),
+                  offset: const Offset(-0.1, 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CustomStatCard(
+                          title: lang.t('coach_metric_active_clients'),
+                          value: '${analytics.activeClients}',
+                          icon: Icons.people,
+                          color: AppColors.primary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: CustomStatCard(
-                        title: lang.t('coach_metric_upcoming'),
-                        value: '${analytics.upcomingAppointments}',
-                        icon: Icons.video_call,
-                        color: AppColors.secondary,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: CustomStatCard(
+                          title: lang.t('coach_metric_upcoming'),
+                          value: '${analytics.upcomingAppointments}',
+                          icon: Icons.video_call,
+                          color: AppColors.secondary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 
                 const SizedBox(height: 12),
                 
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomStatCard(
-                        title: lang.t('coach_metric_new_messages'),
-                        value: '${analytics.unreadMessages}',
-                        icon: Icons.message,
-                        color: AppColors.accent,
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 260),
+                  offset: const Offset(0.1, 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CustomStatCard(
+                          title: lang.t('coach_metric_new_messages'),
+                          value: '${analytics.unreadMessages}',
+                          icon: Icons.message,
+                          color: AppColors.accent,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: CustomStatCard(
-                        title: lang.t('coach_metric_today_sessions'),
-                        value: '$todayAppointmentCount',
-                        icon: Icons.today,
-                        color: AppColors.primary,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: CustomStatCard(
+                          title: lang.t('coach_metric_today_sessions'),
+                          value: '$todayAppointmentCount',
+                          icon: Icons.today,
+                          color: AppColors.primary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
               
               const SizedBox(height: 24),
               
               // Today's schedule
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    lang.t('coach_schedule_today'),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 320),
+                offset: const Offset(0, -0.1),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      lang.t('coach_schedule_today'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedIndex = 2; // Calendar tab
-                      });
-                    },
-                    child: Text(lang.t('coach_view_all')),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              if (isLoading)
-                const Center(child: CircularProgressIndicator())
-              else
-                _buildTodaySchedule(coachProvider, lang, isArabic),
-              
-              const SizedBox(height: 24),
-              
-              // Quick actions
-              Text(
-                lang.t('coach_quick_actions'),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedIndex = 2; // Calendar tab
+                        });
+                      },
+                      child: Text(lang.t('coach_view_all')),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 12),
               
-              CustomInfoCard(
-                title: lang.t('coach_action_workout_plan'),
-                subtitle: lang.t('coach_action_workout_plan_desc'),
-                icon: Icons.fitness_center,
-                iconColor: AppColors.primary,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => WorkoutPlanBuilderScreen(
-                        clientId: 'demo-client',
-                        clientName: lang.t('auth_demo_user'),
-                      ),
+              if (isAppointmentsLoading)
+                const Center(child: CircularProgressIndicator())
+              else
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 360),
+                  offset: const Offset(-0.06, 0.08),
+                  child: _buildTodaySchedule(coachProvider, lang, isArabic),
+                ),
+              
+              const SizedBox(height: 24),
+
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 420),
+                offset: const Offset(0, 0.12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          lang.t('coach_upcoming_sessions'),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 2;
+                            });
+                          },
+                          child: Text(lang.t('coach_view_all')),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                    const SizedBox(height: 12),
+                    _buildUpcomingFilterChips(lang, isArabic),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              if (coachProvider.appointments.isEmpty && isAppointmentsLoading)
+                const Center(child: CircularProgressIndicator())
+              else
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 470),
+                  offset: const Offset(0.08, 0),
+                  child: _buildUpcomingSessions(coachProvider, lang, isArabic),
+                ),
+
+              const SizedBox(height: 24),
+              
+              // Quick actions
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 520),
+                offset: const Offset(-0.08, 0),
+                child: Text(
+                  lang.t('coach_quick_actions'),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 560),
+                offset: const Offset(0, 0.12),
+                child: CustomInfoCard(
+                  title: lang.t('coach_action_workout_plan'),
+                  subtitle: lang.t('coach_action_workout_plan_desc'),
+                  icon: Icons.fitness_center,
+                  iconColor: AppColors.primary,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      _createSmoothRoute(
+                        WorkoutPlanBuilderScreen(
+                          clientId: 'demo-client',
+                          clientName: lang.t('auth_demo_user'),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
               
               const SizedBox(height: 12),
               
-              CustomInfoCard(
-                title: lang.t('coach_action_nutrition_plan'),
-                subtitle: lang.t('coach_action_nutrition_plan_desc'),
-                icon: Icons.restaurant,
-                iconColor: AppColors.secondary,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => NutritionPlanBuilderScreen(
-                        clientId: 'demo-client',
-                        clientName: lang.t('auth_demo_user'),
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 600),
+                offset: const Offset(-0.05, 0.12),
+                child: CustomInfoCard(
+                  title: lang.t('coach_action_nutrition_plan'),
+                  subtitle: lang.t('coach_action_nutrition_plan_desc'),
+                  icon: Icons.restaurant,
+                  iconColor: AppColors.secondary,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      _createSmoothRoute(
+                        NutritionPlanBuilderScreen(
+                          clientId: 'demo-client',
+                          clientName: lang.t('auth_demo_user'),
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
               
               const SizedBox(height: 12),
               
-              CustomInfoCard(
-                title: lang.t('coach_action_schedule_session'),
-                subtitle: lang.t('coach_action_schedule_session_desc'),
-                icon: Icons.video_call,
-                iconColor: AppColors.accent,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = 2; // Calendar tab
-                  });
-                },
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 640),
+                offset: const Offset(0.05, 0.12),
+                child: CustomInfoCard(
+                  title: lang.t('coach_action_schedule_session'),
+                  subtitle: lang.t('coach_action_schedule_session_desc'),
+                  icon: Icons.video_call,
+                  iconColor: AppColors.accent,
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 2; // Calendar tab
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpcomingFilterChips(LanguageProvider lang, bool isArabic) {
+    final videoLabel = isArabic ? 'جلسات الفيديو القادمة' : 'Upcoming video calls';
+    final allLabel = isArabic ? 'كل الجلسات القادمة' : 'All upcoming sessions';
+    return Row(
+      children: [
+        _buildFilterPill(
+          label: videoLabel,
+          icon: Icons.videocam_outlined,
+          selected: _upcomingFilter == _UpcomingFilter.video,
+          onTap: () {
+            if (_upcomingFilter != _UpcomingFilter.video) {
+              setState(() => _upcomingFilter = _UpcomingFilter.video);
+            }
+          },
+        ),
+        const SizedBox(width: 12),
+        _buildFilterPill(
+          label: allLabel,
+          icon: Icons.event_available_outlined,
+          selected: _upcomingFilter == _UpcomingFilter.all,
+          onTap: () {
+            if (_upcomingFilter != _UpcomingFilter.all) {
+              setState(() => _upcomingFilter = _UpcomingFilter.all);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterPill({
+    required String label,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final Color activeColor = selected ? AppColors.primary : AppColors.textSecondary;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primary.withValues(alpha: 0.12) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected
+                  ? AppColors.primary
+                  : AppColors.textDisabled.withValues(alpha: 0.5),
+              width: selected ? 1.5 : 1,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      blurRadius: 14,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: activeColor),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: activeColor,
+                  ),
+                ),
               ),
             ],
           ),
@@ -359,12 +570,28 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   }
   
   Widget _buildSessionItem({
-    required String time,
-    required String clientName,
-    required String type,
-    required bool isArabic,
+    required Appointment appointment,
     required LanguageProvider lang,
+    required bool isArabic,
+    bool showDate = false,
+    bool canJoin = false,
+    bool isJoining = false,
+    VoidCallback? onJoin,
   }) {
+    final scheduledDate = _parseAppointmentDate(appointment);
+    final clientName = appointment.userName ?? appointment.coachName ?? lang.t('coach');
+    final timeLabel = scheduledDate != null ? _formatTimeLabel(scheduledDate) : '--:--';
+    final dateLabel = (showDate && scheduledDate != null)
+        ? '${_formatDateLabel(scheduledDate, isArabic)} • '
+        : '';
+    final typeDisplay = _getTypeDisplayName(appointment.type, lang);
+    final subtitleText = '$dateLabel$timeLabel • $typeDisplay';
+    final showJoinButton = onJoin != null;
+    final readyHint = isArabic ? 'جاهز للانضمام الآن' : 'Ready to join now';
+    final joinHint = isArabic
+      ? 'سيتوفر زر الانضمام قبل 10 دقائق من الجلسة'
+      : 'Join opens 10 minutes before the session';
+
     return ListTile(
       leading: Container(
         width: 48,
@@ -379,14 +606,25 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
         ),
       ),
       title: Text(clientName),
-      subtitle: Text('$time • $type'),
-      trailing: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-        child: Text(lang.t('coach_join')),
-      ),
+      subtitle: Text(subtitleText),
+      trailing: showJoinButton
+          ? Tooltip(
+              message: canJoin ? readyHint : joinHint,
+              child: ElevatedButton(
+                onPressed: (canJoin && !isJoining) ? onJoin : null,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: isJoining
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(lang.t('coach_join')),
+              ),
+            )
+          : null,
     );
   }
   
@@ -397,16 +635,22 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   ) {
     final today = DateTime.now();
     final todayAppointments = coachProvider.appointments.where((appointment) {
-      DateTime? scheduledDate;
-      try {
-        scheduledDate = DateTime.parse(appointment.scheduledAt);
-      } catch (_) {
+      final scheduledDate = _parseAppointmentDate(appointment);
+      if (scheduledDate == null) {
         return false;
       }
       return scheduledDate.year == today.year &&
-             scheduledDate.month == today.month &&
-             scheduledDate.day == today.day;
-    }).toList();
+          scheduledDate.month == today.month &&
+          scheduledDate.day == today.day;
+    }).toList()
+      ..sort((a, b) {
+        final aDate = _parseAppointmentDate(a);
+        final bDate = _parseAppointmentDate(b);
+        if (aDate == null || bDate == null) {
+          return 0;
+        }
+        return aDate.compareTo(bDate);
+      });
 
     if (todayAppointments.isEmpty) {
       return CustomCard(
@@ -440,27 +684,101 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
         children: todayAppointments.asMap().entries.map((entry) {
           final index = entry.key;
           final appointment = entry.value;
-          DateTime? scheduledDate;
-          try {
-            scheduledDate = DateTime.parse(appointment.scheduledAt);
-          } catch (_) {
-            scheduledDate = null;
-          }
-          final timeStr = scheduledDate != null
-              ? '${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}'
-              : '--:--';
-          final clientName = appointment.userName ?? appointment.coachName ?? 'Unknown';
-          final typeDisplay = _getTypeDisplayName(appointment.type, context.read<LanguageProvider>());
+          final supportsVideo = _supportsVideoSession(appointment);
+          final canJoin = _canJoinAppointment(appointment);
+          final isJoining = _joiningAppointmentId == appointment.id;
           return Column(
             children: [
               _buildSessionItem(
-                time: timeStr,
-                clientName: clientName,
-                type: typeDisplay,
-                isArabic: isArabic,
+                appointment: appointment,
                 lang: lang,
+                isArabic: isArabic,
+                canJoin: canJoin,
+                isJoining: isJoining,
+                onJoin: supportsVideo ? () => _handleJoinCall(appointment) : null,
               ),
               if (index < todayAppointments.length - 1) const Divider(),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildUpcomingSessions(
+    CoachProvider coachProvider,
+    LanguageProvider lang,
+    bool isArabic,
+  ) {
+    final upcomingAppointments = _getUpcomingAppointments(coachProvider.appointments);
+
+    if (upcomingAppointments.isEmpty) {
+      return CustomCard(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Text(
+              lang.t('coach_no_upcoming_sessions'),
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final filter = _upcomingFilter;
+    final filteredAppointments = filter == _UpcomingFilter.video
+        ? upcomingAppointments.where(_supportsVideoSession).toList()
+        : upcomingAppointments;
+
+    if (filteredAppointments.isEmpty) {
+      final emptyMessage = filter == _UpcomingFilter.video
+          ? (isArabic
+              ? 'لا توجد جلسات فيديو قادمة حاليًا.'
+              : 'No upcoming video calls yet.')
+          : lang.t('coach_no_upcoming_sessions');
+      return CustomCard(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Text(
+              emptyMessage,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final visibleAppointments = filteredAppointments.take(5).toList();
+
+    return CustomCard(
+      child: Column(
+        children: visibleAppointments.asMap().entries.map((entry) {
+          final index = entry.key;
+          final appointment = entry.value;
+          final supportsVideo = _supportsVideoSession(appointment);
+          final canJoin = _canJoinAppointment(appointment);
+          final isJoining = _joiningAppointmentId == appointment.id;
+          return Column(
+            children: [
+              _buildSessionItem(
+                appointment: appointment,
+                lang: lang,
+                isArabic: isArabic,
+                showDate: true,
+                canJoin: canJoin,
+                isJoining: isJoining,
+                onJoin: supportsVideo ? () => _handleJoinCall(appointment) : null,
+              ),
+              if (index < visibleAppointments.length - 1) const Divider(),
             ],
           );
         }).toList(),
@@ -479,6 +797,134 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
       default:
         return lang.t('unknown');
     }
+  }
+
+  List<Appointment> _getUpcomingAppointments(List<Appointment> appointments) {
+    final now = DateTime.now();
+    final todayKey = DateTime(now.year, now.month, now.day);
+
+    final upcoming = appointments.where((appointment) {
+      final scheduledDate = _parseAppointmentDate(appointment);
+      if (scheduledDate == null) {
+        return false;
+      }
+      final appointmentDay = DateTime(
+        scheduledDate.year,
+        scheduledDate.month,
+        scheduledDate.day,
+      );
+      return appointmentDay.isAfter(todayKey);
+    }).toList()
+      ..sort((a, b) {
+        final aDate = _parseAppointmentDate(a);
+        final bDate = _parseAppointmentDate(b);
+        if (aDate == null || bDate == null) {
+          return 0;
+        }
+        return aDate.compareTo(bDate);
+      });
+
+    return upcoming;
+  }
+
+  Future<void> _handleJoinCall(Appointment appointment) async {
+    setState(() {
+      _joiningAppointmentId = appointment.id;
+    });
+
+    final videoCallProvider = context.read<VideoCallProvider>();
+    final languageProvider = context.read<LanguageProvider>();
+    final authProvider = context.read<AuthProvider>();
+
+    try {
+      final result = await videoCallProvider.canJoinCall(appointment.id);
+      if (result == null || result['canJoin'] != true) {
+        final reason = result?['reason'] ?? languageProvider.t('cannot_join_call');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(reason)),
+          );
+        }
+        return;
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      await Navigator.of(context).push(
+        _createSmoothRoute(
+          VideoCallScreen(
+            appointmentId: appointment.id,
+            coachId: authProvider.user?.id ?? appointment.coachId,
+            coachName: appointment.userName ?? languageProvider.t('coach'),
+            isCoach: true,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(languageProvider.t('error'))),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _joiningAppointmentId = null;
+        });
+      }
+    }
+  }
+
+  DateTime? _parseAppointmentDate(Appointment appointment) {
+    try {
+      return DateTime.parse(appointment.scheduledAt);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _formatTimeLabel(DateTime date) {
+    return DateFormat('HH:mm').format(date);
+  }
+
+  String _formatDateLabel(DateTime date, bool isArabic) {
+    final locale = isArabic ? 'ar' : 'en';
+    return DateFormat('EEE, MMM d', locale).format(date);
+  }
+
+  bool _supportsVideoSession(Appointment appointment) {
+    final type = (appointment.type ?? 'video').toLowerCase();
+    return type == 'video';
+  }
+
+  bool _canJoinAppointment(Appointment appointment) {
+    if (!_supportsVideoSession(appointment)) {
+      return false;
+    }
+
+    final status = appointment.status.toLowerCase();
+    final allowedStatuses = {
+      'confirmed',
+      'scheduled',
+      'in_progress',
+    };
+    if (!allowedStatuses.contains(status)) {
+      return false;
+    }
+
+    final scheduledDate = _parseAppointmentDate(appointment);
+    if (scheduledDate == null) {
+      return false;
+    }
+
+    final now = DateTime.now();
+    final joinWindowStart = scheduledDate.subtract(const Duration(minutes: 10));
+    final meetingLength = appointment.durationMinutes ?? 45;
+    final joinWindowEnd = scheduledDate.add(Duration(minutes: meetingLength + 15));
+
+    return now.isAfter(joinWindowStart) && now.isBefore(joinWindowEnd);
   }
   
   Widget _buildMessagesTab(LanguageProvider lang) {

@@ -78,6 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Title
                 AnimatedReveal(
                   delay: const Duration(milliseconds: 80),
+                  offset: Offset(isArabic ? -0.2 : 0.2, 0),
                   child: Text(
                     languageProvider.t('welcome_back'),
                     style: const TextStyle(
@@ -93,6 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 AnimatedReveal(
                   delay: const Duration(milliseconds: 140),
+                  offset: Offset(isArabic ? -0.18 : 0.18, 0),
                   child: Text(
                     languageProvider.t('sign_in_subtitle'),
                     style: const TextStyle(

@@ -17,7 +17,7 @@ enum ButtonSize {
   large,
 }
 
-class CustomButton extends StatelessWidget {
+class CustomButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final ButtonVariant variant;
@@ -25,7 +25,7 @@ class CustomButton extends StatelessWidget {
   final bool isLoading;
   final IconData? icon;
   final bool fullWidth;
-  
+
   const CustomButton({
     super.key,
     required this.text,
@@ -38,10 +38,37 @@ class CustomButton extends StatelessWidget {
   });
 
   @override
+  State<CustomButton> createState() => _CustomButtonState();
+}
+
+class _CustomButtonState extends State<CustomButton> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    final isDisabled = onPressed == null || isLoading;
-    
-    Widget buttonChild = isLoading
+    final isDisabled = widget.onPressed == null || widget.isLoading;
+    final button = _buildButton(isDisabled);
+
+    return Listener(
+      onPointerDown: isDisabled ? null : (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.97 : 1,
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOutCubic,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          opacity: isDisabled ? 0.85 : 1,
+          child: button,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildButton(bool isDisabled) {
+    final buttonChild = widget.isLoading
         ? SizedBox(
             height: _getIconSize(),
             width: _getIconSize(),
@@ -53,23 +80,23 @@ class CustomButton extends StatelessWidget {
             ),
           )
         : Row(
-            mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+            mainAxisSize: widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (icon != null) ...[
-                Icon(icon, size: _getIconSize()),
+              if (widget.icon != null) ...[
+                Icon(widget.icon, size: _getIconSize()),
                 const SizedBox(width: 8),
               ],
-              Text(text),
+              Text(widget.text),
             ],
           );
-    
-    switch (variant) {
+
+    switch (widget.variant) {
       case ButtonVariant.primary:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: widget.fullWidth ? double.infinity : null,
           child: ElevatedButton(
-            onPressed: isDisabled ? null : onPressed,
+            onPressed: isDisabled ? null : widget.onPressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -86,9 +113,9 @@ class CustomButton extends StatelessWidget {
         
       case ButtonVariant.secondary:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: widget.fullWidth ? double.infinity : null,
           child: OutlinedButton(
-            onPressed: isDisabled ? null : onPressed,
+            onPressed: isDisabled ? null : widget.onPressed,
             style: OutlinedButton.styleFrom(
               backgroundColor: AppColors.secondary,
               foregroundColor: AppColors.secondaryForeground,
@@ -108,9 +135,9 @@ class CustomButton extends StatelessWidget {
         
       case ButtonVariant.outline:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: widget.fullWidth ? double.infinity : null,
           child: OutlinedButton(
-            onPressed: isDisabled ? null : onPressed,
+            onPressed: isDisabled ? null : widget.onPressed,
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
               padding: _getPadding(),
@@ -129,9 +156,9 @@ class CustomButton extends StatelessWidget {
         
       case ButtonVariant.text:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: widget.fullWidth ? double.infinity : null,
           child: TextButton(
-            onPressed: isDisabled ? null : onPressed,
+            onPressed: isDisabled ? null : widget.onPressed,
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
               padding: _getPadding(),
@@ -146,9 +173,9 @@ class CustomButton extends StatelessWidget {
         
       case ButtonVariant.danger:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: widget.fullWidth ? double.infinity : null,
           child: ElevatedButton(
-            onPressed: isDisabled ? null : onPressed,
+            onPressed: isDisabled ? null : widget.onPressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
@@ -165,9 +192,9 @@ class CustomButton extends StatelessWidget {
         
       case ButtonVariant.ghost:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: widget.fullWidth ? double.infinity : null,
           child: TextButton(
-            onPressed: isDisabled ? null : onPressed,
+            onPressed: isDisabled ? null : widget.onPressed,
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
               padding: _getPadding(),
@@ -182,9 +209,9 @@ class CustomButton extends StatelessWidget {
         
       case ButtonVariant.link:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: widget.fullWidth ? double.infinity : null,
           child: TextButton(
-            onPressed: isDisabled ? null : onPressed,
+            onPressed: isDisabled ? null : widget.onPressed,
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
               padding: _getPadding(),
@@ -198,9 +225,14 @@ class CustomButton extends StatelessWidget {
         );
     }
   }
-  
+
+  void _setPressed(bool value) {
+    if (_isPressed == value) return;
+    setState(() => _isPressed = value);
+  }
+
   EdgeInsetsGeometry _getPadding() {
-    switch (size) {
+    switch (widget.size) {
       case ButtonSize.small:
         return const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
       case ButtonSize.medium:
@@ -211,7 +243,7 @@ class CustomButton extends StatelessWidget {
   }
   
   TextStyle _getTextStyle() {
-    switch (size) {
+    switch (widget.size) {
       case ButtonSize.small:
         return const TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
       case ButtonSize.medium:
@@ -222,7 +254,7 @@ class CustomButton extends StatelessWidget {
   }
   
   double _getIconSize() {
-    switch (size) {
+    switch (widget.size) {
       case ButtonSize.small:
         return 16;
       case ButtonSize.medium:
@@ -233,7 +265,7 @@ class CustomButton extends StatelessWidget {
   }
   
   Color _getLoadingColor() {
-    switch (variant) {
+    switch (widget.variant) {
       case ButtonVariant.primary:
       case ButtonVariant.secondary:
       case ButtonVariant.danger:

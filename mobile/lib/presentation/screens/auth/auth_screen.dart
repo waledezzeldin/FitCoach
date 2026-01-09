@@ -6,6 +6,7 @@ import '../../../core/constants/colors.dart';
 import '../../../core/config/demo_config.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/language_provider.dart';
+import '../../widgets/animated_reveal.dart';
 
 enum AuthStep { choose, phone, otp, email, emailSignup }
 
@@ -334,20 +335,31 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Text(
-                            languageProvider.t('auth_app_name'),
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          AnimatedReveal(
+                            offset: Offset(isRTL ? -0.25 : 0.25, 0),
+                            duration: const Duration(milliseconds: 650),
+                            child: Text(
+                              languageProvider.t('auth_app_name'),
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            languageProvider.t('auth_tagline'),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white.withOpacity(0.85),
+                          AnimatedReveal(
+                            delay: const Duration(milliseconds: 120),
+                            offset: Offset(isRTL ? -0.2 : 0.2, 0),
+                            duration: const Duration(milliseconds: 650),
+                            child: Text(
+                              languageProvider.t('auth_tagline'),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white.withOpacity(0.85),
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ],

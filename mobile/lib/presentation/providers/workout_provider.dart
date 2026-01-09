@@ -32,7 +32,7 @@ class WorkoutProvider extends ChangeNotifier {
     final exercise = Exercise(
       id: 'ex1',
       name: 'Push Up',
-      nameAr: 'Push Up',
+      nameAr: 'تمرين الضغط',
       nameEn: 'Push Up',
       sets: 3,
       reps: '12',
@@ -41,6 +41,7 @@ class WorkoutProvider extends ChangeNotifier {
     final day = WorkoutDay(
       id: 'day1',
       dayName: 'Day 1',
+      dayNameAr: 'اليوم 1',
       dayNumber: 1,
       exercises: [exercise],
     );
@@ -49,6 +50,9 @@ class WorkoutProvider extends ChangeNotifier {
       id: 'fallback-plan',
       userId: 'user',
       name: 'Fallback Plan',
+      nameAr: 'خطة افتراضية',
+      description: 'Single day fallback plan',
+      descriptionAr: 'خطة تمرين افتراضية ليوم واحد',
       days: [day],
       startDate: DateTime.now(),
       createdAt: DateTime.now(),

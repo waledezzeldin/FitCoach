@@ -3,7 +3,9 @@ class WorkoutPlan {
   final String userId;
   final String? coachId;
   final String? name;
+  final String? nameAr;
   final String? description;
+  final String? descriptionAr;
   final Map<String, dynamic>? planData;
   final String? notes;
   final List<WorkoutDay>? days;
@@ -19,7 +21,9 @@ class WorkoutPlan {
     required this.userId,
     this.coachId,
     this.name,
+    this.nameAr,
     this.description,
+    this.descriptionAr,
     this.planData,
     this.notes,
     this.days,
@@ -38,7 +42,9 @@ class WorkoutPlan {
       userId: (json['user_id'] ?? json['userId'] ?? '').toString(),
       coachId: json['coach_id'] as String? ?? json['coachId'] as String?,
       name: json['name'] as String?,
+      nameAr: json['nameAr'] as String?,
       description: json['description'] as String?,
+      descriptionAr: json['descriptionAr'] as String?,
       planData: json['plan_data'] as Map<String, dynamic>? ?? json['planData'] as Map<String, dynamic>?,
       notes: json['notes'] as String?,
       days: json['days'] != null
@@ -71,7 +77,9 @@ class WorkoutPlan {
       'userId': userId,
       'coachId': coachId,
       'name': name,
+      'nameAr': nameAr,
       'description': description,
+      'descriptionAr': descriptionAr,
       'plan_data': planData,
       'planData': planData,
       'notes': notes,
@@ -93,6 +101,7 @@ class WorkoutPlan {
 class WorkoutDay {
   final String id;
   final String dayName;
+  final String? dayNameAr;
   final int dayNumber;
   final List<Exercise> exercises;
   final String? notes;
@@ -100,6 +109,7 @@ class WorkoutDay {
   WorkoutDay({
     required this.id,
     required this.dayName,
+    this.dayNameAr,
     required this.dayNumber,
     required this.exercises,
     this.notes,
@@ -109,6 +119,7 @@ class WorkoutDay {
     return WorkoutDay(
       id: json['id'] as String,
       dayName: json['dayName'] as String,
+      dayNameAr: json['dayNameAr'] as String?,
       dayNumber: json['dayNumber'] as int,
       exercises: (json['exercises'] as List)
           .map((ex) => Exercise.fromJson(ex as Map<String, dynamic>))
@@ -121,6 +132,7 @@ class WorkoutDay {
     return {
       'id': id,
       'dayName': dayName,
+      'dayNameAr': dayNameAr,
       'dayNumber': dayNumber,
       'exercises': exercises.map((ex) => ex.toJson()).toList(),
       'notes': notes,

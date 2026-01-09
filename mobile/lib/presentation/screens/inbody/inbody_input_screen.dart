@@ -7,8 +7,10 @@ import '../../../core/constants/colors.dart';
 import '../../../data/repositories/workout_repository.dart';
 import '../../../data/models/inbody_model.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
+import '../subscription/subscription_manager_screen.dart';
 
 class InBodyInputScreen extends StatefulWidget {
   const InBodyInputScreen({super.key});
@@ -53,21 +55,24 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
+    final authProvider = context.watch<AuthProvider>();
     final isArabic = languageProvider.isArabic;
+    final subscriptionTier = authProvider.user?.subscriptionTier ?? 'Freemium';
+    final isPremium = subscriptionTier == 'Premium' || subscriptionTier == 'Smart Premium';
     
     return Scaffold(
       appBar: AppBar(
         title: Text(isArabic ? 'تحليل InBody' : 'InBody Analysis'),
       ),
       body: _inputMode == 'selection'
-          ? _buildModeSelection(isArabic)
+          ? _buildModeSelection(isArabic, isPremium)
           : _inputMode == 'ai-scan'
               ? _buildAIScan(isArabic)
               : _buildManualInput(isArabic),
     );
   }
   
-  Widget _buildModeSelection(bool isArabic) {
+  Widget _buildModeSelection(bool isArabic, bool isPremium) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -93,78 +98,165 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
           const SizedBox(height: 32),
           
           // AI Scan option
-          CustomCard(
-            onTap: () {
-              setState(() {
-                _inputMode = 'ai-scan';
-              });
-            },
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: AppColors.primary,
-                    size: 30,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          Stack(
+            children: [
+              Opacity(
+                opacity: isPremium ? 1.0 : 0.6,
+                child: CustomCard(
+                  onTap: isPremium
+                      ? () {
+                          setState(() {
+                            _inputMode = 'ai-scan';
+                          });
+                        }
+                      : () {
+                          // Show upgrade dialog
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SubscriptionManagerScreen(),
+                            ),
+                          );
+                        },
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            isArabic ? 'مسح بالذكاء الاصطناعي' : 'AI Scan',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: isPremium
+                              ? const LinearGradient(
+                                  colors: [AppColors.primary, AppColors.accent],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                              : null,
+                          color: isPremium ? null : AppColors.textDisabled.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.auto_awesome,
+                          color: isPremium ? Colors.white : AppColors.textDisabled,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  isArabic ? 'مسح بالذكاء الاصطناعي' : 'AI Scan',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (!isPremium)
+                                  const Icon(
+                                    Icons.lock,
+                                    size: 16,
+                                    color: AppColors.textDisabled,
+                                  ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              isArabic ? 'جديد' : 'New',
+                            const SizedBox(height: 4),
+                            Text(
+                              isArabic
+                                  ? 'التقط صورة لتقرير InBody الخاص بك'
+                                  : 'Take a photo of your InBody report',
                               style: const TextStyle(
-                                fontSize: 10,
-                                color: AppColors.warning,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isArabic
-                            ? 'التقط صورة لتقرير InBody الخاص بك'
-                            : 'Take a photo of your InBody report',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                            if (isPremium)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.check_circle,
+                                      size: 16,
+                                      color: AppColors.success,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      isArabic ? 'استخراج فوري للبيانات' : 'Instant data extraction',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.success,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: CustomButton(
+                                  text: isArabic ? 'ترقية للذكاء الاصطناعي' : 'Upgrade for AI',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const SubscriptionManagerScreen(),
+                                      ),
+                                    );
+                                  },
+                                  size: ButtonSize.small,
+                                  variant: ButtonVariant.outline,
+                                ),
+                              ),
+                          ],
                         ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        color: isPremium ? AppColors.textSecondary : AppColors.textDisabled,
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.textDisabled),
-              ],
-            ),
+              ),
+              // Premium badge
+              if (!isPremium)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFF97316), Color(0xFFEC4899)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.workspace_premium,
+                          size: 12,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isArabic ? 'ميزة بريميوم' : 'Premium Feature',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
           ),
           
           const SizedBox(height: 16),
@@ -212,6 +304,24 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
                           fontSize: 13,
                           color: AppColors.textSecondary,
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            size: 16,
+                            color: AppColors.success,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isArabic ? 'متاح لجميع المستخدمين' : 'Available for all users',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
