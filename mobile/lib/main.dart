@@ -18,6 +18,7 @@ import 'presentation/providers/coach_provider.dart';
 import 'presentation/providers/admin_provider.dart';
 import 'presentation/providers/video_call_provider.dart';
 import 'presentation/providers/appointment_provider.dart';
+import 'presentation/providers/store_provider.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/user_repository.dart';
 import 'data/repositories/workout_repository.dart';
@@ -26,6 +27,7 @@ import 'data/repositories/messaging_repository.dart';
 import 'data/repositories/coach_repository.dart';
 import 'data/repositories/admin_repository.dart';
 import 'data/repositories/appointment_repository.dart';
+import 'data/repositories/store_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +83,9 @@ class FitCoachApp extends StatelessWidget {
         ),
         Provider<AppointmentRepository>(
           create: (_) => AppointmentRepository(),
+        ),
+        Provider<StoreRepository>(
+          create: (_) => StoreRepository(),
         ),
         
         // Providers
@@ -160,6 +165,12 @@ class FitCoachApp extends StatelessWidget {
           ),
           update: (context, repo, previous) =>
               previous ?? AppointmentProvider(repo),
+        ),
+        ChangeNotifierProxyProvider<StoreRepository, StoreProvider>(
+          create: (context) => StoreProvider(
+            context.read<StoreRepository>(),
+          ),
+          update: (context, repo, previous) => previous ?? StoreProvider(repo),
         ),
       ],
       child: Consumer2<LanguageProvider, ThemeProvider>(

@@ -60,6 +60,7 @@ class AuthRepository implements AuthRepositoryBase {
         _socialAuthClient = socialAuthClient ?? DefaultSocialAuthClient();
   
   // Request OTP
+  @override
   Future<void> requestOTP(String phoneNumber) async {
     try {
       await _dio.post('/auth/send-otp', data: {
@@ -74,6 +75,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Verify OTP
+  @override
   Future<AuthResponse> verifyOTP(String phoneNumber, String otpCode) async {
     try {
       final response = await _dio.post(
@@ -95,6 +97,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Login with email or phone + password
+  @override
   Future<AuthResponse> loginWithEmailOrPhone({
     required String emailOrPhone,
     required String password,
@@ -119,6 +122,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Signup with email
+  @override
   Future<AuthResponse> signup({
     required String name,
     required String email,
@@ -147,6 +151,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Social login (Google, Facebook, Apple)
+  @override
   Future<AuthResponse> socialLogin(String provider) async {
     try {
       final socialAuth = await _socialAuthClient.signIn(provider);
@@ -173,6 +178,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Get stored token
+  @override
   Future<String?> getStoredToken() async {
     try {
       return await _secureStorage.read(key: _tokenKey);
@@ -182,6 +188,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Store token
+  @override
   Future<void> storeToken(String token) async {
     try {
       await _secureStorage.write(key: _tokenKey, value: token);
@@ -191,6 +198,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Get user profile
+  @override
   Future<UserProfile?> getUserProfile() async {
     try {
       final token = await getStoredToken();
@@ -228,6 +236,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Logout
+  @override
   Future<void> logout() async {
     try {
       await _secureStorage.delete(key: _tokenKey);
@@ -237,6 +246,7 @@ class AuthRepository implements AuthRepositoryBase {
   }
   
   // Refresh token
+  @override
   Future<String?> refreshToken() async {
     try {
       final currentToken = await getStoredToken();

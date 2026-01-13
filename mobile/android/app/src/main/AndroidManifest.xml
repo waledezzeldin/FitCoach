@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.fitcoach.mobile">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
     <!-- Permissions for video calls -->
     <uses-permission android:name="android.permission.INTERNET"/>

@@ -5,7 +5,13 @@ import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/coach_provider.dart';
 import '../../widgets/custom_card.dart';
-// ...existing code...
+import '../../../data/models/coach_client.dart';
+import '../../../data/models/workout_plan.dart';
+import '../../../data/models/nutrition_plan.dart';
+import 'coach_message_thread_screen.dart';
+import 'coach_schedule_session_sheet.dart';
+import 'coach_workout_plan_viewer_screen.dart';
+import 'coach_nutrition_plan_viewer_screen.dart';
 import 'workout_plan_editor_screen.dart';
 import 'nutrition_plan_editor_screen.dart';
 
@@ -18,10 +24,15 @@ class CoachClientDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<CoachClientDetailScreen> createState() => _CoachClientDetailScreenState();
+  State<CoachClientDetailScreen> createState() =>
+      _CoachClientDetailScreenState();
 }
 
 class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
+  WorkoutPlan? _workoutPlan;
+  NutritionPlan? _nutritionPlan;
+  bool _isPlansLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -30,16 +41,39 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     });
   }
 
-  void _loadClientDetails() {
+  Future<void> _loadClientDetails() async {
     final authProvider = context.read<AuthProvider>();
     final coachProvider = context.read<CoachProvider>();
-    
-    if (authProvider.user?.id != null) {
-      coachProvider.loadClientDetails(
-        coachId: authProvider.user!.id,
-        clientId: widget.clientId,
-      );
+    final coachId = authProvider.user?.id;
+
+    if (coachId == null) {
+      return;
     }
+
+    await coachProvider.loadClientDetails(
+      coachId: coachId,
+      clientId: widget.clientId,
+    );
+
+    if (!mounted) return;
+    await _loadClientPlans(coachId);
+  }
+
+  Future<void> _loadClientPlans(String coachId) async {
+    setState(() {
+      _isPlansLoading = true;
+    });
+    final coachProvider = context.read<CoachProvider>();
+    final workout =
+        await coachProvider.getClientWorkoutPlan(coachId, widget.clientId);
+    final nutrition =
+        await coachProvider.getClientNutritionPlan(coachId, widget.clientId);
+    if (!mounted) return;
+    setState(() {
+      _workoutPlan = workout;
+      _nutritionPlan = nutrition;
+      _isPlansLoading = false;
+    });
   }
 
   @override
@@ -52,7 +86,8 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(client?.fullName ?? (isArabic ? 'تفاصيل العميل' : 'Client Details')),
+        title: Text(client?.fullName ??
+            (isArabic ? 'تفاصيل العميل' : 'Client Details')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -74,7 +109,10 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        coachProvider.error ?? (isArabic ? 'فشل تحميل البيانات' : 'Failed to load data'),
+                        coachProvider.error ??
+                            (isArabic
+                                ? 'فشل تحميل البيانات'
+                                : 'Failed to load data'),
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: AppColors.error),
                       ),
@@ -87,32 +125,42 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                   ),
                 )
               : RefreshIndicator(
-                  onRefresh: () async => _loadClientDetails(),
+                  onRefresh: _loadClientDetails,
                   child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Client header
                         _buildClientHeader(client, isArabic),
-                        
+                        const SizedBox(height: 16),
+                        _buildClientActions(client, languageProvider),
+
                         const SizedBox(height: 24),
-                        
+
                         // Fitness score section
-                        _buildFitnessScoreSection(client, authProvider, isArabic),
-                        
+                        _buildFitnessScoreSection(
+                            client, authProvider, isArabic),
+
                         const SizedBox(height: 16),
-                        
+
                         // Plans section
-                        _buildPlansSection(client, isArabic),
-                        
+                        _buildPlansSection(
+                            client, languageProvider, authProvider),
+
                         const SizedBox(height: 16),
-                        
+
+                        // Progress mirror
+                        _buildProgressMirrorSection(client, languageProvider),
+
+                        const SizedBox(height: 16),
+
                         // Activity section
                         _buildActivitySection(client, isArabic),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Contact section
                         _buildContactSection(client, isArabic),
                       ],
@@ -146,9 +194,9 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                     )
                   : null,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Text(
               client.fullName,
               style: const TextStyle(
@@ -157,9 +205,9 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Badges
             Wrap(
               spacing: 8,
@@ -168,7 +216,8 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
               children: [
                 // Subscription tier
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: _getTierColor(client.subscriptionTier),
                     borderRadius: BorderRadius.circular(16),
@@ -182,10 +231,11 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Status
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: _getStatusColor(client.statusText),
                     borderRadius: BorderRadius.circular(16),
@@ -201,13 +251,14 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 ),
               ],
             ),
-            
+
             if (client.goal != null) ...[
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.flag, size: 16, color: AppColors.textSecondary),
+                  const Icon(Icons.flag,
+                      size: 16, color: AppColors.textSecondary),
                   const SizedBox(width: 8),
                   Text(
                     client.goal!,
@@ -225,7 +276,50 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     );
   }
 
-  Widget _buildFitnessScoreSection(client, AuthProvider authProvider, bool isArabic) {
+  Widget _buildClientActions(client, LanguageProvider lang) {
+    final isArabic = lang.isArabic;
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.chat_bubble_outline),
+            label: Text(isArabic ? 'مراسلة العميل' : 'Message client'),
+            onPressed: () => _openMessageThread(client),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.video_call),
+            label: Text(isArabic ? 'جدولة مكالمة' : 'Schedule call'),
+            onPressed: () => _openScheduleSheet(client),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openMessageThread(client) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CoachMessageThreadScreen(
+          clientId: client.id,
+          clientName: client.fullName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openScheduleSheet(client) {
+    return showCoachScheduleSessionSheet(
+      context,
+      clientId: client.id,
+      clientName: client.fullName,
+    );
+  }
+
+  Widget _buildFitnessScoreSection(
+      client, AuthProvider authProvider, bool isArabic) {
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -243,15 +337,14 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: () => _showAssignScoreDialog(authProvider, isArabic),
+                  onPressed: () =>
+                      _showAssignScoreDialog(authProvider, isArabic),
                   icon: const Icon(Icons.edit, size: 16),
                   label: Text(isArabic ? 'تعديل' : 'Edit'),
                 ),
               ],
             ),
-            
             const SizedBox(height: 16),
-            
             Center(
               child: Container(
                 width: 120,
@@ -292,7 +385,13 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     );
   }
 
-  Widget _buildPlansSection(client, bool isArabic) {
+  Widget _buildPlansSection(
+      client, LanguageProvider lang, AuthProvider authProvider) {
+    final isArabic = lang.isArabic;
+    final coachId = authProvider.user?.id;
+    final workoutProgress = _calculateWorkoutProgress(_workoutPlan);
+    final nutritionProgress = _calculateNutritionProgress(_nutritionPlan);
+
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -306,58 +405,564 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
-            const SizedBox(height: 16),
-            
-            // Workout plan
-            ListTile(
-              leading: const Icon(Icons.fitness_center, color: AppColors.primary),
-              title: Text(isArabic ? 'خطة التمرين' : 'Workout Plan'),
-              subtitle: Text(
-                client.workoutPlanName ?? (isArabic ? 'غير معينة' : 'Not assigned'),
+            const SizedBox(height: 12),
+            if (_isPlansLoading)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: const CircularProgressIndicator(),
+                ),
+              )
+            else ...[
+              _buildPlanEntry(
+                lang: lang,
+                icon: Icons.fitness_center,
+                color: AppColors.primary,
+                title: isArabic ? 'خطة التمرين' : 'Workout Plan',
+                assignedName: client.workoutPlanName,
+                progress: workoutProgress,
+                onView: _workoutPlan != null
+                    ? () => _openWorkoutViewer(client.fullName)
+                    : null,
+                onEdit:
+                    coachId != null ? () => _openWorkoutEditor(coachId) : null,
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                final authProvider = context.read<AuthProvider>();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => WorkoutPlanEditorScreen(
-                      clientId: client.id,
-                      coachId: authProvider.user!.id,
-                    ),
-                  ),
-                ).then((_) => _loadClientDetails()); // Reload after editing
-              },
-            ),
-            
-            const Divider(),
-            
-            // Nutrition plan
-            ListTile(
-              leading: const Icon(Icons.restaurant, color: AppColors.success),
-              title: Text(isArabic ? 'خطة التغذية' : 'Nutrition Plan'),
-              subtitle: Text(
-                client.nutritionPlanName ?? (isArabic ? 'غير معينة' : 'Not assigned'),
+              const Divider(),
+              _buildPlanEntry(
+                lang: lang,
+                icon: Icons.restaurant,
+                color: AppColors.success,
+                title: isArabic ? 'خطة التغذية' : 'Nutrition Plan',
+                assignedName: client.nutritionPlanName,
+                progress: nutritionProgress,
+                onView: _nutritionPlan != null
+                    ? () => _openNutritionViewer(client.fullName)
+                    : null,
+                onEdit: coachId != null
+                    ? () => _openNutritionEditor(coachId)
+                    : null,
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                final authProvider = context.read<AuthProvider>();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NutritionPlanEditorScreen(
-                      clientId: client.id,
-                      coachId: authProvider.user!.id,
-                    ),
-                  ),
-                ).then((_) => _loadClientDetails()); // Reload after editing
-              },
-            ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildPlanEntry({
+    required LanguageProvider lang,
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String? assignedName,
+    required double? progress,
+    VoidCallback? onView,
+    VoidCallback? onEdit,
+  }) {
+    final isArabic = lang.isArabic;
+    final planName = assignedName ?? (isArabic ? 'غير معينة' : 'Not assigned');
+    final hasProgress = progress != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    planName,
+                    style: const TextStyle(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 8),
+                  if (hasProgress) ...[
+                    LinearProgressIndicator(
+                      value: progress!.clamp(0, 1),
+                      minHeight: 6,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${(progress * 100).round()}% ${isArabic ? 'إنجاز' : 'complete'}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ] else
+                    Text(
+                      isArabic ? 'لا يوجد نشاط بعد' : 'No progress tracked yet',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.remove_red_eye_outlined),
+                label: Text(isArabic ? 'عرض الخطة' : 'View plan'),
+                onPressed: onView,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.edit),
+                label: Text(isArabic ? 'تعديل الخطة' : 'Edit plan'),
+                onPressed: onEdit,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgressMirrorSection(
+    CoachClient client,
+    LanguageProvider lang,
+  ) {
+    final snapshot = _buildProgressSnapshot(client);
+    if (snapshot == null) {
+      return const SizedBox.shrink();
+    }
+    final isArabic = lang.isArabic;
+
+    return CustomCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isArabic ? 'مرآة التقدم' : 'Progress mirror',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () => _openProgressPeekSheet(snapshot, lang),
+                  icon: const Icon(Icons.timeline, size: 16),
+                  label: Text(isArabic ? 'الخط الزمني' : 'Timeline'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildProgressStatTile(
+                    title: isArabic ? 'التزام التمرين' : 'Workout adherence',
+                    value: snapshot.workoutCompletion,
+                    icon: Icons.fitness_center,
+                    color: AppColors.primary,
+                    isArabic: isArabic,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildProgressStatTile(
+                    title: isArabic ? 'التزام التغذية' : 'Nutrition adherence',
+                    value: snapshot.nutritionCompletion,
+                    icon: Icons.restaurant,
+                    color: AppColors.success,
+                    isArabic: isArabic,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildStreakPill(snapshot.streakDays, isArabic),
+            const SizedBox(height: 16),
+            _buildTrendStrip(
+              title: isArabic ? 'أيام التدريب' : 'Training days',
+              color: AppColors.primary,
+              points: snapshot.workoutTrend,
+              isArabic: isArabic,
+            ),
+            const SizedBox(height: 12),
+            _buildTrendStrip(
+              title: isArabic ? 'أيام التغذية' : 'Nutrition days',
+              color: AppColors.success,
+              points: snapshot.nutritionTrend,
+              isArabic: isArabic,
+            ),
+            const SizedBox(height: 16),
+            _buildFlagWrap(snapshot.flags, isArabic),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressStatTile({
+    required String title,
+    required double? value,
+    required IconData icon,
+    required Color color,
+    required bool isArabic,
+  }) {
+    final display = value != null ? '${(value * 100).round()}%' : '--';
+    final subtitle = value != null
+        ? (value >= 0.7
+            ? (isArabic ? 'على المسار' : 'On track')
+            : (isArabic ? 'بحاجة لتحسين' : 'Needs focus'))
+        : (isArabic ? 'لا توجد بيانات' : 'No data yet');
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            display,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: value?.clamp(0, 1) ?? 0,
+            minHeight: 5,
+            color: color,
+            backgroundColor: AppColors.surface,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrendStrip({
+    required String title,
+    required Color color,
+    required List<_TrendPoint> points,
+    required bool isArabic,
+  }) {
+    if (points.isEmpty) {
+      return Text(
+        isArabic ? 'لم يتم تسجيل بيانات حتى الآن' : 'No timeline captured yet',
+        style: const TextStyle(
+          fontSize: 12,
+          color: AppColors.textSecondary,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 72,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: points.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final point = points[index];
+              return Container(
+                width: 96,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      point.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: point.value.clamp(0, 1),
+                        minHeight: 5,
+                        color: color,
+                        backgroundColor: AppColors.surface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${(point.value * 100).round()}%',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStreakPill(int streak, bool isArabic) {
+    final label = streak > 0
+        ? (isArabic ? 'متتالي $streak يوم' : '$streak day streak')
+        : (isArabic ? 'لا يوجد تسلسل' : 'No active streak');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.local_fire_department, color: AppColors.accent),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFlagWrap(Set<_ProgressFlag> flags, bool isArabic) {
+    if (flags.isEmpty) {
+      return Text(
+        isArabic ? 'كل شيء على المسار الصحيح' : 'Everything looks on track',
+        style: const TextStyle(
+          fontSize: 12,
+          color: AppColors.textSecondary,
+        ),
+      );
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: flags
+          .map(
+            (flag) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _flagLabel(flag, isArabic),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.error,
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  void _openProgressPeekSheet(
+    _ClientProgressSnapshot snapshot,
+    LanguageProvider lang,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => CoachProgressPeekSheet(
+        snapshot: snapshot,
+        isArabic: lang.isArabic,
+      ),
+    );
+  }
+
+  _ClientProgressSnapshot? _buildProgressSnapshot(CoachClient client) {
+    final workoutTrend = _workoutPlan?.days
+            ?.map(
+              (day) => _TrendPoint(
+                label: day.dayName,
+                value: day.exercises.isEmpty
+                    ? 0
+                    : day.exercises
+                            .where((exercise) => exercise.isCompleted)
+                            .length /
+                        day.exercises.length,
+                order: day.dayNumber,
+              ),
+            )
+            .toList() ??
+        <_TrendPoint>[];
+
+    final nutritionTrend = _nutritionPlan?.days
+            ?.map(
+              (day) => _TrendPoint(
+                label: day.dayName,
+                value: day.meals.isEmpty
+                    ? 0
+                    : day.meals.where((meal) => meal.completed).length /
+                        day.meals.length,
+                order: day.dayNumber,
+              ),
+            )
+            .toList() ??
+        <_TrendPoint>[];
+
+    final workoutCompletion = _calculateWorkoutProgress(_workoutPlan);
+    final nutritionCompletion = _calculateNutritionProgress(_nutritionPlan);
+
+    if (workoutCompletion == null &&
+        nutritionCompletion == null &&
+        workoutTrend.isEmpty &&
+        nutritionTrend.isEmpty) {
+      return null;
+    }
+
+    final flags = <_ProgressFlag>{};
+    if (workoutCompletion != null && workoutCompletion < 0.6) {
+      flags.add(_ProgressFlag.lowWorkout);
+    }
+    if (nutritionCompletion != null && nutritionCompletion < 0.6) {
+      flags.add(_ProgressFlag.lowNutrition);
+    }
+    final lastActivity = client.lastActivity;
+    if (lastActivity == null ||
+        DateTime.now().difference(lastActivity).inDays > 5) {
+      flags.add(_ProgressFlag.inactive);
+    }
+
+    final streak = _calculateAdherenceStreak(workoutTrend, nutritionTrend);
+
+    return _ClientProgressSnapshot(
+      workoutCompletion: workoutCompletion,
+      nutritionCompletion: nutritionCompletion,
+      workoutTrend: workoutTrend,
+      nutritionTrend: nutritionTrend,
+      streakDays: streak,
+      flags: flags,
+    );
+  }
+
+  int _calculateAdherenceStreak(
+    List<_TrendPoint> workoutTrend,
+    List<_TrendPoint> nutritionTrend,
+  ) {
+    final orderedWorkout = [...workoutTrend]
+      ..sort((a, b) => a.order.compareTo(b.order));
+    if (orderedWorkout.isNotEmpty) {
+      return _streakFromPoints(orderedWorkout);
+    }
+    final orderedNutrition = [...nutritionTrend]
+      ..sort((a, b) => a.order.compareTo(b.order));
+    return _streakFromPoints(orderedNutrition);
+  }
+
+  int _streakFromPoints(List<_TrendPoint> points) {
+    int streak = 0;
+    for (final point in points.reversed) {
+      if (point.value >= 0.7) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  String _flagLabel(_ProgressFlag flag, bool isArabic) {
+    switch (flag) {
+      case _ProgressFlag.lowWorkout:
+        return isArabic ? 'التزام التمرين منخفض' : 'Low workout adherence';
+      case _ProgressFlag.lowNutrition:
+        return isArabic ? 'التزام التغذية منخفض' : 'Low nutrition adherence';
+      case _ProgressFlag.inactive:
+        return isArabic ? 'لم يسجل نشاطاً مؤخراً' : 'Needs new activity';
+    }
   }
 
   Widget _buildActivitySection(client, bool isArabic) {
@@ -374,9 +979,9 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Assigned date
             if (client.assignedDate != null)
               _buildInfoRow(
@@ -384,9 +989,9 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 label: isArabic ? 'تاريخ التعيين' : 'Assigned Date',
                 value: _formatDate(client.assignedDate!),
               ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Last activity
             if (client.lastActivity != null)
               _buildInfoRow(
@@ -394,9 +999,9 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 label: isArabic ? 'آخر نشاط' : 'Last Activity',
                 value: _formatDate(client.lastActivity!),
               ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Message count
             _buildInfoRow(
               icon: Icons.message,
@@ -423,9 +1028,9 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Email
             if (client.email != null)
               _buildInfoRow(
@@ -433,10 +1038,10 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 label: isArabic ? 'البريد الإلكتروني' : 'Email',
                 value: client.email!,
               ),
-            
+
             if (client.email != null && client.phoneNumber != null)
               const SizedBox(height: 12),
-            
+
             // Phone
             if (client.phoneNumber != null)
               _buildInfoRow(
@@ -448,6 +1053,84 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
         ),
       ),
     );
+  }
+
+  double? _calculateWorkoutProgress(WorkoutPlan? plan) {
+    if (plan?.days == null || plan!.days!.isEmpty) return null;
+    final totalExercises =
+        plan.days!.fold<int>(0, (sum, day) => sum + day.exercises.length);
+    if (totalExercises == 0) return null;
+    final completedExercises = plan.days!.fold<int>(
+        0,
+        (sum, day) =>
+            sum +
+            day.exercises.where((exercise) => exercise.isCompleted).length);
+    return completedExercises / totalExercises;
+  }
+
+  double? _calculateNutritionProgress(NutritionPlan? plan) {
+    final meals = plan?.meals;
+    if (meals == null || meals.isEmpty) return null;
+    final completed = meals.where((meal) => meal.completed).length;
+    return completed / meals.length;
+  }
+
+  Future<void> _openWorkoutEditor(String coachId) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => WorkoutPlanEditorScreen(
+          clientId: widget.clientId,
+          coachId: coachId,
+        ),
+      ),
+    );
+    if (mounted) {
+      _loadClientDetails();
+    }
+  }
+
+  Future<void> _openNutritionEditor(String coachId) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => NutritionPlanEditorScreen(
+          clientId: widget.clientId,
+          coachId: coachId,
+        ),
+      ),
+    );
+    if (mounted) {
+      _loadClientDetails();
+    }
+  }
+
+  Future<void> _openWorkoutViewer(String clientName) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CoachWorkoutPlanViewerScreen(
+          clientId: widget.clientId,
+          clientName: clientName,
+        ),
+      ),
+    );
+    final coachId = context.read<AuthProvider>().user?.id;
+    if (coachId != null) {
+      await _loadClientPlans(coachId);
+    }
+  }
+
+  Future<void> _openNutritionViewer(String clientName) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CoachNutritionPlanViewerScreen(
+          clientId: widget.clientId,
+          clientName: clientName,
+        ),
+      ),
+    );
+    final coachId = context.read<AuthProvider>().user?.id;
+    if (coachId != null) {
+      await _loadClientPlans(coachId);
+    }
   }
 
   Widget _buildInfoRow({
@@ -497,7 +1180,8 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(isArabic ? 'تعيين نتيجة اللياقة' : 'Assign Fitness Score'),
+          title:
+              Text(isArabic ? 'تعيين نتيجة اللياقة' : 'Assign Fitness Score'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -509,7 +1193,6 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                   color: _getScoreColor(score),
                 ),
               ),
-              
               Slider(
                 value: score.toDouble(),
                 min: 0,
@@ -522,13 +1205,12 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                   });
                 },
               ),
-              
               const SizedBox(height: 16),
-              
               TextField(
                 controller: notesController,
                 decoration: InputDecoration(
-                  labelText: isArabic ? 'ملاحظات (اختياري)' : 'Notes (optional)',
+                  labelText:
+                      isArabic ? 'ملاحظات (اختياري)' : 'Notes (optional)',
                   border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
@@ -543,19 +1225,21 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(context);
-                
+
                 final success = await coachProvider.assignFitnessScore(
                   coachId: authProvider.user!.id,
                   clientId: client.id,
                   fitnessScore: score,
-                  notes: notesController.text.isNotEmpty ? notesController.text : null,
+                  notes: notesController.text.isNotEmpty
+                      ? notesController.text
+                      : null,
                 );
-                
+
                 if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        isArabic 
+                        isArabic
                             ? 'تم تعيين النتيجة بنجاح'
                             : 'Fitness score assigned successfully',
                       ),
@@ -565,7 +1249,8 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 } else if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(coachProvider.error ?? 'Failed to assign score'),
+                      content:
+                          Text(coachProvider.error ?? 'Failed to assign score'),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -614,5 +1299,239 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     if (score >= 80) return AppColors.success;
     if (score >= 60) return AppColors.warning;
     return AppColors.error;
+  }
+}
+
+class _ClientProgressSnapshot {
+  final double? workoutCompletion;
+  final double? nutritionCompletion;
+  final List<_TrendPoint> workoutTrend;
+  final List<_TrendPoint> nutritionTrend;
+  final int streakDays;
+  final Set<_ProgressFlag> flags;
+
+  const _ClientProgressSnapshot({
+    required this.workoutCompletion,
+    required this.nutritionCompletion,
+    required this.workoutTrend,
+    required this.nutritionTrend,
+    required this.streakDays,
+    required this.flags,
+  });
+}
+
+class _TrendPoint {
+  final String label;
+  final double value;
+  final int order;
+
+  const _TrendPoint({
+    required this.label,
+    required this.value,
+    required this.order,
+  });
+}
+
+enum _ProgressFlag {
+  lowWorkout,
+  lowNutrition,
+  inactive,
+}
+
+class CoachProgressPeekSheet extends StatelessWidget {
+  final _ClientProgressSnapshot snapshot;
+  final bool isArabic;
+
+  const CoachProgressPeekSheet({
+    super.key,
+    required this.snapshot,
+    required this.isArabic,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 16,
+          bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isArabic ? 'خط زمني للتقدم' : 'Progress timeline',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              isArabic
+                  ? 'آخر 7 أيام من التدريب والتغذية'
+                  : 'Last 7 days across workouts and meals',
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _PeekStatTile(
+                    label: isArabic ? 'التمارين' : 'Workouts',
+                    value: snapshot.workoutCompletion,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _PeekStatTile(
+                    label: isArabic ? 'التغذية' : 'Nutrition',
+                    value: snapshot.nutritionCompletion,
+                    color: AppColors.success,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildPeekTimeline(
+              title: isArabic ? 'سجل التدريب' : 'Workout log',
+              points: snapshot.workoutTrend,
+              color: AppColors.primary,
+            ),
+            const SizedBox(height: 20),
+            _buildPeekTimeline(
+              title: isArabic ? 'سجل التغذية' : 'Nutrition log',
+              points: snapshot.nutritionTrend,
+              color: AppColors.success,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPeekTimeline({
+    required String title,
+    required List<_TrendPoint> points,
+    required Color color,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (points.isEmpty)
+          Text(
+            isArabic ? 'لم يتم تسجيل بيانات' : 'No entries captured yet',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          )
+        else
+          ...points.map(
+            (point) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      point.label,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 160,
+                    child: LinearProgressIndicator(
+                      value: point.value.clamp(0, 1),
+                      minHeight: 6,
+                      color: color,
+                      backgroundColor: AppColors.surface,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('${(point.value * 100).round()}%'),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _PeekStatTile extends StatelessWidget {
+  final String label;
+  final double? value;
+  final Color color;
+
+  const _PeekStatTile({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final display = value != null ? '${(value! * 100).round()}%' : '--';
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            display,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: value?.clamp(0, 1) ?? 0,
+            minHeight: 5,
+            color: color,
+            backgroundColor: AppColors.surface,
+          ),
+        ],
+      ),
+    );
   }
 }

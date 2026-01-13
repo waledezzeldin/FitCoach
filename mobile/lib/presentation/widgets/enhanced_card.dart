@@ -58,11 +58,9 @@ class _EnhancedCardState extends State<EnhancedCard> {
               : null,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(
-                widget.hoverEffect && _isHovered && widget.onTap != null
+              color: Colors.black.withValues(alpha: widget.hoverEffect && _isHovered && widget.onTap != null
                     ? 0.1
-                    : 0.05,
-              ),
+                    : 0.05,),
               blurRadius: widget.hoverEffect && _isHovered && widget.onTap != null ? 20 : 10,
               offset: Offset(0, widget.hoverEffect && _isHovered && widget.onTap != null ? 4 : 2),
             ),

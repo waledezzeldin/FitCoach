@@ -364,6 +364,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   _buildWorkoutActionRow(
                     languageProvider,
                     workoutProgress,
+                    currentDay,
+                    workoutProvider,
                   ),
                 ],
               ),
@@ -425,7 +427,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: (0.2 * 255)),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -447,7 +449,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: Colors.white.withValues(alpha: (0.2 * 255)),
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),
@@ -485,6 +487,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     }
 
     final isCompleted = completedSteps >= totalSteps;
+    // Always show 30% progress if not completed
     final progress = isCompleted ? 1.0 : 0.3;
     final percent = (progress * 100).round();
 
@@ -670,20 +673,73 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Widget _buildWorkoutActionRow(
     LanguageProvider lang,
     double progress,
+    WorkoutDay? currentDay,
+    WorkoutProvider provider,
   ) {
     final isCompleted = progress >= 1.0;
+
+    void showMessage(String message) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+
+    void openExerciseAt(int index) {
+      if (currentDay == null || currentDay.exercises.isEmpty) {
+        showMessage(lang.t('no_active_workout_plan'));
+        return;
+      }
+      final safeIndex = index.clamp(0, currentDay.exercises.length - 1);
+      _openExerciseSession(currentDay, safeIndex);
+    }
+
+    int? lastCompletedIndex() {
+      if (currentDay == null) return null;
+      for (var i = currentDay.exercises.length - 1; i >= 0; i--) {
+        if (provider.isExerciseCompleted(currentDay.exercises[i].id)) {
+          return i;
+        }
+      }
+      return null;
+    }
+
+    int? firstIncompleteIndex() {
+      if (currentDay == null) return null;
+      for (var i = 0; i < currentDay.exercises.length; i++) {
+        if (!provider.isExerciseCompleted(currentDay.exercises[i].id)) {
+          return i;
+        }
+      }
+      return null;
+    }
+
     return Row(
       children: [
         Expanded(
           child: OutlinedButton(
-            onPressed: () {},
+            onPressed: () {
+              final idx = lastCompletedIndex();
+              if (idx == null) {
+                showMessage(lang.t('workout_progress', args: {
+                  'completed': '0',
+                  'total': '${currentDay?.exercises.length ?? 0}',
+                }));
+                return;
+              }
+              openExerciseAt(idx);
+            },
             child: Text(lang.t('workout_previous')),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
-            onPressed: isCompleted ? null : () {},
+            onPressed: isCompleted
+                ? null
+                : () {
+                    final nextIdx = firstIncompleteIndex() ?? lastCompletedIndex() ?? 0;
+                    openExerciseAt(nextIdx);
+                  },
             child: Text(
               isCompleted
                   ? lang.t('workout_completed')
@@ -773,10 +829,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.zero,
       color: isCompleted
-          ? AppColors.success.withValues(alpha: (0.06 * 255))
+          ? AppColors.success.withValues(alpha: 0.06)
           : Colors.white,
       border: isCompleted
-          ? Border.all(color: AppColors.success.withValues(alpha: (0.4 * 255)))
+          ? Border.all(color: AppColors.success.withValues(alpha: 0.4))
           : (hasConflict ? Border.all(color: AppColors.warning) : null),
       onTap: () => _openExerciseDetail(currentDay, index),
       child: Padding(
@@ -817,7 +873,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: (0.12 * 255)),
+                        color: AppColors.warning.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -927,7 +983,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   return ListTile(
                     title: Text(isArabic ? alt.nameAr : alt.nameEn),
                     subtitle: Text(alt.muscleGroup ?? ''),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: Icon(isArabic ? Icons.chevron_left : Icons.chevron_right),
                     onTap: () async {
                       Navigator.pop(context);
                       final success = await provider.substituteExercise(

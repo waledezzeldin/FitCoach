@@ -36,7 +36,8 @@ class _FeatureIntroScreenState extends State<FeatureIntroScreen> {
     final slides = _getSlides(widget.feature, isArabic);
     
     return Scaffold(
-      backgroundColor: Colors.white,
+      // Match the glassy coach intro style with better contrast
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -131,48 +132,54 @@ class _FeatureIntroScreenState extends State<FeatureIntroScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon
+          // Icon with soft colored circle on dark background
+          // Use default 1s duration for clear visibility
           AnimatedReveal(
+            offset: const Offset(0, 0.22),
+            initialScale: 0.8,
             child: Container(
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: (slide['color'] as Color).withValues(alpha: 0.1),
+                color: (slide['color'] as Color).withValues(alpha: 0.18),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 slide['icon'] as IconData,
                 size: 60,
-                color: slide['color'] as Color,
+                color: Colors.white,
               ),
             ),
           ),
-          
           const SizedBox(height: 48),
           
-          // Title
+          // Title (1s duration with slight delay)
           AnimatedReveal(
-            delay: const Duration(milliseconds: 120),
+            delay: const Duration(milliseconds: 100),
+            offset: const Offset(0, 0.18),
+            initialScale: 0.9,
             child: Text(
               slide['title'] as String,
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          
           const SizedBox(height: 16),
           
           // Description
           AnimatedReveal(
-            delay: const Duration(milliseconds: 200),
+            delay: const Duration(milliseconds: 220),
+            offset: const Offset(0, 0.16),
+            initialScale: 0.95,
             child: Text(
               slide['description'] as String,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
-                color: AppColors.textSecondary,
+                color: Colors.white.withValues(alpha: 0.85),
                 height: 1.5,
               ),
               textAlign: TextAlign.center,

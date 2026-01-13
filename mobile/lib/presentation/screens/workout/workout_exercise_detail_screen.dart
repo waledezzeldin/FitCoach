@@ -119,7 +119,11 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                             subtitle: Text(
                               '${alt.sets} ${lang.t('sets')} \u2022 ${alt.reps} ${lang.t('reps')}',
                             ),
-                            trailing: const Icon(Icons.chevron_right),
+                              trailing: Icon(
+                                Directionality.of(context) == TextDirection.rtl
+                                    ? Icons.chevron_left
+                                    : Icons.chevron_right,
+                              ),
                             onTap: () async {
                               Navigator.pop(context);
                               final success = await provider.substituteExercise(
@@ -272,7 +276,17 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                                     ),
                                     const SizedBox(height: 8),
                                     OutlinedButton.icon(
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              isArabic
+                                                  ? 'الفيديو غير متوفر في هذا الإصدار حالياً'
+                                                  : 'Video is not available in this build yet',
+                                            ),
+                                          ),
+                                        );
+                                      },
                                       icon: const Icon(Icons.play_arrow),
                                       label: Text(lang.t('exercise_watch_video_btn')),
                                     ),
@@ -302,7 +316,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                           const SizedBox(height: 16),
                           Container(
                             decoration: BoxDecoration(
-                              color: AppColors.surface.withValues(alpha: (0.9 * 255)),
+                              color: AppColors.surface.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: AppColors.border),
                             ),
@@ -555,7 +569,7 @@ class _DifficultyBadge extends StatelessWidget {
         foreground = const Color(0xFF991B1B);
         break;
       default:
-        background = Colors.white.withValues(alpha: (0.2 * 255));
+        background = Colors.white.withValues(alpha: 0.2);
         foreground = Colors.white;
     }
 
@@ -613,7 +627,7 @@ class _TutorialOverlay extends StatelessWidget {
     final lang = context.watch<LanguageProvider>();
     return Positioned.fill(
       child: Container(
-        color: Colors.black.withValues(alpha: (0.6 * 255)),
+        color: Colors.black.withValues(alpha: 0.6),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -701,7 +715,7 @@ class _TutorialStep extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: (0.15 * 255)),
+            color: AppColors.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(icon, color: AppColors.primary, size: 18),

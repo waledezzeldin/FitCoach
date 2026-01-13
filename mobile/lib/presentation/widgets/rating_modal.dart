@@ -41,7 +41,7 @@ class _RatingModalState extends State<RatingModal> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.hasSelectedLanguage && languageProvider.isArabic;
+    final translator = languageProvider.t;
     
     return Container(
       padding: EdgeInsets.only(
@@ -77,7 +77,7 @@ class _RatingModalState extends State<RatingModal> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: (0.1 * 255)),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -93,7 +93,7 @@ class _RatingModalState extends State<RatingModal> {
             // Title
             Center(
               child: Text(
-                _getTitle(isArabic),
+                translator(_getTitleKey()),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -107,7 +107,7 @@ class _RatingModalState extends State<RatingModal> {
             // Subtitle
             Center(
               child: Text(
-                _getSubtitle(isArabic),
+                translator('rating_subtitle'),
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
@@ -159,7 +159,7 @@ class _RatingModalState extends State<RatingModal> {
               const SizedBox(height: 16),
               Center(
                 child: Text(
-                  _getRatingLabel(_labelRating, isArabic),
+                  translator(_getRatingLabelKey(_labelRating)),
                   style: TextStyle(
                     fontSize: 16,
                     color: _getRatingColor(_labelRating),
@@ -173,7 +173,7 @@ class _RatingModalState extends State<RatingModal> {
             
             // Feedback
             Text(
-              isArabic ? 'ملاحظات إضافية (اختياري)' : 'Additional Feedback (Optional)',
+              translator('rating_feedback_label'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -185,9 +185,7 @@ class _RatingModalState extends State<RatingModal> {
               controller: _feedbackController,
               maxLines: 4,
               decoration: InputDecoration(
-                hintText: isArabic
-                    ? 'أخبرنا بالمزيد عن تجربتك...'
-                    : 'Tell us more about your experience...',
+                hintText: translator('rating_feedback_hint'),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -211,7 +209,7 @@ class _RatingModalState extends State<RatingModal> {
                   disabledBackgroundColor: AppColors.textDisabled,
                 ),
                 child: Text(
-                  isArabic ? 'إرسال التقييم' : 'Submit Rating',
+                  translator('rating_submit'),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -227,7 +225,7 @@ class _RatingModalState extends State<RatingModal> {
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  isArabic ? 'تخطي' : 'Skip',
+                  translator('rating_skip'),
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
@@ -241,34 +239,26 @@ class _RatingModalState extends State<RatingModal> {
     );
   }
   
-  String _getTitle(bool isArabic) {
+  String _getTitleKey() {
     switch (widget.type) {
       case 'video_call':
-        return isArabic ? 'قيّم مكالمة الفيديو' : 'Rate Video Call';
+        return 'rating_title_video_call';
       case 'workout':
-        return isArabic ? 'قيّم التمرين' : 'Rate Workout';
+        return 'rating_title_workout';
       case 'nutrition':
-        return isArabic ? 'قيّم خطة التغذية' : 'Rate Nutrition Plan';
+        return 'rating_title_nutrition';
       default:
-        return isArabic ? 'قيّم تجربتك' : 'Rate Your Experience';
+        return 'rating_title_generic';
     }
   }
-  
-  String _getSubtitle(bool isArabic) {
-    return isArabic
-        ? 'ساعدنا في تحسين خدماتنا من خلال تقييمك'
-        : 'Help us improve our services with your feedback';
-  }
-  
-  String _getRatingLabel(int rating, bool isArabic) {
-    final labels = {
-      1: isArabic ? 'سيء جداً' : 'Very Poor',
-      2: isArabic ? 'سيء' : 'Poor',
-      3: isArabic ? 'مقبول' : 'Fair',
-      4: isArabic ? 'جيد' : 'Good',
-      5: isArabic ? 'ممتاز' : 'Excellent',
-    };
-    return labels[rating] ?? '';
+
+  String _getRatingLabelKey(int rating) {
+    if (rating <= 1) return 'rating_label_1';
+    if (rating == 2) return 'rating_label_2';
+    if (rating == 3) return 'rating_label_3';
+    if (rating == 4) return 'rating_label_4';
+    if (rating >= 5) return 'rating_label_5';
+    return 'rating_label_3';
   }
   
   Color _getRatingColor(int rating) {

@@ -260,15 +260,15 @@ class _LanguageCard extends StatelessWidget {
             vertical: 16,
           ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: (0.95 * 255)),
+            color: Colors.white.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.white.withValues(alpha: (0.3 * 255)),
+              color: Colors.white.withValues(alpha: 0.3),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: (0.15 * 255)),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),

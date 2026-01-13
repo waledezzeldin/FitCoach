@@ -50,7 +50,7 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(isArabic ? Icons.arrow_forward : Icons.arrow_back),
           onPressed: widget.onNavigateToLogin,
         ),
       ),

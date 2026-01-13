@@ -178,14 +178,14 @@ class _WorkoutExerciseSessionScreenState extends State<WorkoutExerciseSessionScr
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.black.withValues(alpha: (0.35 * 255))),
+            child: Container(color: Colors.black.withValues(alpha: 0.35)),
           ),
           SafeArea(
             child: Column(
               children: [
                 Container(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                  color: AppColors.primary.withValues(alpha: (0.85 * 255)),
+                  color: AppColors.primary.withValues(alpha: 0.85),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -193,7 +193,10 @@ class _WorkoutExerciseSessionScreenState extends State<WorkoutExerciseSessionScr
                         children: [
                           IconButton(
                             onPressed: () => Navigator.of(context).pop(),
-                            icon: const Icon(Icons.arrow_back, color: Colors.white),
+                            icon: Icon(
+                              isArabic ? Icons.arrow_forward : Icons.arrow_back,
+                              color: Colors.white,
+                            ),
                           ),
                           Expanded(
                             child: Column(
@@ -226,7 +229,7 @@ class _WorkoutExerciseSessionScreenState extends State<WorkoutExerciseSessionScr
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 6,
-                          backgroundColor: Colors.white.withValues(alpha: (0.2 * 255)),
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
                           valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       ),
@@ -458,7 +461,7 @@ class _SessionCard extends StatelessWidget {
         border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: (0.04 * 255)),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

@@ -78,14 +78,14 @@ class _EnhancedButtonState extends State<EnhancedButton> {
             borderRadius: BorderRadius.circular(AppRadius.small), // 6px for buttons
             border: _isFocused
                 ? Border.all(
-                    color: _getFocusRingColor().withValues(alpha: (0.5 * 255)),
+                    color: _getFocusRingColor().withValues(alpha: 0.5),
                     width: 3,
                   )
                 : null,
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: _getFocusRingColor().withValues(alpha: (0.2 * 255)),
+                      color: _getFocusRingColor().withValues(alpha: 0.2),
                       blurRadius: 8,
                       spreadRadius: 0,
                     ),
@@ -190,29 +190,29 @@ class _EnhancedButtonState extends State<EnhancedButton> {
 
   Color _getBackgroundColor(bool isDisabled) {
     if (isDisabled) {
-      return AppColors.surface.withValues(alpha: (0.5 * 255));
+      return AppColors.surface.withValues(alpha: 0.5);
     }
 
     switch (widget.variant) {
       case ButtonVariant.primary:
         return _isHovered
-            ? AppColors.primary.withValues(alpha: (0.9 * 255))
+            ? AppColors.primary.withValues(alpha: 0.9)
             : AppColors.primary;
       case ButtonVariant.secondary:
         return _isHovered
-            ? AppColors.secondary.withValues(alpha: (0.8 * 255))
+            ? AppColors.secondary.withValues(alpha: 0.8)
             : AppColors.secondary;
       case ButtonVariant.outline:
       case ButtonVariant.ghost:
         return _isHovered
-            ? AppColors.accent.withValues(alpha: (0.1 * 255))
+            ? AppColors.accent.withValues(alpha: 0.1)
             : Colors.transparent;
       case ButtonVariant.text:
       case ButtonVariant.link:
         return Colors.transparent;
       case ButtonVariant.danger:
         return _isHovered
-            ? AppColors.error.withValues(alpha: (0.9 * 255))
+            ? AppColors.error.withValues(alpha: 0.9)
             : AppColors.error;
     }
   }

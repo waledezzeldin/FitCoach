@@ -90,7 +90,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final isArabic = languageProvider.isArabic;
+    final t = languageProvider.t;
     final userRole = authProvider.user?.role ?? 'user';
 
     if (_isLoading) {
@@ -103,7 +103,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'إعدادات الإشعارات' : 'Notification Settings'),
+        title: Text(t('notification_settings_title')),
         actions: [
           if (_isSaving)
             const Center(
@@ -123,7 +123,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         children: [
           // Notification channels
           Text(
-            isArabic ? 'قنوات الإشعارات' : 'Notification Channels',
+            t('notification_channels_title'),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -135,41 +135,41 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             child: Column(
               children: [
                 _buildSwitchTile(
-                  title: isArabic ? 'إشعارات الدفع' : 'Push Notifications',
-                  subtitle: isArabic ? 'إشعارات على جهازك' : 'Notifications on your device',
+                  title: t('notification_channel_push'),
+                  subtitle: t('notification_channel_push_desc'),
                   icon: Icons.notifications_active,
                   value: _pushEnabled,
                   onChanged: (value) {
                     setState(() {
                       _pushEnabled = value;
                     });
-                    _saveSettings(isArabic);
+                    _saveSettings();
                   },
                 ),
                 const Divider(height: 1),
                 _buildSwitchTile(
-                  title: isArabic ? 'البريد الإلكتروني' : 'Email',
-                  subtitle: isArabic ? 'إشعارات عبر البريد' : 'Notifications via email',
+                  title: t('notification_channel_email'),
+                  subtitle: t('notification_channel_email_desc'),
                   icon: Icons.email,
                   value: _emailEnabled,
                   onChanged: (value) {
                     setState(() {
                       _emailEnabled = value;
                     });
-                    _saveSettings(isArabic);
+                    _saveSettings();
                   },
                 ),
                 const Divider(height: 1),
                 _buildSwitchTile(
-                  title: isArabic ? 'رسائل SMS' : 'SMS',
-                  subtitle: isArabic ? 'إشعارات نصية' : 'Text message notifications',
+                  title: t('notification_channel_sms'),
+                  subtitle: t('notification_channel_sms_desc'),
                   icon: Icons.sms,
                   value: _smsEnabled,
                   onChanged: (value) {
                     setState(() {
                       _smsEnabled = value;
                     });
-                    _saveSettings(isArabic);
+                    _saveSettings();
                   },
                 ),
               ],
@@ -181,7 +181,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           // User notifications
           if (userRole == 'user') ...[
             Text(
-              isArabic ? 'إشعارات المستخدم' : 'User Notifications',
+              t('notification_user_section'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -193,54 +193,54 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               child: Column(
                 children: [
                   _buildSwitchTile(
-                    title: isArabic ? 'تذكيرات التمارين' : 'Workout Reminders',
-                    subtitle: isArabic ? 'إشعار بموعد التمرين' : 'Remind you about workouts',
+                    title: t('notification_workout_reminders'),
+                    subtitle: t('notification_workout_reminders_desc'),
                     icon: Icons.fitness_center,
                     value: _workoutReminders,
                     onChanged: (value) {
                       setState(() {
                         _workoutReminders = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'رسائل المدرب' : 'Coach Messages',
-                    subtitle: isArabic ? 'إشعار بالرسائل الجديدة' : 'New messages from coach',
+                    title: t('notification_coach_messages'),
+                    subtitle: t('notification_coach_messages_desc'),
                     icon: Icons.chat_bubble,
                     value: _coachMessages,
                     onChanged: (value) {
                       setState(() {
                         _coachMessages = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'تتبع التغذية' : 'Nutrition Tracking',
-                    subtitle: isArabic ? 'تذكيرات الوجبات' : 'Meal reminders',
+                    title: t('notification_nutrition_tracking'),
+                    subtitle: t('notification_nutrition_tracking_desc'),
                     icon: Icons.restaurant,
                     value: _nutritionTracking,
                     onChanged: (value) {
                       setState(() {
                         _nutritionTracking = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'العروض الترويجية' : 'Promotions',
-                    subtitle: isArabic ? 'عروض وخصومات خاصة' : 'Special offers and discounts',
+                    title: t('notification_promotions'),
+                    subtitle: t('notification_promotions_desc'),
                     icon: Icons.local_offer,
                     value: _promotions,
                     onChanged: (value) {
                       setState(() {
                         _promotions = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                 ],
@@ -251,7 +251,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           // Coach notifications
           if (userRole == 'coach') ...[
             Text(
-              isArabic ? 'إشعارات المدرب' : 'Coach Notifications',
+              t('notification_coach_section'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -263,54 +263,54 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               child: Column(
                 children: [
                   _buildSwitchTile(
-                    title: isArabic ? 'عملاء جدد' : 'New Client Assignments',
-                    subtitle: isArabic ? 'إشعار بالعملاء الجدد' : 'When new clients are assigned',
+                    title: t('notification_new_clients'),
+                    subtitle: t('notification_new_clients_desc'),
                     icon: Icons.person_add,
                     value: _newClientAssignments,
                     onChanged: (value) {
                       setState(() {
                         _newClientAssignments = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'رسائل العملاء' : 'Client Messages',
-                    subtitle: isArabic ? 'رسائل من العملاء' : 'Messages from clients',
+                    title: t('notification_client_messages'),
+                    subtitle: t('notification_client_messages_desc'),
                     icon: Icons.message,
                     value: _clientMessages,
                     onChanged: (value) {
                       setState(() {
                         _clientMessages = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'تذكيرات الجلسات' : 'Session Reminders',
-                    subtitle: isArabic ? 'جلسات الفيديو القادمة' : 'Upcoming video sessions',
+                    title: t('notification_session_reminders'),
+                    subtitle: t('notification_session_reminders_desc'),
                     icon: Icons.videocam,
                     value: _sessionReminders,
                     onChanged: (value) {
                       setState(() {
                         _sessionReminders = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'تنبيهات الدفع' : 'Payment Alerts',
-                    subtitle: isArabic ? 'تنبيهات الأرباح' : 'Earnings notifications',
+                    title: t('notification_payment_alerts'),
+                    subtitle: t('notification_payment_alerts_desc'),
                     icon: Icons.account_balance_wallet,
                     value: _paymentAlerts,
                     onChanged: (value) {
                       setState(() {
                         _paymentAlerts = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                 ],
@@ -321,7 +321,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           // Admin notifications
           if (userRole == 'admin') ...[
             Text(
-              isArabic ? 'إشعارات المسؤول' : 'Admin Notifications',
+              t('notification_admin_section'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -333,67 +333,67 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               child: Column(
                 children: [
                   _buildSwitchTile(
-                    title: isArabic ? 'تنبيهات النظام' : 'System Alerts',
-                    subtitle: isArabic ? 'مشاكل فنية' : 'Technical issues',
+                    title: t('notification_system_alerts'),
+                    subtitle: t('notification_system_alerts_desc'),
                     icon: Icons.warning,
                     value: _systemAlerts,
                     onChanged: (value) {
                       setState(() {
                         _systemAlerts = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'تقارير المستخدمين' : 'User Reports',
-                    subtitle: isArabic ? 'محتوى مبلغ عنه' : 'Reported content',
+                    title: t('notification_user_reports'),
+                    subtitle: t('notification_user_reports_desc'),
                     icon: Icons.flag,
                     value: _userReports,
                     onChanged: (value) {
                       setState(() {
                         _userReports = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'طلبات المدربين' : 'Coach Applications',
-                    subtitle: isArabic ? 'مدربون جدد' : 'New coach applications',
+                    title: t('notification_coach_applications'),
+                    subtitle: t('notification_coach_applications_desc'),
                     icon: Icons.how_to_reg,
                     value: _coachApplications,
                     onChanged: (value) {
                       setState(() {
                         _coachApplications = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'مشاكل الدفع' : 'Payment Issues',
-                    subtitle: isArabic ? 'فشل المعاملات' : 'Failed transactions',
+                    title: t('notification_payment_issues'),
+                    subtitle: t('notification_payment_issues_desc'),
                     icon: Icons.payment,
                     value: _paymentIssues,
                     onChanged: (value) {
                       setState(() {
                         _paymentIssues = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                   const Divider(height: 1),
                   _buildSwitchTile(
-                    title: isArabic ? 'تنبيهات الأمان' : 'Security Alerts',
-                    subtitle: isArabic ? 'نشاط مشبوه' : 'Suspicious activity',
+                    title: t('notification_security_alerts'),
+                    subtitle: t('notification_security_alerts_desc'),
                     icon: Icons.security,
                     value: _securityAlerts,
                     onChanged: (value) {
                       setState(() {
                         _securityAlerts = value;
                       });
-                      _saveSettings(isArabic);
+                      _saveSettings();
                     },
                   ),
                 ],
@@ -422,7 +422,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     );
   }
   
-  Future<void> _saveSettings(bool isArabic) async {
+  Future<void> _saveSettings() async {
     setState(() {
       _isSaving = true;
     });
@@ -451,12 +451,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       
     } catch (e) {
       if (mounted) {
+        final translator = context.read<LanguageProvider>().t;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isArabic 
-                  ? 'فشل في حفظ الإعدادات' 
-                  : 'Failed to save settings',
+              translator('notification_save_error'),
             ),
             backgroundColor: AppColors.error,
           ),

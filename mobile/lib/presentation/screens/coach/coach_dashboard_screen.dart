@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
+import '../../../core/config/demo_config.dart';
+import '../../../data/demo/demo_data.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/coach_provider.dart';
+import '../../../data/models/coach_client.dart';
 import '../../providers/quota_provider.dart';
 import '../../providers/video_call_provider.dart';
 import '../../widgets/custom_card.dart';
@@ -19,6 +22,8 @@ import 'coach_calendar_screen.dart';
 import 'workout_plan_builder_screen.dart';
 import 'nutrition_plan_builder_screen.dart';
 import '../video_call/video_call_screen.dart';
+import 'coach_schedule_session_sheet.dart';
+import 'coach_client_detail_screen.dart';
 
 enum _UpcomingFilter { all, video }
 
@@ -29,10 +34,141 @@ class CoachDashboardScreen extends StatefulWidget {
   State<CoachDashboardScreen> createState() => _CoachDashboardScreenState();
 }
 
+class _ClientSpotlightEntry {
+  final String id;
+  final String name;
+  final String? goal;
+  final double momentum;
+  final bool needsAttention;
+  final int activityDaysAgo;
+
+  const _ClientSpotlightEntry({
+    required this.id,
+    required this.name,
+    this.goal,
+    required this.momentum,
+    required this.needsAttention,
+    required this.activityDaysAgo,
+  });
+
+  String get initials {
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.isNotEmpty ? name[0].toUpperCase() : '?';
+  }
+}
+
 class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   int _selectedIndex = 0;
   String? _joiningAppointmentId;
   _UpcomingFilter _upcomingFilter = _UpcomingFilter.video;
+
+  ({String id, String name})? _resolveDefaultClient(LanguageProvider lang) {
+    if (DemoConfig.isDemo) {
+      final demoClient = DemoData.coachClients().isNotEmpty
+          ? DemoData.coachClients().first
+          : null;
+      if (demoClient != null) {
+        return (id: demoClient.id, name: demoClient.fullName);
+      }
+      return (id: 'demo-client', name: lang.t('auth_demo_user'));
+    }
+
+    final coachProvider = context.read<CoachProvider>();
+    if (coachProvider.clients.isNotEmpty) {
+      final client = coachProvider.clients.first;
+      return (id: client.id, name: client.fullName);
+    }
+    return null;
+  }
+
+  void _openWorkoutPlanBuilder(LanguageProvider lang) {
+    final isArabic = lang.isArabic;
+    final client = _resolveDefaultClient(lang);
+    if (client == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isArabic
+                ? 'يرجى تحميل قائمة العملاء أولاً من تبويب العملاء'
+                : 'Please load your clients first from the Clients tab',
+          ),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      setState(() => _selectedIndex = 1);
+      return;
+    }
+    Navigator.of(context).push(
+      _createSmoothRoute(
+        WorkoutPlanBuilderScreen(
+          clientId: client.id,
+          clientName: client.name,
+        ),
+      ),
+    );
+  }
+
+  void _openNutritionPlanBuilder(LanguageProvider lang) {
+    final isArabic = lang.isArabic;
+    final client = _resolveDefaultClient(lang);
+    if (client == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isArabic
+                ? 'يرجى تحميل قائمة العملاء أولاً من تبويب العملاء'
+                : 'Please load your clients first from the Clients tab',
+          ),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      setState(() => _selectedIndex = 1);
+      return;
+    }
+    Navigator.of(context).push(
+      _createSmoothRoute(
+        NutritionPlanBuilderScreen(
+          clientId: client.id,
+          clientName: client.name,
+        ),
+      ),
+    );
+  }
+
+  void _openQuickSchedule(LanguageProvider lang) {
+    final isArabic = lang.isArabic;
+    final client = _resolveDefaultClient(lang);
+    if (client == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isArabic
+                ? 'يرجى تحميل قائمة العملاء أولاً من تبويب العملاء'
+                : 'Please load your clients first from the Clients tab',
+          ),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      setState(() => _selectedIndex = 1);
+      return;
+    }
+    showCoachScheduleSessionSheet(
+      context,
+      clientId: client.id,
+      clientName: client.name,
+    );
+  }
+
+  void _openClientDetail(String clientId) {
+    Navigator.of(context).push(
+      _createSmoothRoute(
+        CoachClientDetailScreen(clientId: clientId),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -46,7 +182,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   void _loadAnalytics() {
     final authProvider = context.read<AuthProvider>();
     final coachProvider = context.read<CoachProvider>();
-    
+
     if (authProvider.user?.id != null) {
       coachProvider.loadAnalytics(authProvider.user!.id);
       // Also load today's appointments for the schedule
@@ -103,7 +239,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     final languageProvider = context.watch<LanguageProvider>();
     final authProvider = context.watch<AuthProvider>();
     final isArabic = languageProvider.isArabic;
-    
+
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
@@ -145,7 +281,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
       ),
     );
   }
-  
+
   Widget _buildDashboardTab(
     LanguageProvider lang,
     AuthProvider auth,
@@ -257,7 +393,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Quick stats
               if (isAnalyticsLoading)
                 const Center(child: CircularProgressIndicator())
@@ -287,9 +423,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                     ],
                   ),
                 ),
-                
                 const SizedBox(height: 12),
-                
                 AnimatedReveal(
                   delay: const Duration(milliseconds: 260),
                   offset: const Offset(0.1, 0),
@@ -316,9 +450,17 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                   ),
                 ),
               ],
-              
+
               const SizedBox(height: 24),
-              
+
+              if (coachProvider.clients.isNotEmpty) ...[
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 300),
+                  offset: const Offset(-0.08, 0.04),
+                  child: _buildClientSpotlight(lang, coachProvider.clients),
+                ),
+                const SizedBox(height: 24),
+              ],
               // Today's schedule
               AnimatedReveal(
                 delay: const Duration(milliseconds: 320),
@@ -345,7 +487,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              
+
               if (isAppointmentsLoading)
                 const Center(child: CircularProgressIndicator())
               else
@@ -354,7 +496,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                   offset: const Offset(-0.06, 0.08),
                   child: _buildTodaySchedule(coachProvider, lang, isArabic),
                 ),
-              
+
               const SizedBox(height: 24),
 
               AnimatedReveal(
@@ -400,7 +542,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 ),
 
               const SizedBox(height: 24),
-              
+
               // Quick actions
               AnimatedReveal(
                 delay: const Duration(milliseconds: 520),
@@ -414,9 +556,43 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              
+
               AnimatedReveal(
                 delay: const Duration(milliseconds: 560),
+                offset: const Offset(0, 0.12),
+                child: CustomInfoCard(
+                  title: lang.isArabic ? 'مراسلة العملاء' : 'Message clients',
+                  subtitle: lang.isArabic
+                      ? 'رد على الرسائل وحدد الأولويات'
+                      : 'Reply to conversations and prioritize follow-ups',
+                  icon: Icons.chat_bubble_outline,
+                  iconColor: AppColors.accent,
+                  onTap: () => setState(() => _selectedIndex = 3),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 600),
+                offset: const Offset(-0.05, 0.12),
+                child: CustomInfoCard(
+                  title: lang.isArabic
+                      ? 'جدولة جلسة سريعة'
+                      : 'Schedule quick check-in',
+                  subtitle: lang.isArabic
+                      ? 'احجز مكالمة فيديو مع آخر عميل نشط'
+                      : 'Book a video call with your most recent client',
+                  icon: Icons.video_call,
+                  iconColor: AppColors.secondary,
+                  onTap: () => _openQuickSchedule(lang),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 640),
                 offset: const Offset(0, 0.12),
                 child: CustomInfoCard(
                   title: lang.t('coach_action_workout_plan'),
@@ -424,55 +600,23 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                   icon: Icons.fitness_center,
                   iconColor: AppColors.primary,
                   onTap: () {
-                    Navigator.of(context).push(
-                      _createSmoothRoute(
-                        WorkoutPlanBuilderScreen(
-                          clientId: 'demo-client',
-                          clientName: lang.t('auth_demo_user'),
-                        ),
-                      ),
-                    );
+                    _openWorkoutPlanBuilder(lang);
                   },
                 ),
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               AnimatedReveal(
-                delay: const Duration(milliseconds: 600),
+                delay: const Duration(milliseconds: 680),
                 offset: const Offset(-0.05, 0.12),
                 child: CustomInfoCard(
                   title: lang.t('coach_action_nutrition_plan'),
                   subtitle: lang.t('coach_action_nutrition_plan_desc'),
                   icon: Icons.restaurant,
-                  iconColor: AppColors.secondary,
+                  iconColor: AppColors.success,
                   onTap: () {
-                    Navigator.of(context).push(
-                      _createSmoothRoute(
-                        NutritionPlanBuilderScreen(
-                          clientId: 'demo-client',
-                          clientName: lang.t('auth_demo_user'),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              
-              const SizedBox(height: 12),
-              
-              AnimatedReveal(
-                delay: const Duration(milliseconds: 640),
-                offset: const Offset(0.05, 0.12),
-                child: CustomInfoCard(
-                  title: lang.t('coach_action_schedule_session'),
-                  subtitle: lang.t('coach_action_schedule_session_desc'),
-                  icon: Icons.video_call,
-                  iconColor: AppColors.accent,
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = 2; // Calendar tab
-                    });
+                    _openNutritionPlanBuilder(lang);
                   },
                 ),
               ),
@@ -484,7 +628,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   }
 
   Widget _buildUpcomingFilterChips(LanguageProvider lang, bool isArabic) {
-    final videoLabel = isArabic ? 'جلسات الفيديو القادمة' : 'Upcoming video calls';
+    final videoLabel =
+        isArabic ? 'جلسات الفيديو القادمة' : 'Upcoming video calls';
     final allLabel = isArabic ? 'كل الجلسات القادمة' : 'All upcoming sessions';
     return Row(
       children: [
@@ -513,13 +658,200 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     );
   }
 
+  Widget _buildClientSpotlight(
+    LanguageProvider lang,
+    List<CoachClient> clients,
+  ) {
+    final spotlightEntries = _rankClientSpotlight(clients);
+    if (spotlightEntries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final isArabic = lang.isArabic;
+
+    return CustomCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isArabic ? 'أبرز العملاء' : 'Client spotlight',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => setState(() => _selectedIndex = 1),
+                  child: Text(isArabic ? 'عرض الكل' : 'See all'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...spotlightEntries.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => _openClientDetail(entry.id),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 22,
+                              backgroundColor:
+                                  AppColors.primary.withValues(alpha: 0.1),
+                              child: Text(
+                                entry.initials,
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.name,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${entry.goal ?? (isArabic ? 'بدون هدف محدد' : 'No goal yet')} • ${_formatActivityAgo(entry.activityDaysAgo, isArabic)}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: entry.needsAttention
+                                    ? AppColors.error.withValues(alpha: 0.12)
+                                    : AppColors.success.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                entry.needsAttention
+                                    ? (isArabic
+                                        ? 'يحتاج متابعة'
+                                        : 'Needs check-in')
+                                    : (isArabic ? 'على المسار' : 'On track'),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: entry.needsAttention
+                                      ? AppColors.error
+                                      : AppColors.success,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        LinearProgressIndicator(
+                          value: entry.momentum.clamp(0, 1),
+                          minHeight: 6,
+                          color: entry.needsAttention
+                              ? AppColors.warning
+                              : AppColors.primary,
+                          backgroundColor: AppColors.surface,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          isArabic
+                              ? 'جاهزية الخطة ${(entry.momentum * 100).round()}%'
+                              : 'Plan health ${(entry.momentum * 100).round()}%',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<_ClientSpotlightEntry> _rankClientSpotlight(
+    List<CoachClient> clients,
+  ) {
+    final now = DateTime.now();
+    final entries = clients.map((client) {
+      final fitness = (client.fitnessScore ?? 55) / 100;
+      final lastTouch = client.lastActivity ??
+          client.assignedDate ??
+          now.subtract(const Duration(days: 14));
+      final inactivityDays = now.difference(lastTouch).inDays;
+      final activityScore = (1 - (inactivityDays / 14)).clamp(0.0, 1.0);
+      final needsAttention =
+          inactivityDays > 5 || (client.fitnessScore ?? 0) < 55;
+      final composite = (fitness * 0.6) + (activityScore * 0.4);
+      return _ClientSpotlightEntry(
+        id: client.id,
+        name: client.fullName,
+        goal: client.goal,
+        momentum: composite,
+        needsAttention: needsAttention,
+        activityDaysAgo: inactivityDays,
+      );
+    }).toList();
+
+    entries.sort((a, b) {
+      if (a.needsAttention != b.needsAttention) {
+        return b.needsAttention ? 1 : -1;
+      }
+      return b.momentum.compareTo(a.momentum);
+    });
+
+    return entries.take(3).toList();
+  }
+
+  String _formatActivityAgo(int days, bool isArabic) {
+    if (days <= 0) return isArabic ? 'نشط اليوم' : 'Active today';
+    if (days == 1) return isArabic ? 'نشط أمس' : 'Active yesterday';
+    return isArabic
+        ? 'آخر نشاط قبل $days يوم'
+        : '$days days since last check-in';
+  }
+
   Widget _buildFilterPill({
     required String label,
     required IconData icon,
     required bool selected,
     required VoidCallback onTap,
   }) {
-    final Color activeColor = selected ? AppColors.primary : AppColors.textSecondary;
+    final Color activeColor =
+        selected ? AppColors.primary : AppColors.textSecondary;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -528,7 +860,9 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
-            color: selected ? AppColors.primary.withValues(alpha: 0.12) : Colors.white,
+            color: selected
+                ? AppColors.primary.withValues(alpha: 0.12)
+                : Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: selected
@@ -568,7 +902,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
       ),
     );
   }
-  
+
   Widget _buildSessionItem({
     required Appointment appointment,
     required LanguageProvider lang,
@@ -579,8 +913,10 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     VoidCallback? onJoin,
   }) {
     final scheduledDate = _parseAppointmentDate(appointment);
-    final clientName = appointment.userName ?? appointment.coachName ?? lang.t('coach');
-    final timeLabel = scheduledDate != null ? _formatTimeLabel(scheduledDate) : '--:--';
+    final clientName =
+        appointment.userName ?? appointment.coachName ?? lang.t('coach');
+    final timeLabel =
+        scheduledDate != null ? _formatTimeLabel(scheduledDate) : '--:--';
     final dateLabel = (showDate && scheduledDate != null)
         ? '${_formatDateLabel(scheduledDate, isArabic)} • '
         : '';
@@ -589,8 +925,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     final showJoinButton = onJoin != null;
     final readyHint = isArabic ? 'جاهز للانضمام الآن' : 'Ready to join now';
     final joinHint = isArabic
-      ? 'سيتوفر زر الانضمام قبل 10 دقائق من الجلسة'
-      : 'Join opens 10 minutes before the session';
+        ? 'سيتوفر زر الانضمام قبل 10 دقائق من الجلسة'
+        : 'Join opens 10 minutes before the session';
 
     return ListTile(
       leading: Container(
@@ -613,7 +949,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
               child: ElevatedButton(
                 onPressed: (canJoin && !isJoining) ? onJoin : null,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
                 child: isJoining
                     ? const SizedBox(
@@ -627,7 +964,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
           : null,
     );
   }
-  
+
   Widget _buildTodaySchedule(
     CoachProvider coachProvider,
     LanguageProvider lang,
@@ -695,7 +1032,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 isArabic: isArabic,
                 canJoin: canJoin,
                 isJoining: isJoining,
-                onJoin: supportsVideo ? () => _handleJoinCall(appointment) : null,
+                onJoin:
+                    supportsVideo ? () => _handleJoinCall(appointment) : null,
               ),
               if (index < todayAppointments.length - 1) const Divider(),
             ],
@@ -710,7 +1048,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     LanguageProvider lang,
     bool isArabic,
   ) {
-    final upcomingAppointments = _getUpcomingAppointments(coachProvider.appointments);
+    final upcomingAppointments =
+        _getUpcomingAppointments(coachProvider.appointments);
 
     if (upcomingAppointments.isEmpty) {
       return CustomCard(
@@ -776,7 +1115,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 showDate: true,
                 canJoin: canJoin,
                 isJoining: isJoining,
-                onJoin: supportsVideo ? () => _handleJoinCall(appointment) : null,
+                onJoin:
+                    supportsVideo ? () => _handleJoinCall(appointment) : null,
               ),
               if (index < visibleAppointments.length - 1) const Divider(),
             ],
@@ -839,7 +1179,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     try {
       final result = await videoCallProvider.canJoinCall(appointment.id);
       if (result == null || result['canJoin'] != true) {
-        final reason = result?['reason'] ?? languageProvider.t('cannot_join_call');
+        final reason =
+            result?['reason'] ?? languageProvider.t('cannot_join_call');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(reason)),
@@ -922,11 +1263,12 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     final now = DateTime.now();
     final joinWindowStart = scheduledDate.subtract(const Duration(minutes: 10));
     final meetingLength = appointment.durationMinutes ?? 45;
-    final joinWindowEnd = scheduledDate.add(Duration(minutes: meetingLength + 15));
+    final joinWindowEnd =
+        scheduledDate.add(Duration(minutes: meetingLength + 15));
 
     return now.isAfter(joinWindowStart) && now.isBefore(joinWindowEnd);
   }
-  
+
   Widget _buildMessagesTab(LanguageProvider lang) {
     return Scaffold(
       appBar: AppBar(
@@ -954,7 +1296,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
       ),
     );
   }
-  
+
   Color _getTierColor(String tier) {
     switch (tier) {
       case 'Smart Premium':

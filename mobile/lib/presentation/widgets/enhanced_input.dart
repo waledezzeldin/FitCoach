@@ -101,7 +101,7 @@ class _EnhancedTextFieldState extends State<EnhancedTextField> {
                 ? Border.all(
                     color: hasError
                         ? AppColors.error
-                        : AppColors.ring.withValues(alpha: (0.5 * 255)),
+                        : AppColors.ring.withValues(alpha: 0.5),
                     width: 3,
                   )
                 : null,
@@ -109,7 +109,7 @@ class _EnhancedTextFieldState extends State<EnhancedTextField> {
                 ? [
                     BoxShadow(
                       color: (hasError ? AppColors.error : AppColors.ring)
-                          .withValues(alpha: (0.2 * 255)),
+                          .withValues(alpha: 0.2),
                       blurRadius: 8,
                       spreadRadius: 0,
                     ),
@@ -142,7 +142,7 @@ class _EnhancedTextFieldState extends State<EnhancedTextField> {
               filled: true,
               fillColor: widget.enabled
                   ? AppColors.surface
-                  : AppColors.surface.withValues(alpha: (0.5 * 255)),
+                  : AppColors.surface.withValues(alpha: 0.5),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 12,
@@ -185,7 +185,7 @@ class _EnhancedTextFieldState extends State<EnhancedTextField> {
               disabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.medium),
                 borderSide: BorderSide(
-                  color: AppColors.border.withValues(alpha: (0.5 * 255)),
+                  color: AppColors.border.withValues(alpha: 0.5),
                   width: 1,
                 ),
               ),
@@ -279,14 +279,14 @@ class _EnhancedDropdownState<T> extends State<EnhancedDropdown<T>> {
             borderRadius: BorderRadius.circular(AppRadius.medium),
             border: _isFocused
                 ? Border.all(
-                    color: AppColors.ring.withValues(alpha: (0.5 * 255)),
+                    color: AppColors.ring.withValues(alpha: 0.5),
                     width: 3,
                   )
                 : null,
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: AppColors.ring.withValues(alpha: (0.2 * 255)),
+                      color: AppColors.ring.withValues(alpha: 0.2),
                       blurRadius: 8,
                       spreadRadius: 0,
                     ),
@@ -303,7 +303,7 @@ class _EnhancedDropdownState<T> extends State<EnhancedDropdown<T>> {
               filled: true,
               fillColor: widget.enabled
                   ? AppColors.surface
-                  : AppColors.surface.withValues(alpha: (0.5 * 255)),
+                  : AppColors.surface.withValues(alpha: 0.5),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 12,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import 'dart:convert';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/models/nutrition_plan.dart';
 import '../../providers/language_provider.dart';
@@ -14,7 +15,9 @@ import 'nutrition_preferences_intake_screen.dart';
 import '../subscription/subscription_manager_screen.dart';
 
 class NutritionScreen extends StatefulWidget {
-  const NutritionScreen({super.key});
+  final VoidCallback? onBack;
+
+  const NutritionScreen({super.key, this.onBack});
 
   @override
   State<NutritionScreen> createState() => _NutritionScreenState();
@@ -25,6 +28,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
   bool _introLoaded = false;
   bool _showPreferencesIntake = false;
   bool _preferencesLoaded = false;
+
+  Future<void> _handleBack() async {
+    final didPop = await Navigator.of(context).maybePop();
+    if (!didPop) {
+      widget.onBack?.call();
+    }
+  }
 
   @override
   void initState() {
@@ -61,7 +71,17 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   Future<void> _loadPreferencesFlag() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = context.read<AuthProvider>().user?.id ?? 'demo-user';
+    final authUserId = context.read<AuthProvider>().user?.id;
+    final userId = authUserId ?? (DemoConfig.isDemo ? DemoConfig.demoUserId : null);
+    if (userId == null) {
+      if (mounted) {
+        setState(() {
+          _showPreferencesIntake = false;
+          _preferencesLoaded = true;
+        });
+      }
+      return;
+    }
     final pendingKey = 'pending_nutrition_intake_$userId';
     final completedKey = 'nutrition_preferences_completed_$userId';
     final pending = prefs.getBool(pendingKey) ?? false;
@@ -77,7 +97,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   Future<void> _completePreferences(Map<String, dynamic> preferences) async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = context.read<AuthProvider>().user?.id ?? 'demo-user';
+    final authUserId = context.read<AuthProvider>().user?.id;
+    final userId = authUserId ?? (DemoConfig.isDemo ? DemoConfig.demoUserId : null);
+    if (userId == null) return;
     final pendingKey = 'pending_nutrition_intake_$userId';
     final completedKey = 'nutrition_preferences_completed_$userId';
     final prefsKey = 'nutrition_preferences_$userId';
@@ -172,7 +194,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                         Row(
                           children: [
                             IconButton(
-                              onPressed: () => Navigator.of(context).maybePop(),
+                              onPressed: () => _handleBack(),
                               icon: Icon(
                                 isArabic ? Icons.arrow_forward : Icons.arrow_back,
                                 color: Colors.white,
@@ -211,9 +233,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: (0.12 * 255)),
+                            color: Colors.white.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,7 +253,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: (0.2 * 255)),
+                                      color: Colors.white.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
@@ -252,7 +274,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                                 child: LinearProgressIndicator(
                                   value: calorieProgress.clamp(0, 1).toDouble(),
                                   minHeight: 6,
-                                  backgroundColor: Colors.white.withValues(alpha: (0.2 * 255)),
+                                  backgroundColor: Colors.white.withValues(alpha: 0.2),
                                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               ),
@@ -313,6 +335,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
     NutritionProvider provider,
     bool isArabic,
   ) {
+    final meals = provider.dayPlans.isNotEmpty
+        ? provider.getMealsForToday()
+        : (provider.activePlan?.meals ?? <Meal>[]);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Column(
@@ -325,7 +351,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
-          ...((provider.activePlan?.meals ?? <Meal>[]).map(
+          ...(meals.map(
             (meal) => _buildMealCard(
               meal,
               lang,
@@ -342,23 +368,59 @@ class _NutritionScreenState extends State<NutritionScreen> {
     NutritionProvider provider,
     bool isArabic,
   ) {
+    final plan = provider.activePlan;
+    final dayPlans = provider.dayPlans;
+    final todayDayNumber = provider.getTodayDayNumber();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            lang.t('todays_meals'),
+            dayPlans.isNotEmpty ? lang.t('nutrition_week_plan') : lang.t('todays_meals'),
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
-          ...((provider.activePlan?.meals ?? <Meal>[]).map(
-            (meal) => _buildMealCard(
-              meal,
-              lang,
-              isArabic,
+          if (plan == null)
+            const SizedBox.shrink()
+          else if (dayPlans.isEmpty)
+            ...((plan.meals ?? const <Meal>[]).map(
+              (meal) => _buildMealCard(
+                meal,
+                lang,
+                isArabic,
+              ),
+            ))
+          else
+            ...dayPlans.map(
+              (dayPlan) => CustomCard(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.zero,
+                child: Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    initiallyExpanded: dayPlan.dayNumber == todayDayNumber,
+                    title: Text(
+                      lang.t(
+                        'nutrition_day_number',
+                        args: {'number': dayPlan.dayNumber.toString()},
+                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    children: [
+                      for (final meal in dayPlan.meals)
+                        _buildMealCard(
+                          meal,
+                          lang,
+                          isArabic,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          )),
         ],
       ),
     );
@@ -461,8 +523,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isExpiringSoon
-              ? [AppColors.warning, AppColors.warning.withValues(alpha: (0.7 * 255))]
-              : [AppColors.primary, AppColors.primary.withValues(alpha: (0.7 * 255))],
+              ? [AppColors.warning, AppColors.warning.withValues(alpha: 0.7)]
+              : [AppColors.primary, AppColors.primary.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -499,7 +561,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
             ),
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withValues(alpha: (0.9 * 255)),
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
           const SizedBox(height: 12),
@@ -933,7 +995,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _getMealColor(meal.type).withValues(alpha: (0.1 * 255)),
+                  color: _getMealColor(meal.type).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -965,7 +1027,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.chevron_right),
+                icon: Icon(isArabic ? Icons.chevron_left : Icons.chevron_right),
                 onPressed: () {
                   _showMealDetail(meal, lang, isArabic);
                 },

@@ -60,7 +60,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
           if (_actionFilter != null || _dateRange != null)
             Container(
               padding: const EdgeInsets.all(16),
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               child: Row(
                 children: [
                   Expanded(
@@ -185,7 +185,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _getActionColor(log.action).withOpacity(0.1),
+                  color: _getActionColor(log.action).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -259,7 +259,12 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                 ),
               ),
 
-              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+              Icon(
+                Directionality.of(context) == TextDirection.rtl
+                    ? Icons.chevron_left
+                    : Icons.chevron_right,
+                color: AppColors.textSecondary,
+              ),
             ],
           ),
         ),

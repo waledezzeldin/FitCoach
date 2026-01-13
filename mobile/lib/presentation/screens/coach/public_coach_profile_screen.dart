@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
+import '../../../core/config/demo_config.dart';
 import '../../providers/language_provider.dart';
 import '../../widgets/custom_card.dart';
-import '../../widgets/custom_button.dart';
 import '../../../data/models/public_coach_profile.dart';
 import '../../../data/repositories/coach_repository.dart';
 
@@ -37,8 +37,15 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
     _loadProfile();
   }
 
-
   void _loadProfile() async {
+    if (DemoConfig.isDemo) {
+      setState(() {
+        _profile = _getDemoProfile();
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
       final repo = CoachRepository();
       final profile = await repo.getCoachProfile(coachId: widget.coachId);
@@ -48,7 +55,8 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
       });
     } catch (e) {
       setState(() {
-        _profile = null;
+        // In production, show the error state. In dev/demo-like scenarios, fall back to demo.
+        _profile = DemoConfig.isDemo ? _getDemoProfile() : null;
         _isLoading = false;
       });
     }
@@ -176,6 +184,7 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final isArabic = languageProvider.isArabic;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     return Scaffold(
       body: _isLoading
@@ -190,10 +199,59 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                   headerSliverBuilder: (context, innerBoxIsScrolled) {
                     return [
                       SliverAppBar(
-                        expandedHeight: 280,
                         pinned: true,
-                        flexibleSpace: FlexibleSpaceBar(
-                          background: _buildHeader(isArabic),
+                        elevation: 0,
+                        backgroundColor: Colors.transparent,
+                        leading: IconButton(
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          icon: Icon(
+                            isRtl ? Icons.arrow_forward : Icons.arrow_back,
+                            color: Colors.white,
+                          ),
+                        ),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isArabic ? 'مدربك' : 'Your Coach',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              isArabic
+                                  ? 'الاعتمادات المهنية'
+                                  : 'Professional credentials',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                        flexibleSpace: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF9333EA), Color(0xFF4F46E5)],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              _buildProfileHeaderCard(isArabic, isRtl),
+                              const SizedBox(height: 12),
+                              _buildQuickStatsRow(isArabic),
+                              const SizedBox(height: 12),
+                            ],
+                          ),
                         ),
                       ),
                       SliverPersistentHeader(
@@ -204,6 +262,7 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                             labelColor: AppColors.primary,
                             unselectedLabelColor: AppColors.textSecondary,
                             indicatorColor: AppColors.primary,
+                            indicatorWeight: 3,
                             tabs: [
                               Tab(text: isArabic ? 'نظرة عامة' : 'Overview'),
                               Tab(text: isArabic ? 'الشهادات' : 'Certificates'),
@@ -225,109 +284,153 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                     ],
                   ),
                 ),
-      bottomNavigationBar: _profile != null && _profile!.isApproved
-          ? _buildActionBar(isArabic)
-          : null,
     );
   }
 
-  Widget _buildHeader(bool isArabic) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.secondary],
-        ),
-      ),
-      child: SafeArea(
+  Widget _buildProfileHeaderCard(bool isArabic, bool isRtl) {
+    final rating = (_profile!.averageRating ?? 0).toStringAsFixed(1);
+    final reviewsCount = _profile!.totalClients;
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 40),
-            Stack(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.white,
+                  radius: 40,
+                  backgroundColor: const Color(0xFFEDE9FE),
                   child: Text(
                     _profile!.initials,
                     style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: Color(0xFF7C3AED),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                if (_profile!.isVerified)
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: AppColors.success,
-                        shape: BoxShape.circle,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _profile!.fullName,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          if (_profile!.isVerified)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEDE9FE),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.workspace_premium,
+                                    size: 14,
+                                    color: Color(0xFF7C3AED),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    isArabic ? 'موثق' : 'Verified',
+                                    style: const TextStyle(
+                                      color: Color(0xFF7C3AED),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
                       ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 16,
+                      const SizedBox(height: 10),
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 10,
+                        runSpacing: 8,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star, size: 16, color: Color(0xFFF59E0B)),
+                              const SizedBox(width: 6),
+                              Text(
+                                rating,
+                                style: const TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '($reviewsCount ${isArabic ? 'تقييم' : 'reviews'})',
+                                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          const Text('•', style: TextStyle(color: AppColors.textSecondary)),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.people, size: 16, color: AppColors.textSecondary),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${_profile!.activeClients} ${isArabic ? 'عملاء نشطون' : 'active clients'}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          const Text('•', style: TextStyle(color: AppColors.textSecondary)),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${_profile!.yearsOfExperience} ${isArabic ? 'سنة خبرة' : 'years exp'}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _profile!.specializations
+                  .map(
+                    (spec) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        spec,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _profile!.fullName,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.star, color: Colors.amber, size: 20),
-                const SizedBox(width: 4),
-                Text(
-                  _profile!.ratingText,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${_profile!.yearsOfExperience} ${isArabic ? 'سنة خبرة' : 'years exp'}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildStatItem(
-                  isArabic ? 'عملاء' : 'Clients',
-                  '${_profile!.totalClients}',
-                ),
-                _buildStatItem(
-                  isArabic ? 'جلسات' : 'Sessions',
-                  '${_profile!.completedSessions}',
-                ),
-                _buildStatItem(
-                  isArabic ? 'نجاح' : 'Success',
-                  '${_profile!.successRate.toStringAsFixed(0)}%',
-                ),
-              ],
+                  )
+                  .toList(),
             ),
           ],
         ),
@@ -335,22 +438,33 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
-    return Column(
+  Widget _buildQuickStatsRow(bool isArabic) {
+    return Row(
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+        Expanded(
+          child: _QuickStatCard(
+            icon: Icons.people,
+            iconColor: const Color(0xFF7C3AED),
+            value: '${_profile!.totalClients}',
+            label: isArabic ? 'إجمالي العملاء' : 'Total Clients',
           ),
         ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.white70,
+        const SizedBox(width: 10),
+        Expanded(
+          child: _QuickStatCard(
+            icon: Icons.videocam,
+            iconColor: const Color(0xFF2563EB),
+            value: '${_profile!.completedSessions}',
+            label: isArabic ? 'الجلسات' : 'Sessions',
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _QuickStatCard(
+            icon: Icons.trending_up,
+            iconColor: const Color(0xFF16A34A),
+            value: '${_profile!.successRate.toStringAsFixed(0)}%',
+            label: isArabic ? 'نسبة النجاح' : 'Success Rate',
           ),
         ),
       ],
@@ -600,44 +714,6 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
           );
   }
 
-  Widget _buildActionBar(bool isArabic) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          if (widget.onMessage != null)
-            Expanded(
-              child: CustomButton(
-                text: isArabic ? 'رسالة' : 'Message',
-                onPressed: widget.onMessage!,
-                icon: Icons.message,
-              ),
-            ),
-          if (widget.onMessage != null && widget.onBookCall != null)
-            const SizedBox(width: 12),
-          if (widget.onBookCall != null)
-            Expanded(
-              child: CustomButton(
-                text: isArabic ? 'حجز مكالمة' : 'Book Call',
-                onPressed: widget.onBookCall!,
-                icon: Icons.video_call,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   String _formatDate(DateTime date) {
     return '${date.month}/${date.year}';
   }
@@ -684,7 +760,8 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: _tabBar,
     );
   }
@@ -692,5 +769,47 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
     return false;
+  }
+}
+
+class _QuickStatCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String value;
+  final String label;
+
+  const _QuickStatCard({
+    required this.icon,
+    required this.iconColor,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: iconColor, size: 22),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

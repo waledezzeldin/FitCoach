@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -13,7 +14,9 @@ import '../profile/profile_edit_screen.dart';
 import '../settings/notification_settings_screen.dart';
 
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({super.key});
+  final VoidCallback? onBack;
+
+  const AccountScreen({super.key, this.onBack});
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();
@@ -60,6 +63,13 @@ class _AccountScreenState extends State<AccountScreen> {
     'Analytics',
   ];
 
+  Future<void> _handleBack() async {
+    final didPop = await Navigator.of(context).maybePop();
+    if (!didPop) {
+      widget.onBack?.call();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
@@ -102,7 +112,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       Row(
                         children: [
                           IconButton(
-                            onPressed: () => Navigator.of(context).maybePop(),
+                            onPressed: () => _handleBack(),
                             icon: Icon(
                               isArabic ? Icons.arrow_forward : Icons.arrow_back,
                               color: Colors.white,
@@ -133,14 +143,14 @@ class _AccountScreenState extends State<AccountScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: (0.12 * 255)),
+                          color: Colors.white.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           children: [
                             CircleAvatar(
                               radius: 24,
-                              backgroundColor: Colors.white.withValues(alpha: (0.2 * 255)),
+                              backgroundColor: Colors.white.withValues(alpha: 0.2),
                               child: Text(
                                 user?.name.substring(0, 1).toUpperCase() ?? 'U',
                                 style: const TextStyle(
@@ -174,7 +184,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: (0.2 * 255)),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -296,7 +306,7 @@ class _AccountScreenState extends State<AccountScreen> {
             onTap: () => _showComingSoon(isArabic),
           ),
         ],
-        if (isCoach) ...[
+        if (isCoach && DemoConfig.isDemo) ...[
           const SizedBox(height: 24),
           _buildSectionTitle(languageProvider.t('account_coach_profile')),
           const SizedBox(height: 12),
@@ -316,7 +326,18 @@ class _AccountScreenState extends State<AccountScreen> {
             Icons.star,
           ),
         ],
-        if (isAdmin) ...[
+        if (isCoach && !DemoConfig.isDemo) ...[
+          const SizedBox(height: 24),
+          _buildSectionTitle(languageProvider.t('account_coach_profile')),
+          const SizedBox(height: 12),
+          CustomCard(
+            child: Text(
+              languageProvider.t('account_coming_soon'),
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+        ],
+        if (isAdmin && DemoConfig.isDemo) ...[
           const SizedBox(height: 24),
           _buildSectionTitle(languageProvider.t('account_admin_profile')),
           const SizedBox(height: 12),
@@ -325,6 +346,17 @@ class _AccountScreenState extends State<AccountScreen> {
           _buildAdminPermissionsCard(languageProvider),
           const SizedBox(height: 12),
           _buildAdminStatsCard(languageProvider, isArabic),
+        ],
+        if (isAdmin && !DemoConfig.isDemo) ...[
+          const SizedBox(height: 24),
+          _buildSectionTitle(languageProvider.t('account_admin_profile')),
+          const SizedBox(height: 12),
+          CustomCard(
+            child: Text(
+              languageProvider.t('account_coming_soon'),
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
         ],
       ],
     );
@@ -532,7 +564,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 leading: const Icon(Icons.language, color: AppColors.primary),
                 title: Text(languageProvider.t('account_language')),
                 subtitle: Text(isArabic ? languageProvider.t('arabic') : languageProvider.t('english')),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Icon(isArabic ? Icons.chevron_left : Icons.chevron_right),
                 onTap: () => _showLanguageDialog(context, languageProvider, isArabic),
               ),
               const Divider(height: 1),
@@ -552,7 +584,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 leading: const Icon(Icons.notifications, color: AppColors.warning),
                 title: Text(languageProvider.t('account_notification_settings')),
                 subtitle: Text(languageProvider.t('account_notification_settings_subtitle')),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Icon(isArabic ? Icons.chevron_left : Icons.chevron_right),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
@@ -702,7 +734,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   (item) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.background.withValues(alpha: (0.6 * 255)),
+                      color: AppColors.background.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(item, style: const TextStyle(fontSize: 12)),
@@ -836,7 +868,7 @@ class _AccountScreenState extends State<AccountScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: (0.12 * 255)),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/coach_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
 
 class NutritionPlanBuilderScreen extends StatefulWidget {
   final String clientId;
   final String clientName;
-  
+
   const NutritionPlanBuilderScreen({
     super.key,
     required this.clientId,
@@ -16,25 +18,28 @@ class NutritionPlanBuilderScreen extends StatefulWidget {
   });
 
   @override
-  State<NutritionPlanBuilderScreen> createState() => _NutritionPlanBuilderScreenState();
+  State<NutritionPlanBuilderScreen> createState() =>
+      _NutritionPlanBuilderScreenState();
 }
 
-class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen> {
+class _NutritionPlanBuilderScreenState
+    extends State<NutritionPlanBuilderScreen> {
   final TextEditingController _planNameController = TextEditingController();
   final TextEditingController _caloriesController = TextEditingController();
   final TextEditingController _proteinController = TextEditingController();
   final TextEditingController _carbsController = TextEditingController();
   final TextEditingController _fatController = TextEditingController();
-  
+
   String _selectedGoal = 'fat_loss';
   List<Map<String, dynamic>> _meals = [];
-  
+  bool _isSaving = false;
+
   @override
   void initState() {
     super.initState();
     _initializeMeals();
   }
-  
+
   void _initializeMeals() {
     _meals = [
       {'type': 'breakfast', 'name': 'Breakfast', 'foods': []},
@@ -43,7 +48,94 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
       {'type': 'snack', 'name': 'Snack', 'foods': []},
     ];
   }
-  
+
+  void _applyTemplate(String templateKey, bool isArabic) {
+    setState(() {
+      if (templateKey == 'fat_loss') {
+        _selectedGoal = 'fat_loss';
+        _planNameController.text =
+            isArabic ? 'قالب حرق الدهون' : 'Fat Loss Template';
+        _caloriesController.text = '1900';
+        _proteinController.text = '160';
+        _carbsController.text = '170';
+        _fatController.text = '60';
+      } else if (templateKey == 'muscle_gain') {
+        _selectedGoal = 'muscle_gain';
+        _planNameController.text =
+            isArabic ? 'قالب بناء العضلات' : 'Muscle Gain Template';
+        _caloriesController.text = '2600';
+        _proteinController.text = '170';
+        _carbsController.text = '320';
+        _fatController.text = '70';
+      } else {
+        _selectedGoal = 'maintenance';
+        _planNameController.text =
+            isArabic ? 'قالب متوازن' : 'Balanced Template';
+        _caloriesController.text = '2200';
+        _proteinController.text = '150';
+        _carbsController.text = '240';
+        _fatController.text = '70';
+      }
+
+      _initializeMeals();
+
+      void addFood(String mealType, Map<String, dynamic> food) {
+        final meal = _meals.firstWhere((m) => m['type'] == mealType);
+        (meal['foods'] as List).add(food);
+      }
+
+      addFood('breakfast', {
+        'name': 'Oats',
+        'calories': 320,
+        'protein': 10,
+        'carbs': 54,
+        'fat': 6
+      });
+      addFood('breakfast', {
+        'name': 'Eggs',
+        'calories': 140,
+        'protein': 12,
+        'carbs': 1,
+        'fat': 10
+      });
+      addFood('lunch', {
+        'name': 'Chicken Breast',
+        'calories': 220,
+        'protein': 40,
+        'carbs': 0,
+        'fat': 6
+      });
+      addFood('lunch', {
+        'name': 'Rice',
+        'calories': 210,
+        'protein': 4,
+        'carbs': 45,
+        'fat': 1
+      });
+      addFood('dinner', {
+        'name': 'Salmon',
+        'calories': 260,
+        'protein': 34,
+        'carbs': 0,
+        'fat': 12
+      });
+      addFood('dinner', {
+        'name': 'Sweet Potato',
+        'calories': 180,
+        'protein': 4,
+        'carbs': 41,
+        'fat': 0
+      });
+      addFood('snack', {
+        'name': 'Greek Yogurt',
+        'calories': 120,
+        'protein': 15,
+        'carbs': 8,
+        'fat': 3
+      });
+    });
+  }
+
   @override
   void dispose() {
     _planNameController.dispose();
@@ -58,7 +150,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final isArabic = languageProvider.isArabic;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isArabic ? 'إنشاء خطة تغذية' : 'Create Nutrition Plan'),
@@ -113,9 +205,9 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Plan name
             Text(
               isArabic ? 'اسم الخطة' : 'Plan Name',
@@ -128,15 +220,16 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
             TextField(
               controller: _planNameController,
               decoration: InputDecoration(
-                hintText: isArabic ? 'مثال: خطة حرق الدهون' : 'e.g., Fat Loss Plan',
+                hintText:
+                    isArabic ? 'مثال: خطة حرق الدهون' : 'e.g., Fat Loss Plan',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Daily targets
             Text(
               isArabic ? 'الأهداف اليومية' : 'Daily Targets',
@@ -146,7 +239,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
               ),
             ),
             const SizedBox(height: 12),
-            
+
             Row(
               children: [
                 Expanded(
@@ -170,9 +263,9 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Row(
               children: [
                 Expanded(
@@ -196,9 +289,9 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Goal
             Text(
               isArabic ? 'الهدف' : 'Goal',
@@ -225,9 +318,9 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
                 );
               }).toList(),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Meals
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -247,11 +340,11 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
               ],
             ),
             const SizedBox(height: 12),
-            
+
             ..._meals.map((meal) => _buildMealCard(meal, isArabic)).toList(),
-            
+
             const SizedBox(height: 32),
-            
+
             // Save button
             SizedBox(
               width: double.infinity,
@@ -268,7 +361,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
       ),
     );
   }
-  
+
   Widget _buildMacroInput({
     required TextEditingController controller,
     required String label,
@@ -289,11 +382,11 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
       ),
     );
   }
-  
+
   Widget _buildMealCard(Map<String, dynamic> meal, bool isArabic) {
     final foods = meal['foods'] as List;
     final mealType = meal['type'] as String;
-    
+
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -325,7 +418,6 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
               ),
             ],
           ),
-          
           if (foods.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -350,7 +442,8 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
                   style: const TextStyle(fontSize: 11),
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.delete, size: 20, color: AppColors.error),
+                  icon: const Icon(Icons.delete,
+                      size: 20, color: AppColors.error),
                   onPressed: () {
                     setState(() {
                       foods.removeAt(index);
@@ -363,7 +456,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
       ),
     );
   }
-  
+
   IconData _getMealIcon(String type) {
     switch (type) {
       case 'breakfast':
@@ -378,7 +471,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
         return Icons.restaurant;
     }
   }
-  
+
   String _getMealLabel(String type, bool isArabic) {
     final labels = {
       'breakfast': isArabic ? 'إفطار' : 'Breakfast',
@@ -388,7 +481,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
     };
     return labels[type] ?? type;
   }
-  
+
   String _getGoalLabel(String goal, bool isArabic) {
     final labels = {
       'fat_loss': isArabic ? 'حرق دهون' : 'Fat Loss',
@@ -397,7 +490,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
     };
     return labels[goal] ?? goal;
   }
-  
+
   void _addFood(String mealType, bool isArabic) {
     showDialog(
       context: context,
@@ -407,7 +500,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
         int protein = 0;
         int carbs = 0;
         int fat = 0;
-        
+
         return AlertDialog(
           title: Text(isArabic ? 'إضافة طعام' : 'Add Food'),
           content: SingleChildScrollView(
@@ -437,7 +530,8 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
                           labelText: isArabic ? 'بروتين' : 'Protein',
                         ),
                         keyboardType: TextInputType.number,
-                        onChanged: (value) => protein = int.tryParse(value) ?? 0,
+                        onChanged: (value) =>
+                            protein = int.tryParse(value) ?? 0,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -474,7 +568,8 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
               onPressed: () {
                 if (foodName.isNotEmpty) {
                   setState(() {
-                    final meal = _meals.firstWhere((m) => m['type'] == mealType);
+                    final meal =
+                        _meals.firstWhere((m) => m['type'] == mealType);
                     (meal['foods'] as List).add({
                       'name': foodName,
                       'calories': calories,
@@ -493,7 +588,7 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
       },
     );
   }
-  
+
   void _addFromTemplate(bool isArabic) {
     showDialog(
       context: context,
@@ -506,21 +601,22 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
               title: Text(isArabic ? 'قالب حرق الدهون' : 'Fat Loss Template'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Load template
+                _applyTemplate('fat_loss', isArabic);
               },
             ),
             ListTile(
-              title: Text(isArabic ? 'قالب بناء العضلات' : 'Muscle Gain Template'),
+              title:
+                  Text(isArabic ? 'قالب بناء العضلات' : 'Muscle Gain Template'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Load template
+                _applyTemplate('muscle_gain', isArabic);
               },
             ),
             ListTile(
               title: Text(isArabic ? 'قالب متوازن' : 'Balanced Template'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Load template
+                _applyTemplate('balanced', isArabic);
               },
             ),
           ],
@@ -528,8 +624,8 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
       ),
     );
   }
-  
-  void _savePlan(bool isArabic) {
+
+  Future<void> _savePlan(bool isArabic) async {
     if (_planNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -541,16 +637,85 @@ class _NutritionPlanBuilderScreenState extends State<NutritionPlanBuilderScreen>
       );
       return;
     }
-    
-    // TODO: Save to API
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isArabic ? 'تم حفظ الخطة بنجاح' : 'Plan saved successfully',
+
+    if (_isSaving) return;
+
+    final authProvider = context.read<AuthProvider>();
+    final coachProvider = context.read<CoachProvider>();
+    final coachId = authProvider.user?.id;
+    if (coachId == null || coachId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isArabic
+              ? 'تعذر تحديد حساب المدرب'
+              : 'Unable to determine coach account'),
+          backgroundColor: AppColors.error,
         ),
-        backgroundColor: AppColors.success,
-      ),
-    );
+      );
+      return;
+    }
+
+    final dailyCalories = int.tryParse(_caloriesController.text.trim()) ?? 0;
+    final protein = int.tryParse(_proteinController.text.trim()) ?? 0;
+    final carbs = int.tryParse(_carbsController.text.trim()) ?? 0;
+    final fat = int.tryParse(_fatController.text.trim()) ?? 0;
+
+    if (dailyCalories <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isArabic
+              ? 'الرجاء إدخال السعرات اليومية'
+              : 'Please enter daily calories'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final macros = <String, dynamic>{
+        'protein': protein,
+        'carbs': carbs,
+        'fat': fat,
+      };
+      final mealPlan = <String, dynamic>{
+        'name': _planNameController.text.trim(),
+        'goal': _selectedGoal,
+        'meals': _meals,
+      };
+      final notes = _selectedGoal;
+
+      final success = await coachProvider.updateClientNutritionPlan(
+        coachId,
+        widget.clientId,
+        dailyCalories,
+        macros,
+        mealPlan,
+        notes,
+      );
+
+      if (!mounted) return;
+      if (success) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                isArabic ? 'تم حفظ الخطة بنجاح' : 'Plan saved successfully'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(coachProvider.error ??
+                (isArabic ? 'فشل حفظ الخطة' : 'Failed to save plan')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 }

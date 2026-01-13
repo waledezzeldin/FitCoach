@@ -7,16 +7,44 @@ import '../../widgets/animated_reveal.dart';
 
 class StoreIntroScreen extends StatelessWidget {
   final VoidCallback onGetStarted;
+  final VoidCallback? onBack;
 
   const StoreIntroScreen({
     super.key,
     required this.onGetStarted,
+    this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final isArabic = languageProvider.isArabic;
+    final featureCards = [
+      {
+        'icon': Icons.shopping_bag_outlined,
+        'color': const Color(0xFFF59E0B),
+        'title': languageProvider.t('store_intro_feature1_title'),
+        'description': languageProvider.t('store_intro_feature1_desc'),
+      },
+      {
+        'icon': Icons.auto_awesome,
+        'color': const Color(0xFF3B82F6),
+        'title': languageProvider.t('store_intro_feature2_title'),
+        'description': languageProvider.t('store_intro_feature2_desc'),
+      },
+      {
+        'icon': Icons.local_shipping_outlined,
+        'color': const Color(0xFF22C55E),
+        'title': languageProvider.t('store_intro_feature3_title'),
+        'description': languageProvider.t('store_intro_feature3_desc'),
+      },
+      {
+        'icon': Icons.inventory_2_outlined,
+        'color': const Color(0xFF8B5CF6),
+        'title': languageProvider.t('store_intro_feature4_title'),
+        'description': languageProvider.t('store_intro_feature4_desc'),
+      },
+    ];
 
     return Scaffold(
       body: Stack(
@@ -45,6 +73,26 @@ class StoreIntroScreen extends StatelessWidget {
               ),
             ),
           ),
+          if (onBack != null)
+            SafeArea(
+              child: Align(
+                alignment: isArabic ? Alignment.topRight : Alignment.topLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Material(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      icon: Icon(
+                        isArabic ? Icons.chevron_right : Icons.chevron_left,
+                        color: Colors.white,
+                      ),
+                      onPressed: onBack,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) => SingleChildScrollView(
@@ -57,7 +105,8 @@ class StoreIntroScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         AnimatedReveal(
-                          offset: Offset(isArabic ? -0.2 : 0.2, 0),
+                          offset: Offset(isArabic ? -0.24 : 0.24, 0),
+                          initialScale: 0.9,
                           child: Text(
                             languageProvider.t('store_intro_title'),
                             style: const TextStyle(
@@ -71,68 +120,45 @@ class StoreIntroScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 100),
-                          offset: Offset(isArabic ? -0.18 : 0.18, 0),
+                          offset: Offset(isArabic ? -0.22 : 0.22, 0),
+                          initialScale: 0.92,
                           child: Text(
                             languageProvider.t('store_intro_subtitle'),
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: (0.9 * 255)),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 18,
                             ),
                             textAlign: isArabic ? TextAlign.right : TextAlign.left,
                           ),
                         ),
                         const SizedBox(height: 20),
-                        AnimatedReveal(
-                          delay: const Duration(milliseconds: 220),
-                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                            child: _IntroFeatureCard(
-                            icon: Icons.shopping_bag_outlined,
-                            iconColor: const Color(0xFFF59E0B),
-                            title: languageProvider.t('store_intro_feature1_title'),
-                            description: languageProvider.t('store_intro_feature1_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                          delay: const Duration(milliseconds: 300),
-                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                            child: _IntroFeatureCard(
-                            icon: Icons.auto_awesome,
-                            iconColor: const Color(0xFF3B82F6),
-                            title: languageProvider.t('store_intro_feature2_title'),
-                            description: languageProvider.t('store_intro_feature2_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                          delay: const Duration(milliseconds: 380),
-                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                            child: _IntroFeatureCard(
-                            icon: Icons.local_shipping_outlined,
-                            iconColor: const Color(0xFF22C55E),
-                            title: languageProvider.t('store_intro_feature3_title'),
-                            description: languageProvider.t('store_intro_feature3_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                          delay: const Duration(milliseconds: 460),
-                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                            child: _IntroFeatureCard(
-                            icon: Icons.inventory_2_outlined,
-                            iconColor: const Color(0xFF8B5CF6),
-                            title: languageProvider.t('store_intro_feature4_title'),
-                            description: languageProvider.t('store_intro_feature4_desc'),
-                            isArabic: isArabic,
-                          ),
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.zero,
+                          itemCount: featureCards.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final data = featureCards[index];
+                            return AnimatedReveal(
+                              delay: Duration(milliseconds: 220 + index * 100),
+                              offset: Offset(isArabic ? -0.2 : 0.2, 0),
+                              initialScale: 0.9,
+                              child: _IntroFeatureCard(
+                                icon: data['icon'] as IconData,
+                                iconColor: data['color'] as Color,
+                                title: data['title'] as String,
+                                description: data['description'] as String,
+                                isArabic: isArabic,
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 20),
                         AnimatedReveal(
                           delay: const Duration(milliseconds: 520),
-                            offset: const Offset(0, 0.18),
+                            offset: const Offset(0, 0.2),
+                            initialScale: 0.9,
                             child: SizedBox(
                             height: 56,
                             child: ElevatedButton(
@@ -183,9 +209,9 @@ class _IntroFeatureCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: (0.1 * 255)),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: isArabic
@@ -203,7 +229,7 @@ class _IntroFeatureCard extends StatelessWidget {
                           Text(
                             description,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: (0.8 * 255)),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 12,
                             ),
                             textAlign: TextAlign.right,
@@ -229,7 +255,7 @@ class _IntroFeatureCard extends StatelessWidget {
                           Text(
                             description,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: (0.8 * 255)),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 12,
                             ),
                           ),
@@ -259,7 +285,7 @@ class _IntroIcon extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: (0.2 * 255)),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Icon(icon, color: color, size: 26),

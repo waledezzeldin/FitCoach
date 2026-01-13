@@ -12,6 +12,7 @@ import '../../providers/quota_provider.dart';
 import '../../providers/appointment_provider.dart';
 import '../../providers/video_call_provider.dart';
 import '../../widgets/custom_card.dart';
+import '../../widgets/animated_reveal.dart';
 import '../../widgets/custom_stat_info_card.dart';
 import '../../widgets/quota_indicator.dart';
 import '../../widgets/custom_button.dart';
@@ -84,12 +85,30 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          _buildHomeTab(languageProvider, isArabic),
-          _buildWorkoutTab(),
-          _buildNutritionTab(),
-          _buildCoachTab(),
-          _buildStoreTab(),
-          _buildAccountTab(),
+          TickerMode(
+            enabled: _selectedIndex == 0,
+            child: _buildHomeTab(languageProvider, isArabic),
+          ),
+          TickerMode(
+            enabled: _selectedIndex == 1,
+            child: _buildWorkoutTab(),
+          ),
+          TickerMode(
+            enabled: _selectedIndex == 2,
+            child: _buildNutritionTab(),
+          ),
+          TickerMode(
+            enabled: _selectedIndex == 3,
+            child: _buildCoachTab(),
+          ),
+          TickerMode(
+            enabled: _selectedIndex == 4,
+            child: _buildStoreTab(),
+          ),
+          TickerMode(
+            enabled: _selectedIndex == 5,
+            child: _buildAccountTab(),
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -189,43 +208,94 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHomeHeader(
-                    lang,
-                    isArabic,
-                    firstName,
-                    tier,
-                    fitnessScore,
-                    fitnessUpdatedBy,
-                    stats,
+                  AnimatedReveal(
+                    offset: Offset(isArabic ? 0.14 : -0.14, 0),
+                    initialScale: 0.95,
+                    child: _buildHomeHeader(
+                      lang,
+                      isArabic,
+                      firstName,
+                      tier,
+                      fitnessScore,
+                      fitnessUpdatedBy,
+                      stats,
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (isAppointmentsLoading)
-                          _buildNextSessionLoadingCard(),
-                        if (isAppointmentsLoading) const SizedBox(height: 16),
-                        if (nextSession != null) ...[
-                          _buildNextSessionCardHome(
-                            lang,
-                            isArabic,
-                            nextSession,
-                            appointmentProvider,
+                        if (isAppointmentsLoading) ...[
+                          AnimatedReveal(
+                            delay: const Duration(milliseconds: 120),
+                            offset: const Offset(0, 0.16),
+                            initialScale: 0.94,
+                            child: _buildNextSessionLoadingCard(),
                           ),
                           const SizedBox(height: 16),
                         ],
-                        if (tier != 'Smart Premium') _buildQuotaSection(lang, isArabic),
-                        if (tier != 'Smart Premium') const SizedBox(height: 16),
-                        if (todayWorkout != null) _buildTodayWorkoutCard(lang, isArabic, todayWorkout),
-                        if (todayWorkout != null) const SizedBox(height: 16),
-                        _buildNavigationGridCompact(lang, isArabic, tier),
+                        if (nextSession != null) ...[
+                          AnimatedReveal(
+                            delay: const Duration(milliseconds: 180),
+                            offset: Offset(isArabic ? 0.18 : -0.18, 0),
+                            initialScale: 0.94,
+                            child: _buildNextSessionCardHome(
+                              lang,
+                              isArabic,
+                              nextSession,
+                              appointmentProvider,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (tier != 'Smart Premium') ...[
+                          AnimatedReveal(
+                            delay: const Duration(milliseconds: 240),
+                            offset: const Offset(0, 0.14),
+                            initialScale: 0.95,
+                            child: _buildQuotaSection(lang, isArabic),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (todayWorkout != null) ...[
+                          AnimatedReveal(
+                            delay: const Duration(milliseconds: 300),
+                            offset: const Offset(0, 0.12),
+                            initialScale: 0.96,
+                            child: _buildTodayWorkoutCard(lang, isArabic, todayWorkout),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 360),
+                          offset: const Offset(0, 0.12),
+                          initialScale: 0.95,
+                          child: _buildNavigationGridCompact(lang, isArabic, tier),
+                        ),
                         const SizedBox(height: 16),
-                        _buildQuickAccessCard(lang, isArabic, tier),
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 420),
+                          offset: const Offset(0, 0.16),
+                          initialScale: 0.95,
+                          child: _buildQuickAccessCard(lang, isArabic, tier),
+                        ),
                         if (DemoConfig.isDemo) const SizedBox(height: 16),
-                        if (DemoConfig.isDemo) _buildRecentActivityCard(lang, isArabic),
+                        if (DemoConfig.isDemo)
+                          AnimatedReveal(
+                            delay: const Duration(milliseconds: 480),
+                            offset: const Offset(0, 0.18),
+                            initialScale: 0.95,
+                            child: _buildRecentActivityCard(lang, isArabic),
+                          ),
                         if (tier == 'Freemium') const SizedBox(height: 16),
-                        if (tier == 'Freemium') _buildUpgradeCard(lang, isArabic),
+                        if (tier == 'Freemium')
+                          AnimatedReveal(
+                            delay: const Duration(milliseconds: 540),
+                            offset: const Offset(0, 0.2),
+                            initialScale: 0.94,
+                            child: _buildUpgradeCard(lang, isArabic),
+                          ),
                       ],
                     ),
                   ),
@@ -282,7 +352,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: (0.2 * 255)),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -301,7 +371,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: (0.12 * 255)),
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -347,7 +417,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   child: LinearProgressIndicator(
                     value: fitnessScore / 100,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: (0.2 * 255)),
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
@@ -386,7 +456,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: (0.12 * 255)),
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -410,7 +480,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   child: LinearProgressIndicator(
                     value: (stats['weeklyProgress'] ?? 0) / 100,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: (0.2 * 255)),
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
@@ -440,7 +510,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: (0.95 * 255)),
+        // Light surface so text/icons stay clearly visible
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
       ),
@@ -477,8 +548,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
+        // Keep strong gradient but soften a bit for readability
         gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+          colors: [Color(0xFF2563EB), Color(0xFF4F46E5)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -589,7 +661,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: (0.12 * 255)),
+        color: Colors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -1180,7 +1252,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -1199,7 +1271,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -1245,7 +1317,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   child: LinearProgressIndicator(
                     value: fitnessScore / 100,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
@@ -1293,7 +1365,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
+        color: Colors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -1386,7 +1458,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           border: Border.all(color: AppColors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -1401,7 +1473,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: item.color.withOpacity(0.15),
+                    color: item.color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(item.icon, color: item.color, size: 18),
@@ -1427,7 +1499,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1653,7 +1725,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right, color: AppColors.textDisabled),
+                        Icon(
+                          isArabic ? Icons.chevron_left : Icons.chevron_right,
+                          color: AppColors.textDisabled,
+                        ),
                       ],
                     ),
                   ],
@@ -1741,7 +1816,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right, color: AppColors.textDisabled),
+                        Icon(
+                          isArabic ? Icons.chevron_left : Icons.chevron_right,
+                          color: AppColors.textDisabled,
+                        ),
                       ],
                     ),
                   ],
@@ -1956,7 +2034,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
   
   Widget _buildNutritionTab() {
-    return const NutritionScreen();
+    return NutritionScreen(
+      onBack: () => setState(() => _selectedIndex = 0),
+    );
   }
   
   Widget _buildCoachTab() {
@@ -1964,11 +2044,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
   
   Widget _buildStoreTab() {
-    return const StoreScreen();
+    return StoreScreen(
+      onBack: () => setState(() => _selectedIndex = 0),
+    );
   }
   
   Widget _buildAccountTab() {
-    return const AccountScreen();
+    return AccountScreen(
+      onBack: () => setState(() => _selectedIndex = 0),
+    );
   }
 }
 

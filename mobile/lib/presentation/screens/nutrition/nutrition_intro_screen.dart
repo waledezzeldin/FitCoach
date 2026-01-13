@@ -17,6 +17,32 @@ class NutritionIntroScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final isArabic = languageProvider.isArabic;
+    final featureCards = [
+      {
+        'icon': Icons.track_changes,
+        'color': const Color(0xFF22C55E),
+        'title': languageProvider.t('nutrition_intro_feature1_title'),
+        'description': languageProvider.t('nutrition_intro_feature1_desc'),
+      },
+      {
+        'icon': Icons.restaurant_menu,
+        'color': const Color(0xFF2563EB),
+        'title': languageProvider.t('nutrition_intro_feature2_title'),
+        'description': languageProvider.t('nutrition_intro_feature2_desc'),
+      },
+      {
+        'icon': Icons.trending_up,
+        'color': const Color(0xFF7C3AED),
+        'title': languageProvider.t('nutrition_intro_feature3_title'),
+        'description': languageProvider.t('nutrition_intro_feature3_desc'),
+      },
+      {
+        'icon': Icons.local_florist,
+        'color': const Color(0xFFF97316),
+        'title': languageProvider.t('nutrition_intro_feature4_title'),
+        'description': languageProvider.t('nutrition_intro_feature4_desc'),
+      },
+    ];
 
     return Scaffold(
       body: Stack(
@@ -52,6 +78,7 @@ class NutritionIntroScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 24),
                   AnimatedReveal(
+                    initialScale: 0.85,
                     child: Container(
                       width: 80,
                       height: 80,
@@ -65,7 +92,8 @@ class NutritionIntroScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 80),
-                    offset: Offset(isArabic ? -0.2 : 0.2, 0),
+                    offset: Offset(isArabic ? -0.24 : 0.24, 0),
+                    initialScale: 0.9,
                     child: Text(
                       languageProvider.t('nutrition_intro_title'),
                       style: const TextStyle(
@@ -79,11 +107,12 @@ class NutritionIntroScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 140),
-                    offset: Offset(isArabic ? -0.18 : 0.18, 0),
+                    offset: Offset(isArabic ? -0.22 : 0.22, 0),
+                    initialScale: 0.92,
                     child: Text(
                       languageProvider.t('nutrition_intro_subtitle'),
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: (0.9 * 255)),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 18,
                       ),
                       textAlign: TextAlign.center,
@@ -91,63 +120,32 @@ class NutritionIntroScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Expanded(
-                    child: ListView(
+                    child: ListView.separated(
                       padding: EdgeInsets.zero,
-                      children: [
-                        AnimatedReveal(
-                            delay: const Duration(milliseconds: 220),
-                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                            child: _IntroFeatureCard(
-                            icon: Icons.track_changes,
-                            iconColor: const Color(0xFF22C55E),
-                            title: languageProvider.t('nutrition_intro_feature1_title'),
-                            description: languageProvider.t('nutrition_intro_feature1_desc'),
+                      itemCount: featureCards.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final data = featureCards[index];
+                        return AnimatedReveal(
+                          delay: Duration(milliseconds: 220 + index * 100),
+                          offset: Offset(isArabic ? -0.2 : 0.2, 0),
+                          initialScale: 0.9,
+                          child: _IntroFeatureCard(
+                            icon: data['icon'] as IconData,
+                            iconColor: data['color'] as Color,
+                            title: data['title'] as String,
+                            description: data['description'] as String,
                             isArabic: isArabic,
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                            delay: const Duration(milliseconds: 300),
-                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                            child: _IntroFeatureCard(
-                            icon: Icons.restaurant_menu,
-                            iconColor: const Color(0xFF2563EB),
-                            title: languageProvider.t('nutrition_intro_feature2_title'),
-                            description: languageProvider.t('nutrition_intro_feature2_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                            delay: const Duration(milliseconds: 380),
-                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                            child: _IntroFeatureCard(
-                            icon: Icons.trending_up,
-                            iconColor: const Color(0xFF7C3AED),
-                            title: languageProvider.t('nutrition_intro_feature3_title'),
-                            description: languageProvider.t('nutrition_intro_feature3_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                            delay: const Duration(milliseconds: 460),
-                            offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                            child: _IntroFeatureCard(
-                            icon: Icons.local_florist,
-                            iconColor: const Color(0xFFF97316),
-                            title: languageProvider.t('nutrition_intro_feature4_title'),
-                            description: languageProvider.t('nutrition_intro_feature4_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 16),
-                  AnimatedReveal(
+                    AnimatedReveal(
                       delay: const Duration(milliseconds: 520),
-                      offset: const Offset(0, 0.18),
+                      offset: const Offset(0, 0.2),
+                      initialScale: 0.9,
                       child: SizedBox(
                       width: double.infinity,
                       height: 56,
@@ -172,11 +170,12 @@ class NutritionIntroScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 600),
-                    offset: Offset(isArabic ? -0.15 : 0.15, 0),
+                    offset: Offset(isArabic ? -0.2 : 0.2, 0),
+                    initialScale: 0.95,
                     child: Text(
                       languageProvider.t('nutrition_intro_note'),
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: (0.6 * 255)),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12,
                       ),
                       textAlign: TextAlign.center,
@@ -216,9 +215,9 @@ class _IntroFeatureCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: (0.1 * 255)),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,7 +236,7 @@ class _IntroFeatureCard extends StatelessWidget {
                           Text(
                             description,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: (0.8 * 255)),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 12,
                             ),
                             textAlign: TextAlign.right,
@@ -263,7 +262,7 @@ class _IntroFeatureCard extends StatelessWidget {
                           Text(
                             description,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: (0.8 * 255)),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 12,
                             ),
                           ),
@@ -293,7 +292,7 @@ class _IntroIcon extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: (0.2 * 255)),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(icon, color: color, size: 26),

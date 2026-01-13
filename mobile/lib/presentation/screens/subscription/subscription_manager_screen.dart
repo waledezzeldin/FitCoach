@@ -392,7 +392,9 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
     final isUpgradeFromFreemium = currentTier == 'Freemium' &&
         (targetTier == 'Premium' || targetTier == 'Smart Premium');
     if (isUpgradeFromFreemium) {
-      final userId = authProvider.user?.id ?? 'demo-user';
+      final authUserId = authProvider.user?.id;
+      final userId = authUserId ?? (DemoConfig.isDemo ? DemoConfig.demoUserId : null);
+      if (userId == null) return;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('pending_nutrition_intake_$userId', true);
       await prefs.setBool('nutrition_preferences_completed_$userId', false);

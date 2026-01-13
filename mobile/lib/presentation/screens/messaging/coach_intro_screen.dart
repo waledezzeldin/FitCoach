@@ -75,7 +75,7 @@ class CoachIntroScreen extends StatelessWidget {
                           child: Text(
                             languageProvider.t('coach_intro_subtitle'),
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: (0.9 * 255)),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 18,
                             ),
                             textAlign: isArabic ? TextAlign.right : TextAlign.left,
@@ -183,9 +183,9 @@ class _IntroFeatureCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: (0.1 * 255)),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: isArabic
@@ -203,7 +203,7 @@ class _IntroFeatureCard extends StatelessWidget {
                           Text(
                             description,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: (0.8 * 255)),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 12,
                             ),
                             textAlign: TextAlign.right,
@@ -229,7 +229,7 @@ class _IntroFeatureCard extends StatelessWidget {
                           Text(
                             description,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: (0.8 * 255)),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 12,
                             ),
                           ),
@@ -259,7 +259,7 @@ class _IntroIcon extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: (0.2 * 255)),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Icon(icon, color: color, size: 26),

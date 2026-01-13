@@ -16,33 +16,25 @@ class QuotaIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    QuotaProvider? quotaProvider;
-    LanguageProvider? languageProvider;
-    try {
-      quotaProvider = Provider.of<QuotaProvider>(context, listen: false);
-      languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    } catch (_) {
-      quotaProvider = null;
-      languageProvider = null;
-    }
-    final isArabic = languageProvider?.isArabic ?? false;
+    final quotaProvider = context.watch<QuotaProvider>();
+    final languageProvider = context.watch<LanguageProvider>();
+    final translator = languageProvider.t;
     
     final isMessage = type == 'message';
-    final used = isMessage ? (quotaProvider?.messagesUsed ?? 0) : (quotaProvider?.videoCallsUsed ?? 0);
-    final limit = isMessage ? (quotaProvider?.messagesLimit ?? 10) : (quotaProvider?.videoCallsLimit ?? 10);
-    final remaining = isMessage ? (quotaProvider?.messagesRemaining ?? (limit - used)) : (quotaProvider?.videoCallsRemaining ?? (limit - used));
+    final limit = isMessage ? quotaProvider.messagesLimit : quotaProvider.videoCallsLimit;
+    final remaining = isMessage ? quotaProvider.messagesRemaining : quotaProvider.videoCallsRemaining;
     final percentage = isMessage
-        ? (quotaProvider?.messagesUsagePercentage ?? (limit == 0 ? 0 : used / limit))
-        : (quotaProvider?.videoCallsUsagePercentage ?? (limit == 0 ? 0 : used / limit));
+        ? quotaProvider.messagesUsagePercentage
+        : quotaProvider.videoCallsUsagePercentage;
     
     // Unlimited messages (Smart Premium)
     if (limit == -1 && isMessage) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.success.withValues(alpha: (0.1 * 255)),
+          color: AppColors.success.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.success.withValues(alpha: (0.3 * 255))),
+          border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -50,7 +42,7 @@ class QuotaIndicator extends StatelessWidget {
             const Icon(Icons.all_inclusive, color: AppColors.success, size: 16),
             const SizedBox(width: 6),
             Text(
-              isArabic ? 'رسائل غير محدودة' : 'Unlimited Messages',
+              translator('unlimited_messages'),
               style: const TextStyle(
                 color: AppColors.success,
                 fontSize: 12,
@@ -76,9 +68,9 @@ class QuotaIndicator extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: (0.1 * 255)),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: (0.3 * 255))),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -106,9 +98,9 @@ class QuotaIndicator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: (0.05 * 255) ),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: (0.2 * 255))),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,8 +115,8 @@ class QuotaIndicator extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 isMessage
-                    ? (isArabic ? 'الرسائل المتبقية' : 'Messages Remaining')
-                    : (isArabic ? 'المكالمات المتبقية' : 'Video Calls Remaining'),
+                    ? translator('messages_remaining_label')
+                    : translator('video_calls_remaining_label'),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -176,7 +168,10 @@ class QuotaIndicator extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    quotaProvider?.getQuotaWarningMessage(type) ?? '',
+                    translator(
+                      'quota_warning',
+                      args: {'remaining': remaining.toString()},
+                    ),
                     style: TextStyle(
                       fontSize: 12,
                       color: color,
@@ -191,7 +186,7 @@ class QuotaIndicator extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: (0.1 * 255)),
+                color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -204,9 +199,7 @@ class QuotaIndicator extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      isArabic
-                          ? 'وصلت للحد الأقصى. قم بالترقية للمزيد'
-                          : 'Quota exceeded. Upgrade for more',
+                      translator(isMessage ? 'quota_exceeded' : 'video_call_quota_exceeded'),
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.error,
@@ -236,7 +229,7 @@ class QuotaBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final quotaProvider = context.watch<QuotaProvider>();
     final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
+    final translator = languageProvider.t;
     
     final isMessage = type == 'message';
     final canProceed = isMessage 
@@ -249,9 +242,9 @@ class QuotaBanner extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: (0.1 * 255)),
+        color: AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withValues(alpha: (0.3 * 255))),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -266,7 +259,7 @@ class QuotaBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isArabic ? 'تم استنفاد الحصة' : 'Quota Exceeded',
+                  translator(isMessage ? 'quota_exceeded' : 'video_call_quota_exceeded'),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -275,9 +268,7 @@ class QuotaBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  isArabic
-                      ? 'قم بالترقية إلى Premium للحصول على المزيد'
-                      : 'Upgrade to Premium for more quota',
+                  translator('quota_upgrade_prompt'),
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
@@ -290,7 +281,7 @@ class QuotaBanner extends StatelessWidget {
             onPressed: () {
               // Navigate to subscription upgrade
             },
-            child: Text(isArabic ? 'ترقية' : 'Upgrade'),
+            child: Text(translator('upgrade')),
           ),
         ],
       ),

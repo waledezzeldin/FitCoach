@@ -136,26 +136,6 @@ class QuotaProvider extends ChangeNotifier {
     return hasVideoCallsRemaining;
   }
   
-  // Get warning message for quota
-  String? getQuotaWarningMessage(String type) {
-    if (type == 'message') {
-      if (!hasMessagesRemaining) {
-        return 'Message quota exceeded. Upgrade to send more messages.';
-      }
-      if (messagesRemaining <= 5 && messagesRemaining > 0) {
-        return '$messagesRemaining messages remaining this month.';
-      }
-    } else if (type == 'videoCall') {
-      if (!hasVideoCallsRemaining) {
-        return 'Video call quota exceeded. Upgrade for more calls.';
-      }
-      if (videoCallsRemaining == 1) {
-        return '1 video call remaining this month.';
-      }
-    }
-    return null;
-  }
-  
   // Clear error
   void clearError() {
     _error = null;

@@ -1,8 +1,14 @@
-import 'package:characters/characters.dart';
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/models/appointment.dart';
 import '../../../data/models/message.dart';
@@ -12,13 +18,16 @@ import '../../providers/auth_provider.dart';
 import '../../providers/quota_provider.dart';
 import '../../providers/appointment_provider.dart';
 import '../../providers/video_call_provider.dart';
+import '../../providers/coach_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_card.dart';
+import '../../widgets/animated_reveal.dart';
 import '../../widgets/quota_indicator.dart';
 import '../booking/appointment_detail_screen.dart';
 import '../booking/video_booking_screen.dart';
 import '../video_call/video_call_screen.dart';
 import 'coach_intro_screen.dart';
+import '../coach/public_coach_profile_screen.dart';
 
 class CoachMessagingScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -31,26 +40,33 @@ class CoachMessagingScreen extends StatefulWidget {
 
 class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _conversationSearchController =
+      TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ImagePicker _picker = ImagePicker();
   bool _showIntro = false;
   bool _introLoaded = false;
   String? _joiningAppointmentId;
-  
+  String _conversationQuery = '';
+  String? _pendingConversationId;
+
   @override
   void initState() {
     super.initState();
+    _conversationSearchController.addListener(_handleConversationSearch);
     _loadIntroFlag();
-    Future.microtask(() async {
-      final provider = context.read<MessagingProvider>();
-      provider.loadConversations();
-      provider.connectSocket();
-      await _loadUserAppointments();
-    });
+    final provider = context.read<MessagingProvider>();
+    final isArabic = context.read<LanguageProvider>().isArabic;
+    provider.loadConversations(isArabic: isArabic);
+    provider.connectSocket();
+    unawaited(_loadUserAppointments());
+    unawaited(_ensureCoachClients());
   }
-  
+
   @override
   void dispose() {
     _messageController.dispose();
+    _conversationSearchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -73,7 +89,24 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     if (userId == null || userId.isEmpty) {
       return;
     }
-    await appointmentProvider.loadUserAppointments(userId: userId, refresh: refresh);
+    await appointmentProvider.loadUserAppointments(
+        userId: userId, refresh: refresh);
+  }
+
+  void _handleConversationSearch() {
+    setState(() {
+      _conversationQuery = _conversationSearchController.text.trim();
+    });
+  }
+
+  Future<void> _ensureCoachClients() async {
+    final authProvider = context.read<AuthProvider>();
+    final coachProvider = context.read<CoachProvider>();
+    final coachId = authProvider.user?.id;
+    if (coachId == null || coachProvider.clients.isNotEmpty) {
+      return;
+    }
+    await coachProvider.loadClients(coachId: coachId);
   }
 
   Future<void> _refreshAppointments() async {
@@ -97,6 +130,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     final quotaProvider = context.watch<QuotaProvider>();
     final authProvider = context.watch<AuthProvider>();
     final appointmentProvider = context.watch<AppointmentProvider>();
+    final coachProvider = context.watch<CoachProvider>();
     final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
     final canAttach = tier == 'Smart Premium';
     final isArabic = languageProvider.isArabic;
@@ -110,7 +144,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     if (_showIntro) {
       return CoachIntroScreen(onGetStarted: _completeIntro);
     }
-    
+
     return DefaultTabController(
       length: 2,
       initialIndex: widget.initialTabIndex.clamp(0, 1),
@@ -129,59 +163,76 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
             SafeArea(
               child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF4338CA), Color(0xFF6D28D9)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: () => Navigator.of(context).maybePop(),
-                              icon: Icon(
-                                isArabic ? Icons.arrow_forward : Icons.arrow_back,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    languageProvider.t('coach_messaging'),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    languageProvider.t('coach_messaging_subtitle'),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.videocam, color: Colors.white),
-                              onPressed: quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
-                              tooltip: languageProvider.t('book_video_call'),
-                            ),
-                          ],
+                  AnimatedReveal(
+                    offset: Offset(isArabic ? 0.16 : -0.16, 0),
+                    initialScale: 0.96,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF4338CA), Color(0xFF6D28D9)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        const SizedBox(height: 12),
-                        _buildCoachInfoCard(languageProvider, isArabic),
-                      ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () =>
+                                    Navigator.of(context).maybePop(),
+                                icon: Icon(
+                                  isArabic
+                                      ? Icons.arrow_forward
+                                      : Icons.arrow_back,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      languageProvider.t('coach_messaging'),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      languageProvider
+                                          .t('coach_messaging_subtitle'),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.videocam,
+                                    color: Colors.white),
+                                onPressed: quotaProvider.canMakeVideoCall()
+                                    ? _openVideoBooking
+                                    : null,
+                                tooltip: languageProvider.t('book_video_call'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          AnimatedReveal(
+                            delay: const Duration(milliseconds: 140),
+                            offset: const Offset(0, 0.12),
+                            initialScale: 0.97,
+                            child:
+                                _buildCoachInfoCard(languageProvider, isArabic),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -189,40 +240,58 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
-                        const QuotaBanner(type: 'message'),
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 120),
+                          offset: const Offset(0, 0.12),
+                          initialScale: 0.97,
+                          child: const QuotaBanner(type: 'message'),
+                        ),
                         const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: (0.9 * 255)),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              QuotaIndicator(type: 'message', showDetails: false),
-                              SizedBox(width: 16),
-                              QuotaIndicator(type: 'videoCall', showDetails: false),
-                            ],
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 180),
+                          offset: const Offset(0, 0.12),
+                          initialScale: 0.97,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: const [
+                                QuotaIndicator(
+                                    type: 'message', showDetails: false),
+                                SizedBox(width: 16),
+                                QuotaIndicator(
+                                    type: 'videoCall', showDetails: false),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: (0.9 * 255)),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: TabBar(
-                            labelColor: AppColors.primary,
-                            unselectedLabelColor: AppColors.textSecondary,
-                            indicatorColor: AppColors.primary,
-                            indicatorWeight: 3,
-                            tabs: [
-                              Tab(text: languageProvider.t('messages')),
-                              Tab(text: languageProvider.t('sessions')),
-                            ],
+                        AnimatedReveal(
+                          delay: const Duration(milliseconds: 240),
+                          offset: const Offset(0, 0.12),
+                          initialScale: 0.97,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: TabBar(
+                              labelColor: AppColors.primary,
+                              unselectedLabelColor: AppColors.textSecondary,
+                              indicatorColor: AppColors.primary,
+                              indicatorWeight: 3,
+                              tabs: [
+                                Tab(text: languageProvider.t('messages')),
+                                Tab(text: languageProvider.t('sessions')),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -230,20 +299,26 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                   ),
                   const SizedBox(height: 8),
                   Expanded(
-                    child: TabBarView(
-                      children: [
-                        _buildMessagesTab(
-                          languageProvider,
-                          messagingProvider,
-                          quotaProvider,
-                          canAttach,
-                        ),
-                        _buildSessionsTab(
-                          languageProvider,
-                          quotaProvider,
-                          appointmentProvider,
-                        ),
-                      ],
+                    child: AnimatedReveal(
+                      delay: const Duration(milliseconds: 320),
+                      offset: const Offset(0, 0.08),
+                      initialScale: 0.99,
+                      child: TabBarView(
+                        children: [
+                          _buildMessagesTab(
+                            languageProvider,
+                            messagingProvider,
+                            quotaProvider,
+                            canAttach,
+                            coachProvider,
+                          ),
+                          _buildSessionsTab(
+                            languageProvider,
+                            quotaProvider,
+                            appointmentProvider,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -260,29 +335,380 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     MessagingProvider messagingProvider,
     QuotaProvider quotaProvider,
     bool canAttach,
+    CoachProvider coachProvider,
   ) {
+    final filteredConversations =
+        _filteredConversations(messagingProvider, coachProvider);
+    final isArabic = lang.isArabic;
+    final isThreadLoading = messagingProvider.isLoading &&
+        (messagingProvider.messages.isEmpty ||
+            (_pendingConversationId != null));
+
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 18, 24, 8),
+          child: _buildConversationHeader(lang, messagingProvider),
+        ),
+        _buildConversationRail(
+          lang,
+          messagingProvider,
+          coachProvider,
+          filteredConversations,
+        ),
+        const SizedBox(height: 8),
         Expanded(
-          child: messagingProvider.isLoading
+          child: isThreadLoading
               ? const Center(child: CircularProgressIndicator())
               : messagingProvider.messages.isEmpty
-                  ? _buildEmptyState(lang, lang.isArabic)
+                  ? _buildEmptyState(lang, isArabic)
                   : _buildMessagesList(
                       messagingProvider,
                       lang,
-                      lang.isArabic,
+                      isArabic,
                     ),
         ),
         _buildMessageInput(
           lang,
           messagingProvider,
           quotaProvider,
-          lang.isArabic,
+          isArabic,
           canAttach,
         ),
       ],
     );
+  }
+
+  Widget _buildConversationHeader(
+    LanguageProvider lang,
+    MessagingProvider messagingProvider,
+  ) {
+    final isArabic = lang.isArabic;
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _conversationSearchController,
+            decoration: InputDecoration(
+              hintText: isArabic
+                  ? 'ابحث عن عميل أو رسالة'
+                  : 'Search client or message',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _conversationQuery.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _conversationSearchController.clear();
+                        _handleConversationSearch();
+                      },
+                    ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        IconButton(
+          tooltip: isArabic ? 'تحديث المحادثات' : 'Refresh inbox',
+          onPressed: () =>
+              messagingProvider.loadConversations(isArabic: isArabic),
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConversationRail(
+    LanguageProvider lang,
+    MessagingProvider messagingProvider,
+    CoachProvider coachProvider,
+    List<Conversation> conversations,
+  ) {
+    if (messagingProvider.isLoading && conversations.isEmpty) {
+      return const SizedBox(
+        height: 120,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (conversations.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: CustomCard(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                lang.isArabic ? 'لا محادثات بعد' : 'No conversations yet',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                lang.isArabic
+                    ? 'أرسل رسالة أولية إلى عميلك لبدء المتابعة.'
+                    : 'Send your first check-in to kick off the relationship.',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 138,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: conversations.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final conversation = conversations[index];
+          return _buildConversationChip(
+            conversation,
+            lang,
+            messagingProvider,
+            coachProvider,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildConversationChip(
+    Conversation conversation,
+    LanguageProvider lang,
+    MessagingProvider provider,
+    CoachProvider coachProvider,
+  ) {
+    final isActive = provider.activeConversation?.id == conversation.id;
+    final isArabic = lang.isArabic;
+    final displayName =
+        _resolveClientName(conversation.userId, coachProvider, lang);
+    final initials = _conversationInitials(displayName);
+    final snippet = _conversationSnippet(conversation, isArabic);
+    final subtitle = _conversationSubtitle(conversation, lang);
+    final isLoading =
+        _pendingConversationId == conversation.id && provider.isLoading;
+
+    return GestureDetector(
+      onTap: () => _handleConversationSelection(conversation, provider, lang),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        width: 230,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : Colors.white.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isActive ? AppColors.primary : AppColors.border,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (conversation.unreadCount > 0)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.error,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      '${conversation.unreadCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: Text(
+                snippet,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isActive
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
+                ),
+              ),
+            ),
+            if (isLoading) ...[
+              const SizedBox(height: 8),
+              const LinearProgressIndicator(minHeight: 3),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Conversation> _filteredConversations(
+    MessagingProvider provider,
+    CoachProvider coachProvider,
+  ) {
+    if (_conversationQuery.isEmpty) {
+      return provider.conversations;
+    }
+    final query = _conversationQuery.toLowerCase();
+    return provider.conversations.where((conversation) {
+      final name =
+          _resolveClientNameForFilter(conversation.userId, coachProvider);
+      final snippet = conversation.lastMessageContent?.toLowerCase() ?? '';
+      return (name?.toLowerCase().contains(query) ?? false) ||
+          snippet.contains(query);
+    }).toList();
+  }
+
+  String _resolveClientName(
+    String userId,
+    CoachProvider coachProvider,
+    LanguageProvider lang,
+  ) {
+    for (final client in coachProvider.clients) {
+      if (client.id == userId) {
+        return client.fullName;
+      }
+    }
+    if (DemoConfig.isDemo && userId == DemoConfig.demoUserId) {
+      return lang.t('auth_demo_user');
+    }
+    return lang.isArabic ? 'عميل' : 'Client';
+  }
+
+  String? _resolveClientNameForFilter(
+    String userId,
+    CoachProvider coachProvider,
+  ) {
+    for (final client in coachProvider.clients) {
+      if (client.id == userId) {
+        return client.fullName;
+      }
+    }
+    return null;
+  }
+
+  String _conversationInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.isNotEmpty ? name[0].toUpperCase() : '?';
+  }
+
+  String _conversationSubtitle(
+    Conversation conversation,
+    LanguageProvider lang,
+  ) {
+    final timestamp = conversation.lastMessageAt;
+    if (timestamp == null) {
+      return lang.isArabic ? 'بلا نشاط' : 'Awaiting activity';
+    }
+    final formatter = DateFormat(
+      'MMM d • h:mm a',
+      lang.isArabic ? 'ar' : 'en',
+    );
+    return formatter.format(timestamp);
+  }
+
+  String _conversationSnippet(Conversation conversation, bool isArabic) {
+    final content = conversation.lastMessageContent;
+    if (content == null || content.isEmpty) {
+      return isArabic
+          ? 'ابدأ محادثة مخصصة لعميلك.'
+          : 'Kick off a tailored check-in.';
+    }
+    return content;
+  }
+
+  Future<void> _handleConversationSelection(
+    Conversation conversation,
+    MessagingProvider provider,
+    LanguageProvider lang,
+  ) async {
+    setState(() => _pendingConversationId = conversation.id);
+    await provider.selectConversation(conversation.id, isArabic: lang.isArabic);
+    if (!mounted) return;
+    setState(() => _pendingConversationId = null);
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) {
+        return;
+      }
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   Widget _buildSessionsTab(
@@ -293,7 +719,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     final isArabic = lang.isArabic;
     final upcoming = appointmentProvider.upcomingAppointments;
     final nextSession = appointmentProvider.nextVideoCall;
-    final isLoading = appointmentProvider.isLoading && !appointmentProvider.hasLoaded;
+    final isLoading =
+        appointmentProvider.isLoading && !appointmentProvider.hasLoaded;
 
     return RefreshIndicator(
       onRefresh: _refreshAppointments,
@@ -301,46 +728,68 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         children: [
-          _buildSessionsHero(lang),
+          AnimatedReveal(
+            offset: const Offset(0, 0.14),
+            initialScale: 0.97,
+            child: _buildSessionsHero(lang),
+          ),
           const SizedBox(height: 16),
           if (isLoading) ...[
             const SizedBox(height: 80),
             const Center(child: CircularProgressIndicator()),
           ] else ...[
             if (appointmentProvider.error != null)
-              CustomCard(
-                padding: EdgeInsets.zero,
-                color: AppColors.error.withValues(alpha: 0.08),
-                child: Row(
-                  children: [
-                    const Icon(Icons.error_outline, color: AppColors.error),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(appointmentProvider.error!)),
-                    TextButton(
-                      onPressed: _refreshAppointments,
-                      child: Text(lang.isArabic ? 'إعادة المحاولة' : 'Retry'),
-                    ),
-                  ],
+              AnimatedReveal(
+                offset: const Offset(0, 0.14),
+                child: CustomCard(
+                  padding: EdgeInsets.zero,
+                  color: AppColors.error.withValues(alpha: 0.08),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: AppColors.error),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(appointmentProvider.error!)),
+                      TextButton(
+                        onPressed: _refreshAppointments,
+                        child: Text(lang.isArabic ? 'إعادة المحاولة' : 'Retry'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             if (nextSession != null) ...[
-              _buildNextSessionCard(nextSession, lang, isArabic, appointmentProvider),
+              AnimatedReveal(
+                delay: const Duration(milliseconds: 120),
+                offset: const Offset(0, 0.12),
+                child: _buildNextSessionCard(
+                    nextSession, lang, isArabic, appointmentProvider),
+              ),
               const SizedBox(height: 16),
             ],
-            _buildUpcomingSessionsList(
-              lang,
-              isArabic,
-              upcoming,
-              appointmentProvider,
+            AnimatedReveal(
+              delay: const Duration(milliseconds: 200),
+              offset: const Offset(0, 0.12),
+              child: _buildUpcomingSessionsList(
+                lang,
+                isArabic,
+                upcoming,
+                appointmentProvider,
+              ),
             ),
           ],
           const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
-              icon: const Icon(Icons.calendar_month),
-              label: Text(lang.t('book_video_call')),
+          AnimatedReveal(
+            delay: const Duration(milliseconds: 260),
+            offset: const Offset(0, 0.14),
+            initialScale: 0.97,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed:
+                    quotaProvider.canMakeVideoCall() ? _openVideoBooking : null,
+                icon: const Icon(Icons.calendar_month),
+                label: Text(lang.t('book_video_call')),
+              ),
             ),
           ),
         ],
@@ -352,7 +801,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: (0.92 * 255)),
+        color: Colors.white.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
@@ -365,7 +814,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               color: AppColors.primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.videocam_outlined, color: AppColors.primary, size: 26),
+            child: const Icon(Icons.videocam_outlined,
+                color: AppColors.primary, size: 26),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -374,12 +824,14 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               children: [
                 Text(
                   lang.t('sessions'),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   lang.t('book_video_call_hint'),
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 13),
                 ),
               ],
             ),
@@ -424,12 +876,14 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
           const SizedBox(height: 4),
           Text(
             appointment.coachName ?? lang.t('coach'),
-            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+                color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 12),
           Text(
             dateText,
-            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+                color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
           ),
           if (countdown != null) ...[
             const SizedBox(height: 4),
@@ -441,7 +895,9 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
           const SizedBox(height: 16),
           CustomButton(
             text: lang.t('join_video_call'),
-            onPressed: (isVideo && canJoin && !isJoining) ? () => _joinVideoCall(appointment) : null,
+            onPressed: (isVideo && canJoin && !isJoining)
+                ? () => _joinVideoCall(appointment)
+                : null,
             isLoading: isJoining,
             fullWidth: true,
             variant: ButtonVariant.secondary,
@@ -476,23 +932,27 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: (0.95 * 255)),
+          color: Colors.white.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
           children: [
-            const Icon(Icons.event_available_outlined, size: 40, color: AppColors.textSecondary),
+            const Icon(Icons.event_available_outlined,
+                size: 40, color: AppColors.textSecondary),
             const SizedBox(height: 12),
             Text(
-              isArabic ? 'لا توجد جلسات مجدولة حالياً' : 'No sessions scheduled yet',
+              isArabic
+                  ? 'لا توجد جلسات مجدولة حالياً'
+                  : 'No sessions scheduled yet',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
               lang.t('book_video_call_hint'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style:
+                  const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
           ],
         ),
@@ -504,7 +964,10 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+          style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary),
         ),
         const SizedBox(height: 12),
         ...appointments.map(
@@ -548,8 +1011,13 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                 radius: 22,
                 backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                 child: Text(
-                  (appointment.coachName ?? lang.t('coach')).characters.take(2).toString().toUpperCase(),
-                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                  (appointment.coachName ?? lang.t('coach'))
+                      .characters
+                      .take(2)
+                      .toString()
+                      .toUpperCase(),
+                  style: const TextStyle(
+                      color: AppColors.primary, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(width: 12),
@@ -559,12 +1027,14 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                   children: [
                     Text(
                       appointment.coachName ?? lang.t('coach'),
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       typeLabel,
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                          fontSize: 13, color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -583,7 +1053,9 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               Expanded(
                 child: CustomButton(
                   text: lang.t('join_video_call'),
-                  onPressed: (isVideo && canJoin && !isJoining) ? () => _joinVideoCall(appointment) : null,
+                  onPressed: (isVideo && canJoin && !isJoining)
+                      ? () => _joinVideoCall(appointment)
+                      : null,
                   isLoading: isJoining,
                   size: ButtonSize.small,
                   fullWidth: true,
@@ -601,7 +1073,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 hint,
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 12, color: AppColors.textSecondary),
               ),
             ),
         ],
@@ -619,7 +1092,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       ),
       child: Text(
         lang.t(status),
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+        style:
+            TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
       ),
     );
   }
@@ -648,7 +1122,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       if (hours <= 0) {
         return isArabic ? 'يبدأ بعد $minutes دقيقة' : 'Starts in $minutes min';
       }
-      final minutesPart = minutes > 0 ? (isArabic ? ' و $minutes دقيقة' : ' ${minutes}m') : '';
+      final minutesPart =
+          minutes > 0 ? (isArabic ? ' و $minutes دقيقة' : ' ${minutes}m') : '';
       return isArabic
           ? 'يبدأ بعد $hours ساعة$minutesPart'
           : 'Starts in ${hours}h$minutesPart';
@@ -715,7 +1190,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     try {
       final result = await videoCallProvider.canJoinCall(appointment.id);
       if (result == null || result['canJoin'] != true) {
-        final message = result?['reason'] ?? languageProvider.t('cannot_join_call');
+        final message =
+            result?['reason'] ?? languageProvider.t('cannot_join_call');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(message)),
@@ -750,20 +1226,33 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   }
 
   Widget _buildCoachInfoCard(LanguageProvider lang, bool isArabic) {
-    final coachName = lang.t('coach_demo_name');
-    final coachInitials = lang.t('coach_demo_initials');
-    final specialties = [
-      lang.t('coach_specialty_strength'),
-      lang.t('coach_specialty_weight_loss'),
-      lang.t('coach_specialty_nutrition'),
-    ];
+    final authProvider = context.read<AuthProvider>();
+    final userCoachId = authProvider.user?.coachId;
+    if (!DemoConfig.isDemo && (userCoachId == null || userCoachId.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+
+    final coachId = DemoConfig.isDemo ? DemoConfig.demoCoachId : userCoachId!;
+    final coachName =
+        DemoConfig.isDemo ? lang.t('coach_demo_name') : lang.t('coach');
+    final coachInitials = DemoConfig.isDemo
+        ? lang.t('coach_demo_initials')
+        : (coachName.trim().isNotEmpty
+            ? coachName.trim().substring(0, 1)
+            : 'C');
+    final specialties = DemoConfig.isDemo
+        ? [
+            lang.t('coach_specialty_strength'),
+            lang.t('coach_specialty_weight_loss'),
+            lang.t('coach_specialty_nutrition'),
+          ]
+        : const <String>[];
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: (0.12 * 255)),
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -771,11 +1260,15 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
           Row(
             children: [
               CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.white.withValues(alpha: (0.25 * 255)),
+                radius: 24,
+                backgroundColor: const Color(0xFF7E22CE),
                 child: Text(
                   coachInitials,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -787,24 +1280,35 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                       coachName,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.star, size: 14, color: Color(0xFFFBBF24)),
-                        const SizedBox(width: 4),
-                        const Text(
-                          '4.9',
-                          style: TextStyle(color: Colors.white70, fontSize: 11),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '8 ${lang.t('coach_years')}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 11),
-                        ),
+                        if (DemoConfig.isDemo) ...[
+                          const Icon(Icons.star,
+                              size: 14, color: Color(0xFFFBBF24)),
+                          const SizedBox(width: 4),
+                          const Text(
+                            '4.9',
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            '•',
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '8 ${lang.t('coach_years')}',
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -813,38 +1317,71 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: specialties
-                .map(
-                  (specialty) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: (0.2 * 255)),
-                      borderRadius: BorderRadius.circular(10),
+          if (specialties.isNotEmpty) ...[
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: specialties
+                  .map(
+                    (specialty) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        specialty,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600),
+                      ),
                     ),
-                    child: Text(
-                      specialty,
-                      style: const TextStyle(color: Colors.white, fontSize: 11),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 10),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 10),
+          ],
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.star, color: Colors.white, size: 16),
-              label: Text(
-                lang.t('coach_view_profile'),
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.white70),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PublicCoachProfileScreen(coachId: coachId),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.92),
+                foregroundColor: const Color(0xFF111827),
                 padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: isArabic
+                    ? [
+                        Text(
+                          lang.t('coach_view_profile'),
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.star, size: 16),
+                      ]
+                    : [
+                        const Icon(Icons.star, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          lang.t('coach_view_profile'),
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                      ],
               ),
             ),
           ),
@@ -884,7 +1421,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       ),
     );
   }
-  
+
   Widget _buildMessagesList(
     MessagingProvider provider,
     LanguageProvider lang,
@@ -901,7 +1438,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       },
     );
   }
-  
+
   Widget _buildMessageBubble(
     Message message,
     LanguageProvider lang,
@@ -909,7 +1446,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   ) {
     final authProvider = context.read<AuthProvider>();
     final isMe = message.senderId == authProvider.user?.id;
-    
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -918,9 +1455,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
         ),
         margin: const EdgeInsets.only(bottom: 12),
         child: Column(
-          crossAxisAlignment: isMe 
-              ? CrossAxisAlignment.end 
-              : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             // Message bubble
             Container(
@@ -942,7 +1478,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (message.type == 'text')
+                  if (message.type == MessageType.text)
                     Text(
                       message.content,
                       style: TextStyle(
@@ -951,18 +1487,14 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                         height: 1.4,
                       ),
                     ),
-                  
-                  if (message.type == 'image' && message.attachmentUrl != null)
+                  if (message.type == MessageType.image &&
+                      message.attachmentUrl != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        message.attachmentUrl!,
-                        width: 200,
-                        fit: BoxFit.cover,
-                      ),
+                      child: _buildImageAttachment(message.attachmentUrl!),
                     ),
-                  
-                  if (message.type == 'video' && message.attachmentUrl != null)
+                  if (message.type == MessageType.video &&
+                      message.attachmentUrl != null)
                     Container(
                       width: 200,
                       height: 150,
@@ -978,12 +1510,12 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                         ),
                       ),
                     ),
-                  
-                  if (message.type == 'file' && message.attachmentUrl != null)
+                  if (message.type == MessageType.file &&
+                      message.attachmentUrl != null)
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isMe 
+                        color: isMe
                             ? Colors.white.withValues(alpha: 0.2)
                             : AppColors.surface,
                         borderRadius: BorderRadius.circular(8),
@@ -1000,7 +1532,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                             child: Text(
                               message.content,
                               style: TextStyle(
-                                color: isMe ? Colors.white : AppColors.textPrimary,
+                                color:
+                                    isMe ? Colors.white : AppColors.textPrimary,
                               ),
                             ),
                           ),
@@ -1010,7 +1543,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                 ],
               ),
             ),
-            
+
             // Timestamp and status
             const SizedBox(height: 4),
             Row(
@@ -1044,7 +1577,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       ),
     );
   }
-  
+
   Widget _buildMessageInput(
     LanguageProvider lang,
     MessagingProvider messagingProvider,
@@ -1053,7 +1586,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     bool canAttach,
   ) {
     final canSend = quotaProvider.canSendMessage();
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1071,10 +1604,10 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
           if (canAttach)
             IconButton(
               icon: const Icon(Icons.attach_file),
-              onPressed: canSend ? () => _showAttachmentOptions(lang, isArabic) : null,
+              onPressed:
+                  canSend ? () => _showAttachmentOptions(lang, isArabic) : null,
               color: AppColors.textSecondary,
             ),
-          
           Expanded(
             child: TextField(
               controller: _messageController,
@@ -1096,9 +1629,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               textCapitalization: TextCapitalization.sentences,
             ),
           ),
-          
           const SizedBox(width: 8),
-          
           IconButton(
             icon: messagingProvider.isSending
                 ? const SizedBox(
@@ -1116,21 +1647,21 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       ),
     );
   }
-  
+
   Future<void> _sendMessage(
     MessagingProvider messagingProvider,
     QuotaProvider quotaProvider,
   ) async {
     final content = _messageController.text.trim();
     if (content.isEmpty) return;
-    
+
     _messageController.clear();
-    
+
     final success = await messagingProvider.sendMessage(
       content,
       type: MessageType.text,
     );
-    
+
     if (success) {
       quotaProvider.incrementMessageCount();
       _scrollToBottom();
@@ -1143,17 +1674,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       );
     }
   }
-  
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-  
+
+
   void _showAttachmentOptions(LanguageProvider lang, bool isArabic) {
     showModalBottomSheet(
       context: context,
@@ -1178,7 +1700,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.insert_drive_file, color: AppColors.accent),
+              leading:
+                  const Icon(Icons.insert_drive_file, color: AppColors.accent),
               title: Text(lang.t('file')),
               onTap: () {
                 Navigator.pop(context);
@@ -1190,58 +1713,134 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       ),
     );
   }
-  
+
   Future<void> _pickAttachment(String type) async {
-    // Placeholder for file picker integration
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$type picker - to be implemented'),
-      ),
-    );
-  }
-  
-  Future<void> _requestVideoCall() async {
-    final languageProvider = context.read<LanguageProvider>();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(languageProvider.t('request_video_call')),
-        content: Text(languageProvider.t('do_you_want_video_call_with_coach')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(languageProvider.t('cancel')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(languageProvider.t('request')),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && mounted) {
-      final messagingProvider = context.read<MessagingProvider>();
-      final quotaProvider = context.read<QuotaProvider>();
-      final success = await messagingProvider.sendMessage(
-        languageProvider.t('video_call_request_message'),
-        type: MessageType.video,
+    final messagingProvider = context.read<MessagingProvider>();
+    final quotaProvider = context.read<QuotaProvider>();
+
+    String? filePath;
+    String? displayName;
+    MessageType messageType = MessageType.file;
+
+    try {
+      if (type == 'image') {
+        messageType = MessageType.image;
+        final picked = await _picker.pickImage(source: ImageSource.gallery);
+        filePath = picked?.path;
+        displayName = picked?.name;
+      } else if (type == 'video') {
+        messageType = MessageType.video;
+        final picked = await _picker.pickVideo(source: ImageSource.gallery);
+        filePath = picked?.path;
+        displayName = picked?.name;
+      } else {
+        messageType = MessageType.file;
+        final result = await FilePicker.platform.pickFiles();
+        if (result != null && result.files.isNotEmpty) {
+          final file = result.files.single;
+          filePath = file.path;
+          displayName = file.name;
+
+          // Web can return bytes without a usable path.
+          if (kIsWeb && filePath == null) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content:
+                      Text('File attachments are not supported on web yet.')),
+            );
+            return;
+          }
+        }
+      }
+
+      if (filePath == null || filePath.isEmpty) {
+        return;
+      }
+
+      final content = (displayName == null || displayName.isEmpty)
+          ? (type == 'image'
+              ? 'Image'
+              : type == 'video'
+                  ? 'Video'
+                  : 'File')
+          : displayName;
+
+      final success = await messagingProvider.sendMessageWithAttachment(
+        content,
+        filePath,
+        messageType,
       );
-      if (success && mounted) {
+
+      if (success) {
         quotaProvider.incrementMessageCount();
+        _scrollToBottom();
+      } else if (messagingProvider.error != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(languageProvider.t('video_call_request_sent')),
-            backgroundColor: AppColors.success,
+            content: Text(messagingProvider.error!),
+            backgroundColor: AppColors.error,
           ),
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
-  
+
+  Widget _buildImageAttachment(String attachmentUrl) {
+    final uri = Uri.tryParse(attachmentUrl);
+    final isNetwork =
+        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+
+    if (isNetwork) {
+      return Image.network(
+        attachmentUrl,
+        width: 200,
+        fit: BoxFit.cover,
+      );
+    }
+
+    // Local file path (mobile/desktop). On web we fall back to Image.network.
+    if (!kIsWeb) {
+      return Image.file(
+        File(attachmentUrl),
+        width: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(
+          width: 200,
+          height: 120,
+          alignment: Alignment.center,
+          color: Colors.black12,
+          child: const Icon(Icons.broken_image_outlined),
+        ),
+      );
+    }
+
+    return Image.network(
+      attachmentUrl,
+      width: 200,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        width: 200,
+        height: 120,
+        alignment: Alignment.center,
+        color: Colors.black12,
+        child: const Icon(Icons.broken_image_outlined),
+      ),
+    );
+  }
+
   String _formatTime(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
-    
+
     if (difference.inDays > 0) {
       return '${timestamp.day}/${timestamp.month}';
     } else if (difference.inHours > 0) {

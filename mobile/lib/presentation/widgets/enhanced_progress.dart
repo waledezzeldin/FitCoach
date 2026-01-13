@@ -275,7 +275,7 @@ class EnhancedSwitch extends StatelessWidget {
       value: value,
       onChanged: onChanged,
       activeColor: activeColor ?? AppColors.primary,
-      activeTrackColor: (activeColor ?? AppColors.primary).withValues(alpha: (0.5 * 255)),
+      activeTrackColor: (activeColor ?? AppColors.primary).withValues(alpha: 0.5),
       inactiveThumbColor: Colors.white,
       inactiveTrackColor: AppColors.border,
     );

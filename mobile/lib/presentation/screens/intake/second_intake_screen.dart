@@ -108,6 +108,16 @@ class _SecondIntakeScreenState extends State<SecondIntakeScreen> {
     }
   }
 
+  void _toggleInjury(String value) {
+    setState(() {
+      if (_selectedInjuries.contains(value)) {
+        _selectedInjuries.remove(value);
+      } else {
+        _selectedInjuries.add(value);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
@@ -121,7 +131,7 @@ class _SecondIntakeScreenState extends State<SecondIntakeScreen> {
             child: Image.network(
               'https://images.unsplash.com/photo-1680761827444-9214a9c3129f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
               fit: BoxFit.cover,
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               colorBlendMode: BlendMode.darken,
             ),
           ),
@@ -134,11 +144,11 @@ class _SecondIntakeScreenState extends State<SecondIntakeScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.95),
+                      color: Colors.white.withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -388,9 +398,9 @@ class _SecondIntakeScreenState extends State<SecondIntakeScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.1),
+                  color: AppColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.success.withOpacity(0.2)),
+                  border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
@@ -415,20 +425,53 @@ class _SecondIntakeScreenState extends State<SecondIntakeScreen> {
 
   Widget _buildInjuryOption(String label, String value) {
     final isSelected = _selectedInjuries.contains(value);
-    return CheckboxListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      value: isSelected,
-      title: Text(label),
-      onChanged: (selected) {
-        setState(() {
-          if (selected == true) {
-            _selectedInjuries.add(value);
-          } else {
-            _selectedInjuries.remove(value);
-          }
-        });
-      },
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () => _toggleInjury(value),
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.secondaryForeground.withValues(alpha: 0.08)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected ? AppColors.secondaryForeground : AppColors.border,
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Checkbox(
+                value: isSelected,
+                onChanged: (_) => _toggleInjury(value),
+                activeColor: AppColors.secondaryForeground,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? AppColors.secondaryForeground : Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -444,7 +487,7 @@ class _SecondIntakeScreenState extends State<SecondIntakeScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.secondaryForeground.withOpacity(0.08) : Colors.white,
+          color: isSelected ? AppColors.secondaryForeground.withValues(alpha: 0.08) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.secondaryForeground : AppColors.border,
@@ -570,7 +613,7 @@ class _GeneratingPlanScreenState extends State<_GeneratingPlanScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 16,
                   offset: const Offset(0, 8),
                 ),

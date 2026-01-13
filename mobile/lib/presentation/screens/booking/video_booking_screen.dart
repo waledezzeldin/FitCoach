@@ -78,7 +78,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                     _buildNoCallsWarning(languageProvider, isArabic),
 
                   // Assigned coach card
-                  _buildCoachCard(languageProvider, isArabic),
+                  if (DemoConfig.isDemo) _buildCoachCard(languageProvider, isArabic),
                   const SizedBox(height: 20),
 
                   // Date selection
@@ -429,7 +429,9 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   }
 
   Widget _buildTimeSection(LanguageProvider lang, bool isArabic) {
-    final availableSlots = _assignedCoach['availableSlots'] as List<String>;
+    final availableSlots = DemoConfig.isDemo
+        ? (_assignedCoach['availableSlots'] as List<String>)
+        : _allTimeSlots;
 
     return CustomCard(
       child: Column(
@@ -469,7 +471,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
             itemCount: _allTimeSlots.length,
             itemBuilder: (context, index) {
               final slot = _allTimeSlots[index];
-              final isAvailable = availableSlots.contains(slot);
+              final isAvailable = DemoConfig.isDemo ? availableSlots.contains(slot) : true;
               final isSelected = _selectedTime == slot;
 
               return GestureDetector(
@@ -510,7 +512,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
               );
             },
           ),
-          if (availableSlots.isEmpty)
+          if (DemoConfig.isDemo && availableSlots.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: Center(
@@ -528,12 +530,14 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   }
 
   void _showConfirmDialog(BuildContext context, bool isArabic, LanguageProvider lang) {
-    final coachName = isArabic
-        ? (_assignedCoach['nameAr'] ?? _assignedCoach['name'])
-        : _assignedCoach['name'];
-    final specialties = isArabic
+    final coachName = DemoConfig.isDemo
+      ? (isArabic ? (_assignedCoach['nameAr'] ?? _assignedCoach['name']) : _assignedCoach['name'])
+      : (isArabic ? 'المدرب' : 'Coach');
+    final specialties = DemoConfig.isDemo
+      ? (isArabic
         ? (_assignedCoach['specialtiesAr'] as List<String>)
-        : (_assignedCoach['specialties'] as List<String>);
+        : (_assignedCoach['specialties'] as List<String>))
+      : const <String>[];
 
     showDialog(
       context: context,
@@ -564,7 +568,9 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      _assignedCoach['name'].toString().split(' ').map((n) => n[0]).join(''),
+                      DemoConfig.isDemo
+                          ? _assignedCoach['name'].toString().split(' ').map((n) => n[0]).join('')
+                          : 'C',
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -579,7 +585,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       Text(
-                        specialties.take(2).join(', '),
+                        specialties.isNotEmpty ? specialties.take(2).join(', ') : '',
                         style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],

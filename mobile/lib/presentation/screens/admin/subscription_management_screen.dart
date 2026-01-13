@@ -175,7 +175,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
-                                color: AppColors.background.withValues(alpha: (0.6 * 255)),
+                                color: AppColors.background.withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(

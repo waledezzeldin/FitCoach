@@ -138,7 +138,7 @@ class CoachProvider extends ChangeNotifier {
     if (DemoConfig.isDemo) {
       _appointments = DemoData.coachAppointments(
         coachId: coachId,
-        userId: 'demo-user',
+        userId: DemoConfig.demoUserId,
       );
       _isAppointmentsLoading = false;
       notifyListeners();

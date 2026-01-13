@@ -6,6 +6,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/coach_provider.dart';
 import '../../widgets/custom_card.dart';
 import 'coach_client_detail_screen.dart';
+import 'coach_message_thread_screen.dart';
+import 'coach_schedule_session_sheet.dart';
 
 class CoachClientsScreen extends StatefulWidget {
   const CoachClientsScreen({super.key});
@@ -29,12 +31,13 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
   void _loadClients() {
     final authProvider = context.read<AuthProvider>();
     final coachProvider = context.read<CoachProvider>();
-    
+
     if (authProvider.user?.id != null) {
       coachProvider.loadClients(
         coachId: authProvider.user!.id,
         status: _statusFilter,
-        search: _searchController.text.isNotEmpty ? _searchController.text : null,
+        search:
+            _searchController.text.isNotEmpty ? _searchController.text : null,
       );
     }
   }
@@ -97,9 +100,9 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                     });
                   },
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Status filter
                 Row(
                   children: [
@@ -139,7 +142,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
               ],
             ),
           ),
-          
+
           // Client list
           Expanded(
             child: coachProvider.isLoading
@@ -163,7 +166,8 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadClients,
-                              child: Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                              child:
+                                  Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
                             ),
                           ],
                         ),
@@ -180,7 +184,9 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  isArabic ? 'لا يوجد عملاء' : 'No clients found',
+                                  isArabic
+                                      ? 'لا يوجد عملاء'
+                                      : 'No clients found',
                                   style: const TextStyle(
                                     fontSize: 18,
                                     color: AppColors.textSecondary,
@@ -192,11 +198,13 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                         : RefreshIndicator(
                             onRefresh: () async => _loadClients(),
                             child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               itemCount: coachProvider.clients.length,
                               itemBuilder: (context, index) {
                                 final client = coachProvider.clients[index];
-                                return _buildClientCard(client, isArabic);
+                                return _buildClientCard(
+                                    client, languageProvider);
                               },
                             ),
                           ),
@@ -206,148 +214,184 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
     );
   }
 
-  Widget _buildClientCard(client, bool isArabic) {
+  Widget _buildClientCard(client, LanguageProvider languageProvider) {
+    final isArabic = languageProvider.isArabic;
     return CustomCard(
       child: InkWell(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CoachClientDetailScreen(clientId: client.id),
+              builder: (context) =>
+                  CoachClientDetailScreen(clientId: client.id),
             ),
           );
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: AppColors.primary.withValues(alpha: (0.1 * 255)),
-                backgroundImage: client.profilePhotoUrl != null
-                    ? NetworkImage(client.profilePhotoUrl!)
-                    : null,
-                child: client.profilePhotoUrl == null
-                    ? Text(
-                        client.initials,
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      )
-                    : null,
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Client info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      client.fullName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    if (client.goal != null)
-                      Text(
-                        client.goal!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    const SizedBox(height: 4),
-                    Row(
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    backgroundImage: client.profilePhotoUrl != null
+                        ? NetworkImage(client.profilePhotoUrl!)
+                        : null,
+                    child: client.profilePhotoUrl == null
+                        ? Text(
+                            client.initials,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Subscription tier badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
+                        Text(
+                          client.fullName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          decoration: BoxDecoration(
-                            color: _getTierColor(client.subscriptionTier),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            client.subscriptionTier,
+                        ),
+                        const SizedBox(height: 4),
+                        if (client.goal != null)
+                          Text(
+                            client.goal!,
                             style: const TextStyle(
-                              fontSize: 10,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getTierColor(client.subscriptionTier),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                client.subscriptionTier,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(client.statusText),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                client.statusText,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (client.fitnessScore != null) ...[
+                    const SizedBox(width: 16),
+                    Column(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _getScoreColor(client.fitnessScore!),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${client.fitnessScore}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                        
-                        const SizedBox(width: 8),
-                        
-                        // Status badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(client.statusText),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            client.statusText,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isArabic ? 'النتيجة' : 'Score',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ],
-                ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isArabic ? Icons.chevron_left : Icons.chevron_right,
+                    color: AppColors.textDisabled,
+                  ),
+                ],
               ),
-              
-              // Fitness score
-              if (client.fitnessScore != null)
-                Column(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _getScoreColor(client.fitnessScore!),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${client.fitnessScore}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.chat_bubble_outline),
+                      label: Text(isArabic ? 'مراسلة' : 'Message'),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => CoachMessageThreadScreen(
+                              clientId: client.id,
+                              clientName: client.fullName,
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      isArabic ? 'النتيجة' : 'Score',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
-                      ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.video_call),
+                      label: Text(isArabic ? 'جدولة مكالمة' : 'Schedule call'),
+                      onPressed: () {
+                        showCoachScheduleSessionSheet(
+                          context,
+                          clientId: client.id,
+                          clientName: client.fullName,
+                        );
+                      },
                     ),
-                  ],
-                ),
-              
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right, color: AppColors.textDisabled),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

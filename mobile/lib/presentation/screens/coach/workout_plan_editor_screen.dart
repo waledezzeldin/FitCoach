@@ -157,7 +157,7 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
                   // Current plan info
                   if (_currentPlan != null)
                     Card(
-                      color: AppColors.primary.withValues(alpha: (0.1 * 255)),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(

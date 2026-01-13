@@ -39,7 +39,6 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
     
     return Scaffold(
       appBar: AppBar(
@@ -47,7 +46,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => _confirmExit(context, isArabic),
+            onPressed: () => _confirmExit(context, languageProvider),
           ),
         ],
       ),
@@ -67,9 +66,10 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                 children: [
                   // Set counter
                   Text(
-                    isArabic
-                        ? 'المجموعة $_currentSet من ${widget.sets}'
-                        : 'Set $_currentSet of ${widget.sets}',
+                    languageProvider.t('workouts_set_of', args: {
+                      'current': _currentSet.toString(),
+                      'total': widget.sets.toString(),
+                    }),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -113,7 +113,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              isArabic ? 'استراحة' : 'Rest',
+                              languageProvider.t('workouts_rest_time'),
                               style: const TextStyle(
                                 fontSize: 20,
                                 color: AppColors.textSecondary,
@@ -136,7 +136,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              isArabic ? 'تكرارات' : 'Reps',
+                              languageProvider.t('reps'),
                               style: const TextStyle(
                                 fontSize: 20,
                                 color: AppColors.textSecondary,
@@ -163,7 +163,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      _getStatusMessage(isArabic),
+                      _getStatusMessage(languageProvider),
                       style: TextStyle(
                         fontSize: 16,
                         color: _isResting ? AppColors.warning : AppColors.primary,
@@ -185,8 +185,8 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                           width: 140,
                           child: CustomButton(
                             text: _isPaused
-                                ? (isArabic ? 'استئناف' : 'Resume')
-                                : (isArabic ? 'إيقاف' : 'Pause'),
+                                ? languageProvider.t('resume')
+                                : languageProvider.t('pause'),
                             onPressed: _togglePause,
                             variant: ButtonVariant.secondary,
                             size: ButtonSize.large,
@@ -200,7 +200,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                         SizedBox(
                           width: 140,
                           child: CustomButton(
-                            text: isArabic ? 'تخطي' : 'Skip',
+                            text: languageProvider.t('skip'),
                             onPressed: _skipRest,
                             variant: ButtonVariant.secondary,
                             size: ButtonSize.large,
@@ -213,7 +213,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: CustomButton(
-                        text: isArabic ? 'اكتملت المجموعة' : 'Set Complete',
+                        text: languageProvider.t('complete_set'),
                         onPressed: _completeSet,
                         variant: ButtonVariant.primary,
                         size: ButtonSize.large,
@@ -230,19 +230,15 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       TextButton.icon(
-                        onPressed: () => _adjustRest(context, isArabic),
+                        onPressed: () => _adjustRest(context, languageProvider),
                         icon: const Icon(Icons.settings),
-                        label: Text(
-                          isArabic ? 'تعديل الراحة' : 'Adjust Rest',
-                        ),
+                        label: Text(languageProvider.t('workouts_adjust_rest')),
                       ),
                       const SizedBox(width: 24),
                       TextButton.icon(
-                        onPressed: () => _skipExercise(context, isArabic),
+                        onPressed: () => _skipExercise(context, languageProvider),
                         icon: const Icon(Icons.skip_next),
-                        label: Text(
-                          isArabic ? 'تخطي التمرين' : 'Skip Exercise',
-                        ),
+                        label: Text(languageProvider.t('workouts_skip_exercise')),
                       ),
                     ],
                   ),
@@ -261,18 +257,14 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
   
-  String _getStatusMessage(bool isArabic) {
+  String _getStatusMessage(LanguageProvider lang) {
     if (_isResting) {
       if (_isPaused) {
-        return isArabic ? 'الراحة متوقفة' : 'Rest Paused';
+        return lang.t('workouts_rest_paused');
       }
-      return isArabic
-          ? 'خذ قسطاً من الراحة، أنت تقوم بعمل رائع!'
-          : 'Take a rest, you\'re doing great!';
+      return lang.t('workouts_rest_motivation');
     } else {
-      return isArabic
-          ? 'أكمل ${widget.reps} تكرار ثم اضغط على اكتمال'
-          : 'Complete ${widget.reps} reps then tap complete';
+      return lang.t('workouts_complete_reps', args: {'reps': widget.reps.toString()});
     }
   }
   
@@ -323,20 +315,16 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
     });
   }
   
-  void _adjustRest(BuildContext context, bool isArabic) {
+  void _adjustRest(BuildContext context, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'تعديل وقت الراحة' : 'Adjust Rest Time'),
+        title: Text(lang.t('workouts_adjust_rest_time')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [30, 45, 60, 90, 120].map((seconds) {
             return ListTile(
-              title: Text(
-                isArabic
-                    ? '$seconds ثانية'
-                    : '$seconds seconds',
-              ),
+              title: Text(lang.isArabic ? '$seconds ثانية' : '$seconds seconds'),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Update rest time
@@ -348,54 +336,46 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
     );
   }
   
-  void _skipExercise(BuildContext context, bool isArabic) {
+  void _skipExercise(BuildContext context, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'تخطي التمرين؟' : 'Skip Exercise?'),
-        content: Text(
-          isArabic
-              ? 'هل أنت متأكد أنك تريد تخطي هذا التمرين؟'
-              : 'Are you sure you want to skip this exercise?',
-        ),
+        title: Text(lang.t('workouts_skip_exercise_confirm_title')),
+        content: Text(lang.t('workouts_skip_exercise_confirm_body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(lang.t('cancel')),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context, true); // Return to workout screen
             },
-            child: Text(isArabic ? 'تخطي' : 'Skip'),
+            child: Text(lang.t('skip')),
           ),
         ],
       ),
     );
   }
   
-  void _confirmExit(BuildContext context, bool isArabic) {
+  void _confirmExit(BuildContext context, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'إنهاء التمرين؟' : 'End Workout?'),
-        content: Text(
-          isArabic
-              ? 'سيتم فقدان تقدمك. هل أنت متأكد؟'
-              : 'Your progress will be lost. Are you sure?',
-        ),
+        title: Text(lang.t('workouts_end_workout_confirm_title')),
+        content: Text(lang.t('workouts_end_workout_confirm_body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(lang.t('cancel')),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: Text(isArabic ? 'إنهاء' : 'End'),
+            child: Text(lang.t('workouts_end')),
           ),
         ],
       ),
@@ -407,7 +387,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        final isArabic = context.read<LanguageProvider>().isArabic;
+        final lang = context.read<LanguageProvider>();
         return AlertDialog(
           title: Column(
             children: [
@@ -418,15 +398,13 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                isArabic ? 'أحسنت!' : 'Great Job!',
+                lang.t('workouts_great_job'),
                 textAlign: TextAlign.center,
               ),
             ],
           ),
           content: Text(
-            isArabic
-                ? 'لقد أكملت جميع المجموعات!'
-                : 'You\'ve completed all sets!',
+            lang.t('workouts_completed_all_sets'),
             textAlign: TextAlign.center,
           ),
           actions: [
@@ -435,7 +413,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
                 Navigator.pop(context);
                 Navigator.pop(context, true);
               },
-              child: Text(isArabic ? 'تم' : 'Done'),
+              child: Text(lang.t('done')),
             ),
           ],
         );

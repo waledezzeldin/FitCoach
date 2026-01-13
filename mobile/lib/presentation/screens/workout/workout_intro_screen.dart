@@ -16,6 +16,32 @@ class WorkoutIntroScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final isArabic = languageProvider.isArabic;
+    final featureCards = [
+      {
+        'icon': Icons.track_changes,
+        'color': const Color(0xFF7BA7FF),
+        'title': languageProvider.t('workouts_intro_feature1_title'),
+        'description': languageProvider.t('workouts_intro_feature1_desc'),
+      },
+      {
+        'icon': Icons.check_circle_outline,
+        'color': const Color(0xFF74E1A8),
+        'title': languageProvider.t('workouts_intro_feature2_title'),
+        'description': languageProvider.t('workouts_intro_feature2_desc'),
+      },
+      {
+        'icon': Icons.trending_up,
+        'color': const Color(0xFFC9A8FF),
+        'title': languageProvider.t('workouts_intro_feature3_title'),
+        'description': languageProvider.t('workouts_intro_feature3_desc'),
+      },
+      {
+        'icon': Icons.calendar_today,
+        'color': const Color(0xFFFFC48B),
+        'title': languageProvider.t('workouts_intro_feature4_title'),
+        'description': languageProvider.t('workouts_intro_feature4_desc'),
+      },
+    ];
 
     return Scaffold(
       body: Stack(
@@ -51,6 +77,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 24),
                   AnimatedReveal(
+                    initialScale: 0.85,
                     child: Container(
                       width: 80,
                       height: 80,
@@ -59,7 +86,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(40),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: (0.35 * 255)),
+                            color: Colors.black.withValues(alpha: 0.35),
                             blurRadius: 12,
                             offset: const Offset(0, 6),
                           ),
@@ -75,7 +102,8 @@ class WorkoutIntroScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 80),
-                    offset: Offset(isArabic ? -0.2 : 0.2, 0),
+                    offset: Offset(isArabic ? -0.24 : 0.24, 0),
+                    initialScale: 0.9,
                     child: Text(
                       languageProvider.t('workouts_intro_title'),
                       style: AppTextStyles.h2.copyWith(color: Colors.white),
@@ -85,7 +113,8 @@ class WorkoutIntroScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 140),
-                    offset: Offset(isArabic ? -0.18 : 0.18, 0),
+                    offset: Offset(isArabic ? -0.22 : 0.22, 0),
+                    initialScale: 0.92,
                     child: Text(
                       languageProvider.t('workouts_intro_subtitle'),
                       style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
@@ -94,63 +123,32 @@ class WorkoutIntroScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Expanded(
-                    child: ListView(
+                    child: ListView.separated(
                       padding: EdgeInsets.zero,
-                      children: [
-                        AnimatedReveal(
-                          delay: const Duration(milliseconds: 220),
-                          offset: Offset(isArabic ? -0.14 : 0.14, 0),
+                      itemCount: featureCards.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final data = featureCards[index];
+                        return AnimatedReveal(
+                          delay: Duration(milliseconds: 220 + index * 100),
+                          offset: Offset(isArabic ? -0.2 : 0.2, 0),
+                          initialScale: 0.9,
                           child: _FeatureCard(
-                            icon: Icons.track_changes,
-                            iconColor: const Color(0xFF7BA7FF),
-                            title: languageProvider.t('workouts_intro_feature1_title'),
-                            description: languageProvider.t('workouts_intro_feature1_desc'),
+                            icon: data['icon'] as IconData,
+                            iconColor: data['color'] as Color,
+                            title: data['title'] as String,
+                            description: data['description'] as String,
                             isArabic: isArabic,
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                          delay: const Duration(milliseconds: 300),
-                          offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                          child: _FeatureCard(
-                            icon: Icons.check_circle_outline,
-                            iconColor: const Color(0xFF74E1A8),
-                            title: languageProvider.t('workouts_intro_feature2_title'),
-                            description: languageProvider.t('workouts_intro_feature2_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                          delay: const Duration(milliseconds: 380),
-                          offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                          child: _FeatureCard(
-                            icon: Icons.trending_up,
-                            iconColor: const Color(0xFFC9A8FF),
-                            title: languageProvider.t('workouts_intro_feature3_title'),
-                            description: languageProvider.t('workouts_intro_feature3_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        AnimatedReveal(
-                          delay: const Duration(milliseconds: 460),
-                          offset: Offset(isArabic ? -0.14 : 0.14, 0),
-                          child: _FeatureCard(
-                            icon: Icons.calendar_today,
-                            iconColor: const Color(0xFFFFC48B),
-                            title: languageProvider.t('workouts_intro_feature4_title'),
-                            description: languageProvider.t('workouts_intro_feature4_desc'),
-                            isArabic: isArabic,
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 16),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 520),
-                    offset: const Offset(0, 0.18),
+                    offset: const Offset(0, 0.2),
+                    initialScale: 0.9,
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -171,7 +169,8 @@ class WorkoutIntroScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   AnimatedReveal(
                     delay: const Duration(milliseconds: 600),
-                    offset: Offset(isArabic ? -0.15 : 0.15, 0),
+                    offset: Offset(isArabic ? -0.2 : 0.2, 0),
+                    initialScale: 0.95,
                     child: Text(
                       languageProvider.t('workouts_intro_note'),
                       style: AppTextStyles.small.copyWith(color: Colors.white60),
@@ -208,9 +207,9 @@ class _FeatureCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: (0.12 * 255)),
+        color: Colors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: (0.2 * 255))),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,7 +246,7 @@ class _FeatureCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: (0.2 * 255)),
+                    color: iconColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: iconColor, size: 22),
@@ -258,7 +257,7 @@ class _FeatureCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: (0.2 * 255)),
+                    color: iconColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: iconColor, size: 22),

@@ -74,16 +74,21 @@ class DemoData {
         equipment: 'barbell',
         difficulty: 'Intermediate',
         videoUrl: 'https://example.com/videos/barbell_squat.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Set your stance shoulder-width.\n2. Brace your core and squat down.\n3. Drive through your heels to stand.',
-        instructionsEn: '1. Set your stance shoulder-width.\n2. Brace your core and squat down.\n3. Drive through your heels to stand.',
-        instructionsAr: '\u0661\u002e \u062b\u0628\u062a \u0627\u0644\u0642\u062f\u0645\u064a\u0646 \u0628\u0639\u0631\u0636 \u0627\u0644\u0643\u062a\u0641\u064a\u0646\u002e\n\u0662\u002e \u0634\u062f \u0627\u0644\u062c\u0630\u0639 \u0648\u0627\u0646\u0632\u0644 \u0628\u0627\u0644\u062a\u0639\u0631\u064a\u0629\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0628\u0627\u0644\u0643\u0639\u0628\u064a\u0646 \u0644\u0644\u0639\u0648\u062f\u0629.',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Set your stance shoulder-width.\n2. Brace your core and squat down.\n3. Drive through your heels to stand.',
+        instructionsEn:
+            '1. Set your stance shoulder-width.\n2. Brace your core and squat down.\n3. Drive through your heels to stand.',
+        instructionsAr:
+            '\u0661\u002e \u062b\u0628\u062a \u0627\u0644\u0642\u062f\u0645\u064a\u0646 \u0628\u0639\u0631\u0636 \u0627\u0644\u0643\u062a\u0641\u064a\u0646\u002e\n\u0662\u002e \u0634\u062f \u0627\u0644\u062c\u0630\u0639 \u0648\u0627\u0646\u0632\u0644 \u0628\u0627\u0644\u062a\u0639\u0631\u064a\u0629\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0628\u0627\u0644\u0643\u0639\u0628\u064a\u0646 \u0644\u0644\u0639\u0648\u062f\u0629.',
         notes: 'Keep your chest lifted and knees tracking over toes.',
         alternatives: const ['ex-goblet-squat', 'ex-leg-press'],
         sets: 4,
         reps: '8',
         restTime: '90s',
         tempo: '3-1-1',
+        isCompleted: true,
       ),
       Exercise(
         id: 'ex-bench',
@@ -95,16 +100,21 @@ class DemoData {
         equipment: 'barbell',
         difficulty: 'Intermediate',
         videoUrl: 'https://example.com/videos/bench_press.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Set your grip just outside shoulder-width.\n2. Lower the bar to mid-chest.\n3. Press back up with control.',
-        instructionsEn: '1. Set your grip just outside shoulder-width.\n2. Lower the bar to mid-chest.\n3. Press back up with control.',
-        instructionsAr: '\u0661\u002e \u0627\u0645\u0633\u0643 \u0627\u0644\u0628\u0627\u0631 \u0628\u0639\u0631\u0636 \u0623\u0643\u062a\u0627\u0641 \u0642\u0644\u064a\u0644\u0627\u064b\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u0628\u0627\u0644\u0628\u0627\u0631 \u0644\u0645\u0646\u062a\u0635\u0641 \u0627\u0644\u0635\u062f\u0631\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649 \u0628\u062b\u0628\u0627\u062a\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Set your grip just outside shoulder-width.\n2. Lower the bar to mid-chest.\n3. Press back up with control.',
+        instructionsEn:
+            '1. Set your grip just outside shoulder-width.\n2. Lower the bar to mid-chest.\n3. Press back up with control.',
+        instructionsAr:
+            '\u0661\u002e \u0627\u0645\u0633\u0643 \u0627\u0644\u0628\u0627\u0631 \u0628\u0639\u0631\u0636 \u0623\u0643\u062a\u0627\u0641 \u0642\u0644\u064a\u0644\u0627\u064b\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u0628\u0627\u0644\u0628\u0627\u0631 \u0644\u0645\u0646\u062a\u0635\u0641 \u0627\u0644\u0635\u062f\u0631\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649 \u0628\u062b\u0628\u0627\u062a\u002e',
         notes: 'Keep your shoulders packed and wrists stacked.',
         alternatives: const ['ex-pushup', 'ex-dumbbell-press'],
         sets: 4,
         reps: '10',
         restTime: '90s',
         tempo: '2-1-1',
+        isCompleted: true,
       ),
     ];
 
@@ -119,16 +129,21 @@ class DemoData {
         equipment: 'machine',
         difficulty: 'Beginner',
         videoUrl: 'https://example.com/videos/seated_row.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Sit tall and grab the handles.\n2. Pull toward your ribcage.\n3. Control the return.',
-        instructionsEn: '1. Sit tall and grab the handles.\n2. Pull toward your ribcage.\n3. Control the return.',
-        instructionsAr: '\u0661\u002e \u0627\u062c\u0644\u0633 \u0645\u0633\u062a\u0642\u064a\u0645\u0627\u064b \u0648\u0627\u0645\u0633\u0643 \u0627\u0644\u0645\u0642\u0627\u0628\u0636\u002e\n\u0662\u002e \u0627\u0633\u062d\u0628 \u0646\u062d\u0648 \u0627\u0644\u0623\u0636\u0644\u0627\u0639\u002e\n\u0663\u002e \u0627\u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Sit tall and grab the handles.\n2. Pull toward your ribcage.\n3. Control the return.',
+        instructionsEn:
+            '1. Sit tall and grab the handles.\n2. Pull toward your ribcage.\n3. Control the return.',
+        instructionsAr:
+            '\u0661\u002e \u0627\u062c\u0644\u0633 \u0645\u0633\u062a\u0642\u064a\u0645\u0627\u064b \u0648\u0627\u0645\u0633\u0643 \u0627\u0644\u0645\u0642\u0627\u0628\u0636\u002e\n\u0662\u002e \u0627\u0633\u062d\u0628 \u0646\u062d\u0648 \u0627\u0644\u0623\u0636\u0644\u0627\u0639\u002e\n\u0663\u002e \u0627\u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
         notes: 'Keep your chest open and squeeze the back.',
         alternatives: const ['ex-band-row', 'ex-lat-pulldown'],
         sets: 3,
         reps: '12',
         restTime: '60s',
         tempo: '2-0-2',
+        isCompleted: true,
       ),
       Exercise(
         id: 'ex-press',
@@ -140,10 +155,14 @@ class DemoData {
         equipment: 'dumbbell',
         difficulty: 'Intermediate',
         videoUrl: 'https://example.com/videos/overhead_press.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Brace your core and press overhead.\n2. Keep ribs down and elbows under wrists.\n3. Lower with control.',
-        instructionsEn: '1. Brace your core and press overhead.\n2. Keep ribs down and elbows under wrists.\n3. Lower with control.',
-        instructionsAr: '\u0661\u002e \u0627\u0634\u062f \u0627\u0644\u062c\u0630\u0639 \u0648\u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649\u002e\n\u0662\u002e \u062d\u0627\u0641\u0638 \u0639\u0644\u0649 \u0627\u0644\u0623\u0636\u0644\u0627\u0639 \u0645\u0646\u062e\u0641\u0636\u0629\u002e\n\u0663\u002e \u0627\u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Brace your core and press overhead.\n2. Keep ribs down and elbows under wrists.\n3. Lower with control.',
+        instructionsEn:
+            '1. Brace your core and press overhead.\n2. Keep ribs down and elbows under wrists.\n3. Lower with control.',
+        instructionsAr:
+            '\u0661\u002e \u0627\u0634\u062f \u0627\u0644\u062c\u0630\u0639 \u0648\u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649\u002e\n\u0662\u002e \u062d\u0627\u0641\u0638 \u0639\u0644\u0649 \u0627\u0644\u0623\u0636\u0644\u0627\u0639 \u0645\u0646\u062e\u0641\u0636\u0629\u002e\n\u0663\u002e \u0627\u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
         notes: 'Lock out softly and avoid leaning back.',
         alternatives: const ['ex-landmine-press', 'ex-seated-db-press'],
         sets: 3,
@@ -181,6 +200,38 @@ class DemoData {
     );
   }
 
+  /// Minimal, lightweight demo plan (kept for demo-only builds).
+  static WorkoutPlan fallbackWorkoutPlan({required String userId}) {
+    final exercise = Exercise(
+      id: 'ex1',
+      name: 'Push Up',
+      nameAr: 'تمرين الضغط',
+      nameEn: 'Push Up',
+      sets: 3,
+      reps: '12',
+    );
+
+    final day = WorkoutDay(
+      id: 'day1',
+      dayName: 'Day 1',
+      dayNameAr: 'اليوم 1',
+      dayNumber: 1,
+      exercises: [exercise],
+    );
+
+    return WorkoutPlan(
+      id: 'fallback-plan',
+      userId: userId,
+      name: 'Fallback Plan',
+      nameAr: 'خطة افتراضية',
+      description: 'Single day fallback plan',
+      descriptionAr: 'خطة تمرين افتراضية ليوم واحد',
+      days: [day],
+      startDate: DateTime.now(),
+      createdAt: DateTime.now(),
+    );
+  }
+
   static List<Exercise> exerciseLibrary() {
     return [
       Exercise(
@@ -193,10 +244,14 @@ class DemoData {
         equipment: 'bodyweight',
         difficulty: 'Beginner',
         videoUrl: 'https://example.com/videos/push_up.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Set hands under shoulders.\n2. Lower with control.\n3. Press back up.',
-        instructionsEn: '1. Set hands under shoulders.\n2. Lower with control.\n3. Press back up.',
-        instructionsAr: '\u0661\u002e \u062b\u0628\u062a \u0627\u0644\u064a\u062f\u064a\u0646 \u062a\u062d\u062a \u0627\u0644\u0643\u062a\u0641\u064a\u0646\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u0628\u062b\u0628\u0627\u062a\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Set hands under shoulders.\n2. Lower with control.\n3. Press back up.',
+        instructionsEn:
+            '1. Set hands under shoulders.\n2. Lower with control.\n3. Press back up.',
+        instructionsAr:
+            '\u0661\u002e \u062b\u0628\u062a \u0627\u0644\u064a\u062f\u064a\u0646 \u062a\u062d\u062a \u0627\u0644\u0643\u062a\u0641\u064a\u0646\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u0628\u062b\u0628\u0627\u062a\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649\u002e',
         notes: 'Keep your body in a straight line.',
         sets: 3,
         reps: '12',
@@ -211,10 +266,14 @@ class DemoData {
         equipment: 'bodyweight',
         difficulty: 'Beginner',
         videoUrl: 'https://example.com/videos/walking_lunge.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Step forward into a lunge.\n2. Keep front knee stacked.\n3. Drive through the front heel.',
-        instructionsEn: '1. Step forward into a lunge.\n2. Keep front knee stacked.\n3. Drive through the front heel.',
-        instructionsAr: '\u0661\u002e \u0627\u062e\u0637\u064f \u0642\u062f\u0645\u064b\u0627 \u0644\u0644\u0623\u0645\u0627\u0645 \u0641\u064a \u0648\u0636\u0639 \u0627\u0646\u062f\u0641\u0627\u0639\u002e\n\u0662\u002e \u062d\u0627\u0641\u0638 \u0639\u0644\u0649 \u0627\u0644\u0631\u0643\u0628\u0629 \u0641\u0648\u0642 \u0627\u0644\u0643\u0627\u062d\u0644\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0628\u0627\u0644\u0643\u0639\u0628 \u0627\u0644\u0623\u0645\u0627\u0645\u064a\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Step forward into a lunge.\n2. Keep front knee stacked.\n3. Drive through the front heel.',
+        instructionsEn:
+            '1. Step forward into a lunge.\n2. Keep front knee stacked.\n3. Drive through the front heel.',
+        instructionsAr:
+            '\u0661\u002e \u0627\u062e\u0637\u064f \u0642\u062f\u0645\u064b\u0627 \u0644\u0644\u0623\u0645\u0627\u0645 \u0641\u064a \u0648\u0636\u0639 \u0627\u0646\u062f\u0641\u0627\u0639\u002e\n\u0662\u002e \u062d\u0627\u0641\u0638 \u0639\u0644\u0649 \u0627\u0644\u0631\u0643\u0628\u0629 \u0641\u0648\u0642 \u0627\u0644\u0643\u0627\u062d\u0644\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0628\u0627\u0644\u0643\u0639\u0628 \u0627\u0644\u0623\u0645\u0627\u0645\u064a\u002e',
         notes: 'Keep your torso tall and steady.',
         sets: 3,
         reps: '12',
@@ -230,10 +289,14 @@ class DemoData {
         equipment: 'dumbbell',
         difficulty: 'Beginner',
         videoUrl: 'https://example.com/videos/goblet_squat.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Hold a dumbbell at chest height.\n2. Sit into a squat.\n3. Drive back up with control.',
-        instructionsEn: '1. Hold a dumbbell at chest height.\n2. Sit into a squat.\n3. Drive back up with control.',
-        instructionsAr: '\u0661\u002e \u0623\u0645\u0633\u0643 \u0627\u0644\u062f\u0645\u0628\u0644 \u0623\u0645\u0627\u0645 \u0627\u0644\u0635\u062f\u0631\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u0628\u0627\u0644\u0642\u0631\u0641\u0635\u0627\u0621\u002e\n\u0663\u002e \u0627\u0635\u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Hold a dumbbell at chest height.\n2. Sit into a squat.\n3. Drive back up with control.',
+        instructionsEn:
+            '1. Hold a dumbbell at chest height.\n2. Sit into a squat.\n3. Drive back up with control.',
+        instructionsAr:
+            '\u0661\u002e \u0623\u0645\u0633\u0643 \u0627\u0644\u062f\u0645\u0628\u0644 \u0623\u0645\u0627\u0645 \u0627\u0644\u0635\u062f\u0631\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u0628\u0627\u0644\u0642\u0631\u0641\u0635\u0627\u0621\u002e\n\u0663\u002e \u0627\u0635\u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
         notes: 'Elbows stay inside the knees at the bottom.',
         sets: 3,
         reps: '10',
@@ -248,10 +311,14 @@ class DemoData {
         equipment: 'machine',
         difficulty: 'Intermediate',
         videoUrl: 'https://example.com/videos/leg_press.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Place feet shoulder-width on the platform.\n2. Lower until knees are at 90 degrees.\n3. Press back up without locking.',
-        instructionsEn: '1. Place feet shoulder-width on the platform.\n2. Lower until knees are at 90 degrees.\n3. Press back up without locking.',
-        instructionsAr: '\u0661\u002e \u0636\u0639 \u0627\u0644\u0642\u062f\u0645\u064a\u0646 \u0639\u0644\u0649 \u0627\u0644\u0645\u0646\u0635\u0629\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u062d\u062a\u0649 \u0632\u0627\u0648\u064a\u0629 \u0669\u0660 \u062f\u0631\u062c\u0629\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649 \u0628\u062f\u0648\u0646 \u0625\u0642\u0641\u0627\u0644\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Place feet shoulder-width on the platform.\n2. Lower until knees are at 90 degrees.\n3. Press back up without locking.',
+        instructionsEn:
+            '1. Place feet shoulder-width on the platform.\n2. Lower until knees are at 90 degrees.\n3. Press back up without locking.',
+        instructionsAr:
+            '\u0661\u002e \u0636\u0639 \u0627\u0644\u0642\u062f\u0645\u064a\u0646 \u0639\u0644\u0649 \u0627\u0644\u0645\u0646\u0635\u0629\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u062d\u062a\u0649 \u0632\u0627\u0648\u064a\u0629 \u0669\u0660 \u062f\u0631\u062c\u0629\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649 \u0628\u062f\u0648\u0646 \u0625\u0642\u0641\u0627\u0644\u002e',
         notes: 'Keep hips down and avoid bouncing.',
         sets: 3,
         reps: '12',
@@ -266,10 +333,14 @@ class DemoData {
         equipment: 'dumbbell',
         difficulty: 'Beginner',
         videoUrl: 'https://example.com/videos/dumbbell_press.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Press dumbbells above chest.\n2. Lower with elbows at 45 degrees.\n3. Drive up evenly.',
-        instructionsEn: '1. Press dumbbells above chest.\n2. Lower with elbows at 45 degrees.\n3. Drive up evenly.',
-        instructionsAr: '\u0661\u002e \u0627\u062f\u0641\u0639 \u0627\u0644\u062f\u0645\u0627\u0628\u0644 \u0641\u0648\u0642 \u0627\u0644\u0635\u062f\u0631\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u0628\u0627\u0644\u0645\u0631\u0627\u0641\u0642\u064a\u0646 \u0628\u0632\u0627\u0648\u064a\u0629 \u0664\u0665\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0628\u062a\u0648\u0627\u0632\u0646\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Press dumbbells above chest.\n2. Lower with elbows at 45 degrees.\n3. Drive up evenly.',
+        instructionsEn:
+            '1. Press dumbbells above chest.\n2. Lower with elbows at 45 degrees.\n3. Drive up evenly.',
+        instructionsAr:
+            '\u0661\u002e \u0627\u062f\u0641\u0639 \u0627\u0644\u062f\u0645\u0627\u0628\u0644 \u0641\u0648\u0642 \u0627\u0644\u0635\u062f\u0631\u002e\n\u0662\u002e \u0627\u0646\u0632\u0644 \u0628\u0627\u0644\u0645\u0631\u0627\u0641\u0642\u064a\u0646 \u0628\u0632\u0627\u0648\u064a\u0629 \u0664\u0665\u002e\n\u0663\u002e \u0627\u062f\u0641\u0639 \u0628\u062a\u0648\u0627\u0632\u0646\u002e',
         notes: 'Keep wrists stacked and control the descent.',
         sets: 3,
         reps: '10',
@@ -284,10 +355,14 @@ class DemoData {
         equipment: 'band',
         difficulty: 'Beginner',
         videoUrl: 'https://example.com/videos/band_row.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Anchor the band and sit tall.\n2. Pull to the ribcage.\n3. Return slowly.',
-        instructionsEn: '1. Anchor the band and sit tall.\n2. Pull to the ribcage.\n3. Return slowly.',
-        instructionsAr: '\u0661\u002e \u062b\u0628\u062a \u0627\u0644\u0628\u0627\u0646\u062f \u0648\u0627\u062c\u0644\u0633 \u0628\u0627\u0633\u062a\u0642\u0627\u0645\u0629\u002e\n\u0662\u002e \u0627\u0633\u062d\u0628 \u0644\u0644\u0623\u0636\u0644\u0627\u0639\u002e\n\u0663\u002e \u0639\u062f \u0628\u0628\u0637\u0621\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Anchor the band and sit tall.\n2. Pull to the ribcage.\n3. Return slowly.',
+        instructionsEn:
+            '1. Anchor the band and sit tall.\n2. Pull to the ribcage.\n3. Return slowly.',
+        instructionsAr:
+            '\u0661\u002e \u062b\u0628\u062a \u0627\u0644\u0628\u0627\u0646\u062f \u0648\u0627\u062c\u0644\u0633 \u0628\u0627\u0633\u062a\u0642\u0627\u0645\u0629\u002e\n\u0662\u002e \u0627\u0633\u062d\u0628 \u0644\u0644\u0623\u0636\u0644\u0627\u0639\u002e\n\u0663\u002e \u0639\u062f \u0628\u0628\u0637\u0621\u002e',
         notes: 'Squeeze the shoulder blades together.',
         sets: 3,
         reps: '15',
@@ -302,10 +377,14 @@ class DemoData {
         equipment: 'machine',
         difficulty: 'Beginner',
         videoUrl: 'https://example.com/videos/lat_pulldown.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Grip the bar wide.\n2. Pull toward the upper chest.\n3. Control the return.',
-        instructionsEn: '1. Grip the bar wide.\n2. Pull toward the upper chest.\n3. Control the return.',
-        instructionsAr: '\u0661\u002e \u0627\u0645\u0633\u0643 \u0627\u0644\u0628\u0627\u0631 \u0628\u0648\u0633\u0639 \u0639\u0631\u0636 \u0627\u0644\u0643\u062a\u0641\u064a\u0646\u002e\n\u0662\u002e \u0627\u0633\u062d\u0628 \u0646\u062d\u0648 \u0623\u0639\u0644\u0649 \u0627\u0644\u0635\u062f\u0631\u002e\n\u0663\u002e \u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Grip the bar wide.\n2. Pull toward the upper chest.\n3. Control the return.',
+        instructionsEn:
+            '1. Grip the bar wide.\n2. Pull toward the upper chest.\n3. Control the return.',
+        instructionsAr:
+            '\u0661\u002e \u0627\u0645\u0633\u0643 \u0627\u0644\u0628\u0627\u0631 \u0628\u0648\u0633\u0639 \u0639\u0631\u0636 \u0627\u0644\u0643\u062a\u0641\u064a\u0646\u002e\n\u0662\u002e \u0627\u0633\u062d\u0628 \u0646\u062d\u0648 \u0623\u0639\u0644\u0649 \u0627\u0644\u0635\u062f\u0631\u002e\n\u0663\u002e \u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
         notes: 'Keep shoulders down and avoid swinging.',
         sets: 3,
         reps: '12',
@@ -320,10 +399,14 @@ class DemoData {
         equipment: 'barbell',
         difficulty: 'Intermediate',
         videoUrl: 'https://example.com/videos/landmine_press.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Hold the bar at shoulder.\n2. Press forward and up.\n3. Lower with control.',
-        instructionsEn: '1. Hold the bar at shoulder.\n2. Press forward and up.\n3. Lower with control.',
-        instructionsAr: '\u0661\u002e \u0623\u0645\u0633\u0643 \u0627\u0644\u0628\u0627\u0631 \u0628\u0642\u0631\u0628 \u0627\u0644\u0643\u062a\u0641\u002e\n\u0662\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0645\u0627\u0645 \u0648\u0627\u0644\u0623\u0639\u0644\u0649\u002e\n\u0663\u002e \u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Hold the bar at shoulder.\n2. Press forward and up.\n3. Lower with control.',
+        instructionsEn:
+            '1. Hold the bar at shoulder.\n2. Press forward and up.\n3. Lower with control.',
+        instructionsAr:
+            '\u0661\u002e \u0623\u0645\u0633\u0643 \u0627\u0644\u0628\u0627\u0631 \u0628\u0642\u0631\u0628 \u0627\u0644\u0643\u062a\u0641\u002e\n\u0662\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0645\u0627\u0645 \u0648\u0627\u0644\u0623\u0639\u0644\u0649\u002e\n\u0663\u002e \u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
         notes: 'Keep ribs down and core tight.',
         sets: 3,
         reps: '10',
@@ -338,11 +421,190 @@ class DemoData {
         equipment: 'dumbbell',
         difficulty: 'Beginner',
         videoUrl: 'https://example.com/videos/seated_db_press.mp4',
-        thumbnailUrl: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
-        instructions: '1. Sit tall with dumbbells at shoulders.\n2. Press overhead.\n3. Lower with control.',
-        instructionsEn: '1. Sit tall with dumbbells at shoulders.\n2. Press overhead.\n3. Lower with control.',
-        instructionsAr: '\u0661\u002e \u0627\u062c\u0644\u0633 \u0628\u0627\u0633\u062a\u0642\u0627\u0645\u0629 \u0648\u0627\u0644\u062f\u0645\u0628\u0644 \u0639\u0646\u062f \u0627\u0644\u0643\u062a\u0641\u064a\u0646\u002e\n\u0662\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649\u002e\n\u0663\u002e \u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Sit tall with dumbbells at shoulders.\n2. Press overhead.\n3. Lower with control.',
+        instructionsEn:
+            '1. Sit tall with dumbbells at shoulders.\n2. Press overhead.\n3. Lower with control.',
+        instructionsAr:
+            '\u0661\u002e \u0627\u062c\u0644\u0633 \u0628\u0627\u0633\u062a\u0642\u0627\u0645\u0629 \u0648\u0627\u0644\u062f\u0645\u0628\u0644 \u0639\u0646\u062f \u0627\u0644\u0643\u062a\u0641\u064a\u0646\u002e\n\u0662\u002e \u0627\u062f\u0641\u0639 \u0644\u0644\u0623\u0639\u0644\u0649\u002e\n\u0663\u002e \u0639\u062f \u0628\u062a\u062d\u0643\u0645\u002e',
         notes: 'Keep the neck relaxed and elbows under wrists.',
+        sets: 3,
+        reps: '12',
+      ),
+      Exercise(
+        id: 'ex-bulgarian-split',
+        name: 'Bulgarian Split Squat',
+        nameAr: 'اندفاع بلغاري',
+        nameEn: 'Bulgarian Split Squat',
+        category: 'strength',
+        muscleGroup: 'legs',
+        equipment: 'dumbbell',
+        difficulty: 'Intermediate',
+        videoUrl: 'https://example.com/videos/bulgarian_split_squat.mp4',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Elevate back foot.\n2. Drop rear knee toward floor.\n3. Drive through the front heel.',
+        instructionsEn:
+            '1. Elevate back foot.\n2. Drop rear knee toward floor.\n3. Drive through the front heel.',
+        instructionsAr:
+            '١. ارفع القدم الخلفية على كرسي.\n٢. انزل بالركبة نحو الأرض دون اندفاع للأمام.\n٣. ادفع بالكعب الأمامي للعودة.',
+        notes: 'Keep hips squared forward and core tight.',
+        alternatives: const ['ex-goblet-squat', 'ex-leg-press'],
+        sets: 3,
+        reps: '10',
+      ),
+      Exercise(
+        id: 'ex-rdl',
+        name: 'Romanian Deadlift',
+        nameAr: 'الرفعة الرومانية',
+        nameEn: 'Romanian Deadlift',
+        category: 'strength',
+        muscleGroup: 'posterior chain',
+        equipment: 'barbell',
+        difficulty: 'Intermediate',
+        videoUrl: 'https://example.com/videos/romanian_deadlift.mp4',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Hinge at the hips with soft knees.\n2. Lower the bar to mid-shin.\n3. Drive hips forward to stand tall.',
+        instructionsEn:
+            '1. Hinge at the hips with soft knees.\n2. Lower the bar to mid-shin.\n3. Drive hips forward to stand tall.',
+        instructionsAr:
+            '١. اثنِ الركبتين قليلاً وابدأ بالحركة من الورك.\n٢. اخفض البار حتى منتصف الساق.\n٣. ادفع الحوض للأمام للعودة.',
+        notes: 'Maintain a neutral spine and feel the stretch in hamstrings.',
+        alternatives: const ['ex-leg-press', 'ex-hip-thrust'],
+        sets: 4,
+        reps: '8',
+      ),
+      Exercise(
+        id: 'ex-hip-thrust',
+        name: 'Barbell Hip Thrust',
+        nameAr: 'رفع الحوض بالبار',
+        nameEn: 'Barbell Hip Thrust',
+        category: 'strength',
+        muscleGroup: 'glutes',
+        equipment: 'barbell',
+        difficulty: 'Intermediate',
+        videoUrl: 'https://example.com/videos/barbell_hip_thrust.mp4',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Rest shoulders on a bench.\n2. Drive hips up until glutes squeeze.\n3. Lower with control.',
+        instructionsEn:
+            '1. Rest shoulders on a bench.\n2. Drive hips up until glutes squeeze.\n3. Lower with control.',
+        instructionsAr:
+            '١. اسند الكتفين على مقعد ثابت.\n٢. ارفع الحوض حتى تشعر بانقباض المؤخرة.\n٣. انزل ببطء مع الحفاظ على السيطرة.',
+        notes: 'Chin stays tucked and ribs down.',
+        alternatives: const ['ex-rdl', 'ex-leg-press'],
+        sets: 4,
+        reps: '12',
+      ),
+      Exercise(
+        id: 'ex-incline-pushup',
+        name: 'Incline Push Up',
+        nameAr: 'ضغط مائل',
+        nameEn: 'Incline Push Up',
+        category: 'strength',
+        muscleGroup: 'chest',
+        equipment: 'bodyweight',
+        difficulty: 'Beginner',
+        videoUrl: 'https://example.com/videos/incline_pushup.mp4',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Place hands on an elevated surface.\n2. Lower chest toward the edge.\n3. Press back up keeping body rigid.',
+        instructionsEn:
+            '1. Place hands on an elevated surface.\n2. Lower chest toward the edge.\n3. Press back up keeping body rigid.',
+        instructionsAr:
+            '١. ضع اليدين على سطح مرتفع.\n٢. انزل بالصدر نحو الحافة.\n٣. ادفع للأعلى مع الحفاظ على الجسم مستقيمًا.',
+        notes: 'Great option when wrists or shoulders need a lighter load.',
+        alternatives: const ['ex-pushup', 'ex-dumbbell-press'],
+        sets: 3,
+        reps: '12',
+      ),
+      Exercise(
+        id: 'ex-cable-fly',
+        name: 'Cable Chest Fly',
+        nameAr: 'تفتيح الصدر بالكابل',
+        nameEn: 'Cable Chest Fly',
+        category: 'strength',
+        muscleGroup: 'chest',
+        equipment: 'cable',
+        difficulty: 'Intermediate',
+        videoUrl: 'https://example.com/videos/cable_chest_fly.mp4',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Step forward with slight stagger.\n2. Hug the cable handles together.\n3. Control the stretch.',
+        instructionsEn:
+            '1. Step forward with slight stagger.\n2. Hug the cable handles together.\n3. Control the stretch.',
+        instructionsAr:
+            '١. تقدم خطوة صغيرة للأمام.\n٢. قرّب المقابض كما لو أنك تعانق.\n٣. عد ببطء إلى وضع البداية.',
+        notes: 'Soft elbows and squeeze at the midline.',
+        alternatives: const ['ex-bench', 'ex-dumbbell-press'],
+        sets: 3,
+        reps: '15',
+      ),
+      Exercise(
+        id: 'ex-face-pull',
+        name: 'Face Pull',
+        nameAr: 'سحب الوجه',
+        nameEn: 'Face Pull',
+        category: 'strength',
+        muscleGroup: 'upper back',
+        equipment: 'cable',
+        difficulty: 'Beginner',
+        videoUrl: 'https://example.com/videos/face_pull.mp4',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Set cable at eye level.\n2. Pull toward the face with elbows high.\n3. Control the return.',
+        instructionsEn:
+            '1. Set cable at eye level.\n2. Pull toward the face with elbows high.\n3. Control the return.',
+        instructionsAr:
+            '١. ضع مستوى الكابل بمحاذاة العين.\n٢. اسحب نحو الوجه مع رفع المرفقين.\n٣. عد ببطء إلى الأمام.',
+        notes: 'Great for posture and shoulder health.',
+        alternatives: const ['ex-band-row', 'ex-lat-pulldown'],
+        sets: 3,
+        reps: '15',
+      ),
+      Exercise(
+        id: 'ex-pike-press',
+        name: 'Pike Push Up',
+        nameAr: 'ضغط بايك',
+        nameEn: 'Pike Push Up',
+        category: 'strength',
+        muscleGroup: 'shoulders',
+        equipment: 'bodyweight',
+        difficulty: 'Intermediate',
+        videoUrl: 'https://example.com/videos/pike_pushup.mp4',
+        thumbnailUrl:
+            'assets/placeholders/splash_onboarding/workout_onboarding.png',
+        instructions:
+            '1. Form an inverted V shape.\n2. Lower head toward the floor.\n3. Press back through shoulders.',
+        instructionsEn:
+            '1. Form an inverted V shape.\n2. Lower head toward the floor.\n3. Press back through shoulders.',
+        instructionsAr:
+            '١. شكّل حرف V مقلوب مع رفع الحوض.\n٢. انزل بالرأس نحو الأرض.\n٣. ادفع بكتفيك للعودة إلى البداية.',
+        notes: 'Mimics overhead press when equipment is limited.',
+        alternatives: const ['ex-landmine-press', 'ex-seated-db-press'],
+        sets: 3,
+        reps: '8',
+      ),
+    ];
+  }
+
+  /// Minimal demo exercise library (kept for demo-only builds).
+  static List<Exercise> fallbackExerciseLibrary() {
+    return [
+      Exercise(
+        id: 'ex1',
+        name: 'Push Up',
+        nameAr: 'تمرين الضغط',
+        nameEn: 'Push Up',
         sets: 3,
         reps: '12',
       ),
@@ -350,124 +612,170 @@ class DemoData {
   }
 
   static NutritionPlan nutritionPlan({required String userId}) {
-    final meals = [
-      Meal(
-        id: 'meal-1',
-        name: 'Breakfast',
-        nameAr: 'الإفطار',
-        nameEn: 'Breakfast',
-        type: 'breakfast',
-        time: '08:00',
-        foods: [
-          FoodItem(
-            id: 'food-oats',
-            name: 'Oats',
-            nameAr: 'الشوفان',
-            nameEn: 'Oats',
-            quantity: 80,
-            unit: 'g',
-            macros: MacroTargets(protein: 10, carbs: 54, fats: 6),
-            calories: 320,
-          ),
-          FoodItem(
-            id: 'food-eggs',
-            name: 'Eggs',
-            nameAr: 'البيض',
-            nameEn: 'Eggs',
-            quantity: 2,
-            unit: 'pcs',
-            macros: MacroTargets(protein: 12, carbs: 1, fats: 10),
-            calories: 140,
-          ),
-        ],
-        macros: MacroTargets(protein: 22, carbs: 55, fats: 16),
-        calories: 460,
-      ),
-      Meal(
-        id: 'meal-2',
-        name: 'Lunch',
-        nameAr: 'الغداء',
-        nameEn: 'Lunch',
-        type: 'lunch',
-        time: '13:00',
-        foods: [
-          FoodItem(
-            id: 'food-chicken',
-            name: 'Chicken Breast',
-            nameAr: 'صدر الدجاج',
-            nameEn: 'Chicken Breast',
-            quantity: 180,
-            unit: 'g',
-            macros: MacroTargets(protein: 40, carbs: 0, fats: 6),
-            calories: 220,
-          ),
-          FoodItem(
-            id: 'food-rice',
-            name: 'Rice',
-            nameAr: 'الأرز',
-            nameEn: 'Rice',
-            quantity: 150,
-            unit: 'g',
-            macros: MacroTargets(protein: 4, carbs: 45, fats: 1),
-            calories: 210,
-          ),
-        ],
-        macros: MacroTargets(protein: 44, carbs: 45, fats: 7),
-        calories: 430,
-      ),
-      Meal(
-        id: 'meal-3',
-        name: 'Dinner',
-        nameAr: 'العشاء',
-        nameEn: 'Dinner',
-        type: 'dinner',
-        time: '19:30',
-        foods: [
-          FoodItem(
-            id: 'food-salmon',
-            name: 'Salmon',
-            nameAr: 'السلمون',
-            nameEn: 'Salmon',
-            quantity: 160,
-            unit: 'g',
-            macros: MacroTargets(protein: 34, carbs: 0, fats: 12),
-            calories: 260,
-          ),
-          FoodItem(
-            id: 'food-potato',
-            name: 'Sweet Potato',
-            nameAr: 'البطاطا الحلوة',
-            nameEn: 'Sweet Potato',
-            quantity: 200,
-            unit: 'g',
-            macros: MacroTargets(protein: 4, carbs: 41, fats: 0),
-            calories: 180,
-          ),
-        ],
-        macros: MacroTargets(protein: 38, carbs: 41, fats: 12),
-        calories: 440,
-      ),
-    ];
+    List<Meal> buildMealsForDay(int dayNumber) {
+      // Rotate proteins/carbs slightly across the week while keeping a consistent structure.
+      final lunchProtein = <Map<String, String>>[
+        {'en': 'Chicken Breast', 'ar': 'صدر الدجاج'},
+        {'en': 'Turkey', 'ar': 'الديك الرومي'},
+        {'en': 'Lean Beef', 'ar': 'لحم بقري قليل الدهن'},
+        {'en': 'Tuna', 'ar': 'تونة'},
+        {'en': 'Chicken Breast', 'ar': 'صدر الدجاج'},
+        {'en': 'Salmon', 'ar': 'السلمون'},
+        {'en': 'Shrimp', 'ar': 'روبيان'},
+      ];
+
+      final carb = <Map<String, String>>[
+        {'en': 'Rice', 'ar': 'الأرز'},
+        {'en': 'Quinoa', 'ar': 'كينوا'},
+        {'en': 'Potato', 'ar': 'بطاطس'},
+        {'en': 'Pasta', 'ar': 'مكرونة'},
+        {'en': 'Rice', 'ar': 'الأرز'},
+        {'en': 'Sweet Potato', 'ar': 'البطاطا الحلوة'},
+        {'en': 'Couscous', 'ar': 'كسكس'},
+      ];
+
+      final proteinIndex = (dayNumber - 1) % lunchProtein.length;
+      final carbIndex = (dayNumber - 1) % carb.length;
+
+      final lunchProteinEn = lunchProtein[proteinIndex]['en']!;
+      final lunchProteinAr = lunchProtein[proteinIndex]['ar']!;
+      final carbEn = carb[carbIndex]['en']!;
+      final carbAr = carb[carbIndex]['ar']!;
+
+      return [
+        Meal(
+          id: 'meal-$dayNumber-1',
+          name: 'Breakfast',
+          nameAr: 'الإفطار',
+          nameEn: 'Breakfast',
+          type: 'breakfast',
+          time: '08:00',
+          foods: [
+            FoodItem(
+              id: 'food-$dayNumber-oats',
+              name: 'Oats',
+              nameAr: 'الشوفان',
+              nameEn: 'Oats',
+              quantity: 80,
+              unit: 'g',
+              macros: MacroTargets(protein: 10, carbs: 54, fats: 6),
+              calories: 320,
+            ),
+            FoodItem(
+              id: 'food-$dayNumber-eggs',
+              name: 'Eggs',
+              nameAr: 'البيض',
+              nameEn: 'Eggs',
+              quantity: 2,
+              unit: 'pcs',
+              macros: MacroTargets(protein: 12, carbs: 1, fats: 10),
+              calories: 140,
+            ),
+          ],
+          macros: MacroTargets(protein: 22, carbs: 55, fats: 16),
+          calories: 460,
+          completed: dayNumber <= 2,
+        ),
+        Meal(
+          id: 'meal-$dayNumber-2',
+          name: 'Lunch',
+          nameAr: 'الغداء',
+          nameEn: 'Lunch',
+          type: 'lunch',
+          time: '13:00',
+          foods: [
+            FoodItem(
+              id: 'food-$dayNumber-protein',
+              name: lunchProteinEn,
+              nameAr: lunchProteinAr,
+              nameEn: lunchProteinEn,
+              quantity: 180,
+              unit: 'g',
+              macros: MacroTargets(protein: 40, carbs: 0, fats: 6),
+              calories: 220,
+            ),
+            FoodItem(
+              id: 'food-$dayNumber-carb',
+              name: carbEn,
+              nameAr: carbAr,
+              nameEn: carbEn,
+              quantity: 150,
+              unit: 'g',
+              macros: MacroTargets(protein: 4, carbs: 45, fats: 1),
+              calories: 210,
+            ),
+          ],
+          macros: MacroTargets(protein: 44, carbs: 45, fats: 7),
+          calories: 430,
+          completed: dayNumber == 1,
+        ),
+        Meal(
+          id: 'meal-$dayNumber-3',
+          name: 'Dinner',
+          nameAr: 'العشاء',
+          nameEn: 'Dinner',
+          type: 'dinner',
+          time: '19:30',
+          foods: [
+            FoodItem(
+              id: 'food-$dayNumber-salmon',
+              name: 'Salmon',
+              nameAr: 'السلمون',
+              nameEn: 'Salmon',
+              quantity: 160,
+              unit: 'g',
+              macros: MacroTargets(protein: 34, carbs: 0, fats: 12),
+              calories: 260,
+            ),
+            FoodItem(
+              id: 'food-$dayNumber-sweet-potato',
+              name: 'Sweet Potato',
+              nameAr: 'البطاطا الحلوة',
+              nameEn: 'Sweet Potato',
+              quantity: 200,
+              unit: 'g',
+              macros: MacroTargets(protein: 4, carbs: 41, fats: 0),
+              calories: 180,
+            ),
+          ],
+          macros: MacroTargets(protein: 38, carbs: 41, fats: 12),
+          calories: 440,
+          completed: dayNumber == 1,
+        ),
+      ];
+    }
+
+    final days = List<DayMealPlan>.generate(
+      7,
+      (index) {
+        final dayNumber = index + 1;
+        return DayMealPlan(
+          id: 'day-$dayNumber',
+          dayName: 'Day $dayNumber',
+          dayNumber: dayNumber,
+          meals: buildMealsForDay(dayNumber),
+        );
+      },
+    );
+
+    final startDate =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final endDate = startDate.add(const Duration(days: 6));
 
     return NutritionPlan(
       id: 'demo-nutrition-1',
       userId: userId,
       name: 'Demo Nutrition Plan',
       description: 'Balanced macros for training days',
-      days: [
-        DayMealPlan(
-          id: 'day-1',
-          dayName: 'Day 1',
-          dayNumber: 1,
-          meals: meals,
-        ),
-      ],
+      days: days,
       macros: const {
         'protein': 150.0,
         'carbs': 260.0,
         'fats': 70.0,
       },
       dailyCalories: 2400,
+      startDate: startDate,
+      endDate: endDate,
       createdAt: DateTime.now().subtract(const Duration(days: 10)),
       macroTargets: const {
         'calories': 2400,
@@ -475,6 +783,76 @@ class DemoData {
         'carbs': 260,
         'fat': 70,
       },
+    );
+  }
+
+  /// Minimal, lightweight demo nutrition plan (kept for demo-only builds).
+  static NutritionPlan fallbackNutritionPlan({required String userId}) {
+    final macroTargets = {
+      'calories': 2000,
+      'protein': 150,
+      'carbs': 250,
+      'fat': 70,
+    };
+
+    final mealMacros = MacroTargets(protein: 30, carbs: 40, fats: 15);
+    final meals = [
+      Meal(
+        id: 'meal1',
+        name: 'Breakfast',
+        nameAr: 'Breakfast',
+        nameEn: 'Breakfast',
+        type: 'breakfast',
+        time: '08:00',
+        foods: [],
+        macros: mealMacros,
+        calories: 400,
+      ),
+      Meal(
+        id: 'meal2',
+        name: 'Lunch',
+        nameAr: 'Lunch',
+        nameEn: 'Lunch',
+        type: 'lunch',
+        time: '13:00',
+        foods: [],
+        macros: mealMacros,
+        calories: 700,
+      ),
+      Meal(
+        id: 'meal3',
+        name: 'Dinner',
+        nameAr: 'Dinner',
+        nameEn: 'Dinner',
+        type: 'dinner',
+        time: '19:00',
+        foods: [],
+        macros: mealMacros,
+        calories: 900,
+      ),
+    ];
+
+    final day = DayMealPlan(
+      id: 'day1',
+      dayName: 'Day 1',
+      dayNumber: 1,
+      meals: meals,
+    );
+
+    return NutritionPlan(
+      id: 'fallback-nutrition-plan',
+      userId: userId,
+      name: 'Fallback Plan',
+      days: [day],
+      macros: {
+        'protein': 150.0,
+        'carbs': 250.0,
+        'fats': 70.0,
+      },
+      dailyCalories: 2000,
+      startDate: DateTime.now(),
+      createdAt: DateTime.now(),
+      macroTargets: macroTargets,
     );
   }
 
@@ -742,7 +1120,8 @@ class DemoData {
       byTier: [
         RevenueTier(subscriptionTier: 'Freemium', revenue: 12000, count: 520),
         RevenueTier(subscriptionTier: 'Premium', revenue: 62000, count: 460),
-        RevenueTier(subscriptionTier: 'Smart Premium', revenue: 80200, count: 260),
+        RevenueTier(
+            subscriptionTier: 'Smart Premium', revenue: 80200, count: 260),
       ],
     );
   }
@@ -776,13 +1155,16 @@ class DemoData {
   static Conversation demoConversation({
     required String userId,
     required String coachId,
+    bool isArabic = false,
   }) {
     final now = DateTime.now();
     return Conversation(
       id: '${userId}_$coachId',
       userId: userId,
       coachId: coachId,
-      lastMessageContent: 'Your plan is ready for review.',
+      lastMessageContent: isArabic
+          ? 'خطة التمرين جاهزة للمراجعة.'
+          : 'Your plan is ready for review.',
       lastMessageAt: now.subtract(const Duration(minutes: 15)),
       unreadCount: 1,
       createdAt: now.subtract(const Duration(days: 30)),
@@ -792,6 +1174,7 @@ class DemoData {
 
   static List<Message> chatMessages({
     required String conversationId,
+    bool isArabic = false,
   }) {
     final now = DateTime.now();
     return [
@@ -800,7 +1183,9 @@ class DemoData {
         conversationId: conversationId,
         senderId: 'demo-coach',
         receiverId: 'demo-user',
-        content: 'Welcome! Ready for today\'s session?',
+        content: isArabic
+            ? 'مرحباً! هل أنت مستعد لجلسة اليوم؟'
+            : 'Welcome! Ready for today\'s session?',
         type: MessageType.text,
         isRead: true,
         createdAt: now.subtract(const Duration(days: 1, hours: 2)),
@@ -811,7 +1196,9 @@ class DemoData {
         conversationId: conversationId,
         senderId: 'demo-user',
         receiverId: 'demo-coach',
-        content: 'Yes, feeling good. Can we review my form cues?',
+        content: isArabic
+            ? 'نعم، أشعر أني بخير. هل يمكننا مراجعة إشارات وضعية الجسم؟'
+            : 'Yes, feeling good. Can we review my form cues?',
         type: MessageType.text,
         isRead: true,
         createdAt: now.subtract(const Duration(days: 1, hours: 1)),
@@ -822,10 +1209,36 @@ class DemoData {
         conversationId: conversationId,
         senderId: 'demo-coach',
         receiverId: 'demo-user',
-        content: 'Absolutely. I added notes in your plan.',
+        content: isArabic
+            ? 'بالتأكيد. أضفت ملاحظات داخل خطتك.'
+            : 'Absolutely. I added notes in your plan.',
         type: MessageType.text,
         isRead: false,
         createdAt: now.subtract(const Duration(minutes: 20)),
+      ),
+      Message(
+        id: 'msg-4',
+        conversationId: conversationId,
+        senderId: 'demo-user',
+        receiverId: 'demo-coach',
+        content: isArabic
+            ? 'سأطلع عليها الليلة قبل الجلسة.'
+            : 'I will review them tonight before the session.',
+        type: MessageType.text,
+        isRead: false,
+        createdAt: now.subtract(const Duration(minutes: 8)),
+      ),
+      Message(
+        id: 'msg-5',
+        conversationId: conversationId,
+        senderId: 'demo-coach',
+        receiverId: 'demo-user',
+        content: isArabic
+            ? 'رائع، سأرسل لك أيضاً خطة المغذيات المحدثة.'
+            : 'Great, I will also send the updated nutrition targets.',
+        type: MessageType.text,
+        isRead: false,
+        createdAt: now.subtract(const Duration(minutes: 3)),
       ),
     ];
   }

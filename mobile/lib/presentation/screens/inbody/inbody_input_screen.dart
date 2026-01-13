@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'dart:typed_data';
 import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/repositories/workout_repository.dart';
@@ -21,7 +21,7 @@ class InBodyInputScreen extends StatefulWidget {
 
 class _InBodyInputScreenState extends State<InBodyInputScreen> {
   String _inputMode = 'selection'; // 'selection', 'ai-scan', 'manual'
-  File? _selectedImage;
+  Uint8List? _selectedImageBytes;
   bool _isAnalyzing = false;
   bool _extractionComplete = false;
   Map<String, dynamic>? _extractedData;
@@ -64,18 +64,18 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
       appBar: AppBar(
         title: Text(isArabic ? 'تحليل InBody' : 'InBody Analysis'),
       ),
-      body: _inputMode == 'selection'
+        body: _inputMode == 'selection'
           ? _buildModeSelection(isArabic, isPremium)
           : _inputMode == 'ai-scan'
-              ? _buildAIScan(isArabic)
-              : _buildManualInput(isArabic),
+            ? _buildAIScan(languageProvider)
+            : _buildManualInput(isArabic),
     );
   }
   
   Widget _buildModeSelection(bool isArabic, bool isPremium) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: Column(
+            child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -326,7 +326,10 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.textDisabled),
+                Icon(
+                  isArabic ? Icons.chevron_left : Icons.chevron_right,
+                  color: AppColors.textDisabled,
+                ),
               ],
             ),
           ),
@@ -363,97 +366,498 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
     );
   }
   
-  Widget _buildAIScan(bool isArabic) {
+  Widget _buildAIScan(LanguageProvider lang) {
+    final isArabic = lang.isArabic;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Container(
-            height: 400,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border, width: 2),
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.camera_alt_outlined,
-                    size: 80,
-                    color: AppColors.textDisabled,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    isArabic ? 'التقط صورة لتقرير InBody' : 'Capture InBody Report',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    isArabic
-                        ? 'تأكد من أن جميع الأرقام واضحة'
-                        : 'Make sure all numbers are clear',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: _selectedImageBytes == null
+                ? _buildAiIntro(lang, isArabic)
+                : _buildAiPreview(lang, isArabic),
           ),
-          
           const SizedBox(height: 24),
-          
-          SizedBox(
-            width: double.infinity,
-            child: CustomButton(
-              text: isArabic ? 'فتح الكاميرا' : 'Open Camera',
-              onPressed: () {
-                // Implement camera
-                _openCamera();
-              },
-              variant: ButtonVariant.primary,
-              size: ButtonSize.large,
-              icon: Icons.camera_alt,
-              fullWidth: true,
-            ),
-          ),
-          
-          const SizedBox(height: 12),
-          
-          SizedBox(
-            width: double.infinity,
-            child: CustomButton(
-              text: isArabic ? 'اختيار من المعرض' : 'Choose from Gallery',
-              onPressed: () {
-                // Implement gallery picker
-                _openGallery();
-              },
-              variant: ButtonVariant.secondary,
-              size: ButtonSize.large,
-              icon: Icons.photo_library,
-              fullWidth: true,
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-          
           TextButton(
             onPressed: () {
-              setState(() {
-                _inputMode = 'selection';
-              });
+              _clearAiCapture();
+              setState(() => _inputMode = 'selection');
             },
-            child: Text(isArabic ? 'رجوع' : 'Back'),
+            child: Text(lang.t('back')),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildAiIntro(LanguageProvider lang, bool isArabic) {
+    return Column(
+      key: const ValueKey('ai-intro'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.accent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: const Icon(Icons.auto_awesome, color: Colors.white, size: 36),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isArabic ? 'تحليل InBody بالذكاء الاصطناعي' : 'AI-powered InBody analysis',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isArabic
+                    ? 'التقط صورة واضحة لتقرير InBody وسنملأ الأرقام تلقائياً.'
+                    : 'Capture a clear photo of your InBody report and we will fill every metric for you.',
+                style: const TextStyle(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Column(
+                children: [
+                  _buildAiHintRow(
+                    Icons.photo_camera_outlined,
+                    isArabic ? 'احرص على إضاءة جيدة وخلفية نظيفة.' : 'Use good lighting and a clean background.',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildAiHintRow(
+                    Icons.crop_free,
+                    isArabic ? 'قم بمحاذاة التقرير بالكامل داخل الإطار.' : 'Align the entire report inside the frame.',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildAiHintRow(
+                    Icons.timer,
+                    isArabic ? 'يستغرق التحليل ثوانٍ معدودة.' : 'Analysis takes only a few seconds.',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        CustomButton(
+          text: isArabic ? 'فتح الكاميرا' : 'Open Camera',
+          onPressed: _openCamera,
+          variant: ButtonVariant.primary,
+          size: ButtonSize.large,
+          icon: Icons.camera_alt,
+          fullWidth: true,
+        ),
+        const SizedBox(height: 12),
+        CustomButton(
+          text: isArabic ? 'اختيار من المعرض' : 'Choose from Gallery',
+          onPressed: _openGallery,
+          variant: ButtonVariant.secondary,
+          size: ButtonSize.large,
+          icon: Icons.photo_library,
+          fullWidth: true,
+        ),
+        const SizedBox(height: 8),
+        CustomButton(
+          text: isArabic ? 'الانتقال للإدخال اليدوي' : 'Switch to manual entry',
+          onPressed: () => setState(() => _inputMode = 'manual'),
+          variant: ButtonVariant.ghost,
+          size: ButtonSize.medium,
+          fullWidth: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAiPreview(LanguageProvider lang, bool isArabic) {
+    final summary = _extractedData;
+    return Column(
+      key: const ValueKey('ai-preview'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: _selectedImageBytes == null
+                        ? const SizedBox.shrink()
+                        : Image.memory(
+                            _selectedImageBytes!,
+                            height: 280,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+                  PositionedDirectional(
+                    top: 12,
+                    end: 12,
+                    child: Material(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: _isAnalyzing ? null : _clearAiCapture,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (_isAnalyzing) ...[
+                const SizedBox(height: 8),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 12),
+                Text(
+                  isArabic ? 'يتم الآن تحليل الصورة...' : 'Analyzing your scan...',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isArabic
+                      ? 'نستخرج تلقائياً كل البيانات المهمة من تقريرك.'
+                      : 'We extract every important metric from your report.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 12),
+                const LinearProgressIndicator(value: 0.65, minHeight: 6),
+              ]
+              else if (_extractionComplete && summary != null) ...[
+                Text(
+                  isArabic ? 'تم استخراج البيانات' : 'Data extraction complete',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  isArabic
+                      ? 'راجع أبرز القياسات ثم تابع لتعديل أي قيمة قبل الحفظ.'
+                      : 'Review the highlighted metrics, then continue to fine-tune before saving.',
+                  style: const TextStyle(color: AppColors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                _buildAiSummaryGrid(summary, isArabic),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        text: isArabic ? 'إعادة الالتقاط' : 'Retake photo',
+                        onPressed: _clearAiCapture,
+                        variant: ButtonVariant.outline,
+                        size: ButtonSize.medium,
+                        icon: Icons.refresh,
+                        fullWidth: true,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: CustomButton(
+                        text: isArabic ? 'استخدام هذه البيانات' : 'Use extracted data',
+                        onPressed: () => _applyExtractedDataAndContinue(lang),
+                        variant: ButtonVariant.primary,
+                        size: ButtonSize.medium,
+                        icon: isArabic ? Icons.arrow_back : Icons.arrow_forward,
+                        fullWidth: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ]
+              else ...[
+                Text(
+                  isArabic ? 'جارٍ تجهيز المعاينة...' : 'Preparing preview...',
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAiHintRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.primary),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAiSummaryGrid(Map<String, dynamic> summary, bool isArabic) {
+    final weightValue = _formatNumber(summary['weight'] as num?);
+    final bmiValue = _formatNumber(summary['bmi'] as num?);
+    final fatValue = _formatNumber(summary['bodyFat'] as num?);
+    final muscleValue = _formatNumber(summary['muscleMass'] as num?);
+    final stats = [
+      {
+        'label': isArabic ? 'الوزن' : 'Weight',
+        'value': weightValue == '--' ? weightValue : '$weightValue kg',
+        'color': AppColors.primary,
+      },
+      {
+        'label': 'BMI',
+        'value': bmiValue,
+        'color': AppColors.secondaryForeground,
+      },
+      {
+        'label': isArabic ? 'دهون الجسم' : 'Body fat',
+        'value': fatValue == '--' ? fatValue : '$fatValue%',
+        'color': const Color(0xFF22C55E),
+      },
+      {
+        'label': isArabic ? 'الكتلة العضلية' : 'Muscle mass',
+        'value': muscleValue == '--' ? muscleValue : '$muscleValue kg',
+        'color': const Color(0xFF0EA5E9),
+      },
+    ];
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.7,
+      children: stats
+          .map(
+            (stat) => _buildAiStatTile(
+              stat['label'] as String,
+              stat['value'] as String,
+              stat['color'] as Color,
+              isArabic,
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildAiStatTile(String label, String value, Color color, bool isArabic) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openCamera() async {
+    try {
+      final result = await _picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear,
+        imageQuality: 85,
+      );
+      if (result != null) {
+        await _handlePickedImage(result);
+      }
+    } catch (error) {
+      _showImageError();
+    }
+  }
+
+  Future<void> _openGallery() async {
+    try {
+      final result = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (result != null) {
+        await _handlePickedImage(result);
+      }
+    } catch (error) {
+      _showImageError();
+    }
+  }
+
+  Future<void> _handlePickedImage(XFile file) async {
+    try {
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _selectedImageBytes = bytes;
+        _isAnalyzing = true;
+        _extractionComplete = false;
+        _extractedData = null;
+      });
+      await _simulateExtraction();
+    } catch (error) {
+      _showImageError();
+    }
+  }
+
+  Future<void> _simulateExtraction() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    final inferredWeight = double.tryParse(_weightController.text) ?? 72.4;
+    final extractedData = {
+      'weight': inferredWeight,
+      'bmi': double.tryParse(_bmiController.text) ?? 23.4,
+      'bodyFat': double.tryParse(_bodyFatController.text) ?? 17.8,
+      'muscleMass': double.tryParse(_muscleMassController.text) ?? (inferredWeight * 0.42),
+      'visceralFat': int.tryParse(_visceralFatController.text) ?? 8,
+      'bodyWater': double.tryParse(_bodyWaterController.text) ?? (inferredWeight * 0.62),
+      'protein': double.tryParse(_proteinController.text) ?? (inferredWeight * 0.18),
+      'mineral': double.tryParse(_mineralController.text) ?? (inferredWeight * 0.045),
+      'bmr': int.tryParse(_bmrController.text) ?? 1580,
+    };
+
+    setState(() {
+      _isAnalyzing = false;
+      _extractionComplete = true;
+      _extractedData = extractedData;
+    });
+  }
+
+  void _showImageError() {
+    if (!mounted) return;
+    final lang = context.read<LanguageProvider>();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          lang.isArabic
+              ? 'حدث خطأ أثناء معالجة الصورة. حاول مرة أخرى.'
+              : 'Something went wrong while processing the image. Please try again.',
+        ),
+        backgroundColor: AppColors.error,
+      ),
+    );
+  }
+
+  void _clearAiCapture() {
+    setState(() {
+      _selectedImageBytes = null;
+      _isAnalyzing = false;
+      _extractionComplete = false;
+      _extractedData = null;
+    });
+  }
+
+  void _applyExtractedDataAndContinue(LanguageProvider lang) {
+    final data = _extractedData;
+    if (data == null) return;
+
+    _weightController.text = _formatNumber(data['weight'] as num?, emptyIfNull: true);
+    _bodyFatController.text = _formatNumber(data['bodyFat'] as num?, emptyIfNull: true);
+    _muscleMassController.text = _formatNumber(data['muscleMass'] as num?, emptyIfNull: true);
+    _bmiController.text = _formatNumber(data['bmi'] as num?, emptyIfNull: true);
+    _visceralFatController.text = _formatNumber(
+      data['visceralFat'] as num?,
+      fractionDigits: 0,
+      emptyIfNull: true,
+    );
+    _bodyWaterController.text = _formatNumber(data['bodyWater'] as num?, emptyIfNull: true);
+    _proteinController.text = _formatNumber(data['protein'] as num?, emptyIfNull: true);
+    _mineralController.text = _formatNumber(data['mineral'] as num?, emptyIfNull: true);
+    _bmrController.text = _formatNumber(
+      data['bmr'] as num?,
+      fractionDigits: 0,
+      emptyIfNull: true,
+    );
+
+    setState(() {
+      _inputMode = 'manual';
+      _selectedImageBytes = null;
+      _isAnalyzing = false;
+      _extractionComplete = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          lang.isArabic
+              ? 'تمت إضافة القياسات المستخرجة، تأكد منها قبل الحفظ.'
+              : 'Extracted metrics applied. Review them before saving.',
+        ),
+        backgroundColor: AppColors.success,
+      ),
+    );
+  }
+
+  String _formatNumber(num? value, {int fractionDigits = 1, bool emptyIfNull = false}) {
+    if (value == null) {
+      return emptyIfNull ? '' : '--';
+    }
+    if (value is int || fractionDigits == 0) {
+      return value.toString();
+    }
+    return value.toStringAsFixed(fractionDigits);
   }
   
   Widget _buildManualInput(bool isArabic) {
@@ -722,64 +1126,5 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
       );
     }
   }
-  
-  void _openCamera() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-        _isAnalyzing = true;
-      });
-      // Simulate analysis
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            _isAnalyzing = false;
-            _extractionComplete = true;
-            _extractedData = {
-              'weight': 70.5,
-              'bodyFat': 18.5,
-              'muscleMass': 35.2,
-              'bmi': 23.4,
-              'visceralFat': 8,
-              'bodyWater': 60.2,
-              'protein': 12.5,
-              'mineral': 3.2,
-              'bmr': 1650,
-            };
-          });
-        }
-      });
-    }
-  }
-  
-  void _openGallery() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-        _isAnalyzing = true;
-      });
-      // Simulate analysis
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            _isAnalyzing = false;
-            _extractionComplete = true;
-            _extractedData = {
-              'weight': 70.5,
-              'bodyFat': 18.5,
-              'muscleMass': 35.2,
-              'bmi': 23.4,
-              'visceralFat': 8,
-              'bodyWater': 60.2,
-              'protein': 12.5,
-              'mineral': 3.2,
-              'bmr': 1650,
-            };
-          });
-        }
-      });
-    }
-  }
+
 }

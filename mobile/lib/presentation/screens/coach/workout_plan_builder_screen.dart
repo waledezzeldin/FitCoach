@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
+import '../../../data/demo/demo_data.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/coach_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
 
 class WorkoutPlanBuilderScreen extends StatefulWidget {
   final String clientId;
   final String clientName;
-  
+
   const WorkoutPlanBuilderScreen({
     super.key,
     required this.clientId,
@@ -16,31 +20,103 @@ class WorkoutPlanBuilderScreen extends StatefulWidget {
   });
 
   @override
-  State<WorkoutPlanBuilderScreen> createState() => _WorkoutPlanBuilderScreenState();
+  State<WorkoutPlanBuilderScreen> createState() =>
+      _WorkoutPlanBuilderScreenState();
 }
 
 class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
   final TextEditingController _planNameController = TextEditingController();
-  final TextEditingController _planDescriptionController = TextEditingController();
-  
+  final TextEditingController _planDescriptionController =
+      TextEditingController();
+
   String _selectedGoal = 'fat_loss';
   int _daysPerWeek = 3;
   List<Map<String, dynamic>> _workoutDays = [];
-  
+  bool _isSaving = false;
+
   @override
   void initState() {
     super.initState();
     _initializeWorkoutDays();
   }
-  
+
   void _initializeWorkoutDays() {
-    _workoutDays = List.generate(_daysPerWeek, (index) => {
-      'day': index + 1,
-      'name': 'Day ${index + 1}',
-      'exercises': <Map<String, dynamic>>[],
+    _workoutDays = List.generate(
+        _daysPerWeek,
+        (index) => {
+              'day': index + 1,
+              'name': 'Day ${index + 1}',
+              'exercises': <Map<String, dynamic>>[],
+            });
+  }
+
+  void _applyTemplate(String templateKey, bool isArabic) {
+    setState(() {
+      if (templateKey == 'beginner') {
+        _selectedGoal = 'fat_loss';
+        _daysPerWeek = 3;
+        _planNameController.text =
+            isArabic ? 'قالب مبتدئين - 3 أيام' : 'Beginner Template - 3 Days';
+        _planDescriptionController.text = isArabic
+            ? 'خطة بسيطة للمبتدئين تركز على التكنيك والالتزام.'
+            : 'A simple beginner plan focused on technique and consistency.';
+      } else if (templateKey == 'intermediate') {
+        _selectedGoal = 'maintenance';
+        _daysPerWeek = 4;
+        _planNameController.text =
+            isArabic ? 'قالب متوسط - 4 أيام' : 'Intermediate Template - 4 Days';
+        _planDescriptionController.text = isArabic
+            ? 'حجم تدريب أعلى وتنوع أكبر في التمارين.'
+            : 'Higher training volume with more exercise variety.';
+      } else {
+        _selectedGoal = 'muscle_gain';
+        _daysPerWeek = 5;
+        _planNameController.text =
+            isArabic ? 'قالب متقدم - 5 أيام' : 'Advanced Template - 5 Days';
+        _planDescriptionController.text = isArabic
+            ? 'خطة متقدمة مع تقسيم عضلي وحجم مرتفع.'
+            : 'Advanced split with higher overall volume.';
+      }
+
+      _initializeWorkoutDays();
+
+      // Seed each day with a few example exercises.
+      final seeds = <List<Map<String, dynamic>>>[
+        [
+          {'name': 'Squat', 'sets': 3, 'reps': 10},
+          {'name': 'Push Up', 'sets': 3, 'reps': 12},
+          {'name': 'Plank', 'sets': 3, 'reps': 45},
+        ],
+        [
+          {'name': 'Deadlift', 'sets': 3, 'reps': 8},
+          {'name': 'Row', 'sets': 3, 'reps': 10},
+          {'name': 'Lunge', 'sets': 3, 'reps': 12},
+        ],
+        [
+          {'name': 'Bench Press', 'sets': 3, 'reps': 8},
+          {'name': 'Lat Pulldown', 'sets': 3, 'reps': 10},
+          {'name': 'Shoulder Press', 'sets': 3, 'reps': 10},
+        ],
+        [
+          {'name': 'Leg Press', 'sets': 4, 'reps': 10},
+          {'name': 'Incline DB Press', 'sets': 3, 'reps': 10},
+          {'name': 'Cable Row', 'sets': 3, 'reps': 12},
+        ],
+        [
+          {'name': 'Hip Thrust', 'sets': 4, 'reps': 10},
+          {'name': 'Pull Up', 'sets': 3, 'reps': 8},
+          {'name': 'Core Circuit', 'sets': 3, 'reps': 12},
+        ],
+      ];
+
+      for (var i = 0; i < _workoutDays.length; i++) {
+        final exercises = seeds[i % seeds.length];
+        _workoutDays[i]['exercises'] =
+            exercises.map((e) => Map<String, dynamic>.from(e)).toList();
+      }
     });
   }
-  
+
   @override
   void dispose() {
     _planNameController.dispose();
@@ -52,7 +128,7 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final isArabic = languageProvider.isArabic;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isArabic ? 'إنشاء خطة تمرين' : 'Create Workout Plan'),
@@ -107,9 +183,9 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Plan name
             Text(
               isArabic ? 'اسم الخطة' : 'Plan Name',
@@ -122,15 +198,17 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
             TextField(
               controller: _planNameController,
               decoration: InputDecoration(
-                hintText: isArabic ? 'مثال: خطة تحول الجسم' : 'e.g., Body Transformation Plan',
+                hintText: isArabic
+                    ? 'مثال: خطة تحول الجسم'
+                    : 'e.g., Body Transformation Plan',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Description
             Text(
               isArabic ? 'الوصف' : 'Description',
@@ -152,9 +230,9 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Goal selection
             Text(
               isArabic ? 'الهدف' : 'Goal',
@@ -166,7 +244,8 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: ['fat_loss', 'muscle_gain', 'general_fitness'].map((goal) {
+              children:
+                  ['fat_loss', 'muscle_gain', 'general_fitness'].map((goal) {
                 final isSelected = _selectedGoal == goal;
                 return FilterChip(
                   label: Text(_getGoalLabel(goal, isArabic)),
@@ -181,9 +260,9 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
                 );
               }).toList(),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Days per week
             Text(
               isArabic ? 'أيام التمرين في الأسبوع' : 'Workout Days Per Week',
@@ -210,13 +289,10 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primary
-                            : Colors.white,
+                        color: isSelected ? AppColors.primary : Colors.white,
                         border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.border,
+                          color:
+                              isSelected ? AppColors.primary : AppColors.border,
                         ),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -236,9 +312,9 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
                 );
               }),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Workout days
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -258,15 +334,15 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             ..._workoutDays.asMap().entries.map((entry) {
               final index = entry.key;
               final day = entry.value;
               return _buildWorkoutDayCard(day, index, isArabic);
             }).toList(),
-            
+
             const SizedBox(height: 32),
-            
+
             // Save button
             SizedBox(
               width: double.infinity,
@@ -283,10 +359,11 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
       ),
     );
   }
-  
-  Widget _buildWorkoutDayCard(Map<String, dynamic> day, int index, bool isArabic) {
+
+  Widget _buildWorkoutDayCard(
+      Map<String, dynamic> day, int index, bool isArabic) {
     final exercises = day['exercises'] as List<Map<String, dynamic>>;
-    
+
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -316,7 +393,6 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
               ),
             ],
           ),
-          
           if (exercises.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -351,7 +427,8 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
                   style: const TextStyle(fontSize: 12),
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.delete, size: 20, color: AppColors.error),
+                  icon: const Icon(Icons.delete,
+                      size: 20, color: AppColors.error),
                   onPressed: () {
                     setState(() {
                       exercises.removeAt(exerciseIndex);
@@ -364,7 +441,7 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
       ),
     );
   }
-  
+
   String _getGoalLabel(String goal, bool isArabic) {
     final labels = {
       'fat_loss': isArabic ? 'حرق دهون' : 'Fat Loss',
@@ -373,10 +450,10 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
     };
     return labels[goal] ?? goal;
   }
-  
+
   void _editDayName(int index, bool isArabic) {
     final controller = TextEditingController(text: _workoutDays[index]['name']);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -406,7 +483,7 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
       ),
     );
   }
-  
+
   void _addExercise(int dayIndex, bool isArabic) {
     showDialog(
       context: context,
@@ -414,7 +491,7 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
         String exerciseName = '';
         int sets = 3;
         int reps = 12;
-        
+
         return StatefulBuilder(
           builder: (context, setDialogState) => AlertDialog(
             title: Text(isArabic ? 'إضافة تمرين' : 'Add Exercise'),
@@ -425,7 +502,8 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
                   TextField(
                     decoration: InputDecoration(
                       labelText: isArabic ? 'اسم التمرين' : 'Exercise Name',
-                      hintText: isArabic ? 'مثال: ضغط البنش' : 'e.g., Bench Press',
+                      hintText:
+                          isArabic ? 'مثال: ضغط البنش' : 'e.g., Bench Press',
                     ),
                     onChanged: (value) => exerciseName = value,
                   ),
@@ -448,7 +526,8 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
                             labelText: isArabic ? 'التكرارات' : 'Reps',
                           ),
                           keyboardType: TextInputType.number,
-                          onChanged: (value) => reps = int.tryParse(value) ?? 12,
+                          onChanged: (value) =>
+                              reps = int.tryParse(value) ?? 12,
                         ),
                       ),
                     ],
@@ -482,7 +561,7 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
       },
     );
   }
-  
+
   void _addFromTemplate(bool isArabic) {
     showDialog(
       context: context,
@@ -495,21 +574,21 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
               title: Text(isArabic ? 'قالب المبتدئين' : 'Beginner Template'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Load template
+                _applyTemplate('beginner', isArabic);
               },
             ),
             ListTile(
               title: Text(isArabic ? 'قالب متوسط' : 'Intermediate Template'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Load template
+                _applyTemplate('intermediate', isArabic);
               },
             ),
             ListTile(
               title: Text(isArabic ? 'قالب متقدم' : 'Advanced Template'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Load template
+                _applyTemplate('advanced', isArabic);
               },
             ),
           ],
@@ -517,8 +596,8 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
       ),
     );
   }
-  
-  void _savePlan(bool isArabic) {
+
+  Future<void> _savePlan(bool isArabic) async {
     if (_planNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -530,16 +609,64 @@ class _WorkoutPlanBuilderScreenState extends State<WorkoutPlanBuilderScreen> {
       );
       return;
     }
-    
-    // TODO: Save to API
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isArabic ? 'تم حفظ الخطة بنجاح' : 'Plan saved successfully',
+
+    if (_isSaving) return;
+
+    final authProvider = context.read<AuthProvider>();
+    final coachProvider = context.read<CoachProvider>();
+
+    final coachId = authProvider.user?.id;
+    if (coachId == null || coachId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isArabic
+              ? 'تعذر تحديد حساب المدرب'
+              : 'Unable to determine coach account'),
+          backgroundColor: AppColors.error,
         ),
-        backgroundColor: AppColors.success,
-      ),
-    );
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final notes = _planDescriptionController.text.trim();
+      final planData = <String, dynamic>{
+        'name': _planNameController.text.trim(),
+        'description': notes,
+        'goal': _selectedGoal,
+        'daysPerWeek': _daysPerWeek,
+        'days': _workoutDays,
+      };
+
+      final success = await coachProvider.updateClientWorkoutPlan(
+        coachId,
+        widget.clientId,
+        planData,
+        notes,
+      );
+
+      if (!mounted) return;
+      if (success) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                isArabic ? 'تم حفظ الخطة بنجاح' : 'Plan saved successfully'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(coachProvider.error ??
+                (isArabic ? 'فشل حفظ الخطة' : 'Failed to save plan')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 }

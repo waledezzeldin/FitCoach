@@ -1,6 +1,8 @@
 /// API Configuration
 /// Centralized API endpoint configuration for different environments
 
+import 'package:flutter/foundation.dart';
+
 class ApiConfig {
   // Environment flag
   static const String environment = String.fromEnvironment(
@@ -69,10 +71,13 @@ class ApiConfig {
 
   /// Print current configuration (for debugging)
   static void printConfig() {
-    print('=== API Configuration ===');
-    print('Environment: $environment');
-    print('Base URL: $baseUrl');
-    print('Socket URL: $socketUrl');
-    print('========================');
+    if (!kDebugMode) {
+      return;
+    }
+    debugPrint('=== API Configuration ===');
+    debugPrint('Environment: $environment');
+    debugPrint('Base URL: $baseUrl');
+    debugPrint('Socket URL: $socketUrl');
+    debugPrint('========================');
   }
 }

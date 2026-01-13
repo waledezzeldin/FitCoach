@@ -163,20 +163,22 @@ class _AppState extends State<App> {
         return const WorkoutScreen();
       
       case 'nutrition':
-        return const NutritionScreen();
+        return NutritionScreen(
+          onBack: () => _navigateToScreen('home'),
+        );
       
       case 'coach':
         return const CoachMessagingScreen();
       
       case 'store':
-        return const StoreScreen(
-          // Replace 'onBack' with the correct parameter name or remove if not needed
-          // For example, if the correct parameter is 'onClose':
-          // onClose: () => _navigateToScreen('home'),
+        return StoreScreen(
+          onBack: () => _navigateToScreen('home'),
         );
       
       case 'account':
-        return const AccountScreen();
+        return AccountScreen(
+          onBack: () => _navigateToScreen('home'),
+        );
       
       case 'coachDashboard':
         return const CoachDashboardScreen(

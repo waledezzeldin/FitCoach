@@ -61,7 +61,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: TextButton(
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.small),
@@ -105,9 +105,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         border: Border(
-                          top: BorderSide(color: AppColors.border.withOpacity(0.8)),
+                          top: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
                         ),
                       ),
                       child: Column(
@@ -210,8 +210,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         description: lang.t('onboarding_coaching_desc'),
         imagePath: 'assets/placeholders/splash_onboarding/coach_onboarding.png',
         gradientColors: [
-          AppColors.secondaryForeground.withOpacity(0.2),
-          AppColors.primary.withOpacity(0.2),
+          AppColors.secondaryForeground.withValues(alpha: 0.2),
+          AppColors.primary.withValues(alpha: 0.2),
         ],
         accentColor: AppColors.secondaryForeground,
       ),
@@ -220,8 +220,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         description: lang.t('onboarding_nutrition_desc'),
         imagePath: 'assets/placeholders/splash_onboarding/nuitration_onboarding.png',
         gradientColors: [
-          AppColors.accent.withOpacity(0.2),
-          AppColors.primary.withOpacity(0.2),
+          AppColors.accent.withValues(alpha: 0.2),
+          AppColors.primary.withValues(alpha: 0.2),
         ],
         accentColor: AppColors.accent,
       ),
@@ -230,8 +230,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         description: lang.t('onboarding_workouts_desc'),
         imagePath: 'assets/placeholders/splash_onboarding/workout_onboarding.png',
         gradientColors: [
-          AppColors.primary.withOpacity(0.2),
-          AppColors.secondaryForeground.withOpacity(0.2),
+          AppColors.primary.withValues(alpha: 0.2),
+          AppColors.secondaryForeground.withValues(alpha: 0.2),
         ],
         accentColor: AppColors.primary,
       ),
@@ -240,8 +240,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         description: lang.t('onboarding_store_desc'),
         imagePath: 'assets/placeholders/splash_onboarding/store_onboarding.png',
         gradientColors: [
-          AppColors.accent.withOpacity(0.2),
-          AppColors.secondaryForeground.withOpacity(0.2),
+          AppColors.accent.withValues(alpha: 0.2),
+          AppColors.secondaryForeground.withValues(alpha: 0.2),
         ],
         accentColor: AppColors.accent,
       ),
@@ -509,7 +509,7 @@ class _BlurAccent extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         shape: BoxShape.circle,
       ),
     );

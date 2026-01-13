@@ -306,7 +306,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
           ),
-          Container(color: Colors.black.withOpacity(0.2)),
+          Container(color: Colors.black.withValues(alpha: 0.2)),
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -357,7 +357,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               languageProvider.t('auth_tagline'),
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white.withOpacity(0.85),
+                                color: Colors.white.withValues(alpha: 0.85),
                               ),
                               textAlign: TextAlign.center,
                             ),

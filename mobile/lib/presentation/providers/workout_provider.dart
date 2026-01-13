@@ -28,46 +28,16 @@ class WorkoutProvider extends ChangeNotifier {
     return _activePlan!.days![_currentDayIndex!];
   }
 
-  WorkoutPlan _buildFallbackPlan() {
-    final exercise = Exercise(
-      id: 'ex1',
-      name: 'Push Up',
-      nameAr: 'تمرين الضغط',
-      nameEn: 'Push Up',
-      sets: 3,
-      reps: '12',
-    );
-
-    final day = WorkoutDay(
-      id: 'day1',
-      dayName: 'Day 1',
-      dayNameAr: 'اليوم 1',
-      dayNumber: 1,
-      exercises: [exercise],
-    );
-
-    return WorkoutPlan(
-      id: 'fallback-plan',
-      userId: 'user',
-      name: 'Fallback Plan',
-      nameAr: 'خطة افتراضية',
-      description: 'Single day fallback plan',
-      descriptionAr: 'خطة تمرين افتراضية ليوم واحد',
-      days: [day],
-      startDate: DateTime.now(),
-      createdAt: DateTime.now(),
-    );
-  }
-
   Future<void> loadActivePlan() async {
     if (DemoConfig.isDemo) {
-      _activePlan = DemoData.workoutPlan(userId: 'demo-user');
+      _activePlan = DemoData.workoutPlan(userId: DemoConfig.demoUserId);
       _currentDayIndex = 0;
       _error = null;
       _isLoading = false;
       notifyListeners();
       return;
     }
+    _isLoading = true;
     _error = null;
     notifyListeners();
 
@@ -76,7 +46,8 @@ class WorkoutProvider extends ChangeNotifier {
       _activePlan = plan;
     } catch (e) {
       _error = e.toString();
-      _activePlan ??= _buildFallbackPlan();
+      _activePlan = null;
+      _currentDayIndex = null;
     }
 
     _isLoading = false;
@@ -91,6 +62,7 @@ class WorkoutProvider extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    _isLoading = true;
     _error = null;
     notifyListeners();
 
@@ -99,16 +71,7 @@ class WorkoutProvider extends ChangeNotifier {
       _exerciseLibrary = exercisesData.map<Exercise>((e) => Exercise.fromJson(e)).toList();
     } catch (e) {
       _error = e.toString();
-      _exerciseLibrary = [
-        Exercise(
-          id: 'ex1',
-          name: 'Push Up',
-          nameAr: 'Push Up',
-          nameEn: 'Push Up',
-          sets: 3,
-          reps: '12',
-        ),
-      ];
+      _exerciseLibrary = [];
     }
 
     _isLoading = false;

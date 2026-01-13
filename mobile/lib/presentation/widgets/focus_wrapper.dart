@@ -62,14 +62,14 @@ class _FocusWrapperState extends State<FocusWrapper> {
         borderRadius: widget.borderRadius ?? BorderRadius.circular(AppRadius.medium),
         border: widget.showFocusRing && _isFocused
             ? Border.all(
-                color: (widget.focusColor ?? AppColors.ring).withValues(alpha: (0.5 * 255)),
+                color: (widget.focusColor ?? AppColors.ring).withValues(alpha: 0.5),
                 width: widget.ringWidth,
               )
             : null,
         boxShadow: widget.showFocusRing && _isFocused
             ? [
                 BoxShadow(
-                  color: (widget.focusColor ?? AppColors.ring).withValues(alpha: (0.2 * 255)),
+                  color: (widget.focusColor ?? AppColors.ring).withValues(alpha: 0.2),
                   blurRadius: 8,
                   spreadRadius: 0,
                 ),
@@ -102,7 +102,7 @@ InputDecoration getFocusedInputDecoration({
     errorText: errorText,
     enabled: enabled,
     filled: true,
-    fillColor: enabled ? AppColors.surface : AppColors.surface.withValues(alpha: (0.5 * 255)),
+    fillColor: enabled ? AppColors.surface : AppColors.surface.withValues(alpha: 0.5),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.medium),
@@ -126,7 +126,7 @@ InputDecoration getFocusedInputDecoration({
     ),
     disabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.medium),
-      borderSide: BorderSide(color: AppColors.border.withValues(alpha: (0.5 * 255)), width: 1),
+      borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.5), width: 1),
     ),
   );
 }

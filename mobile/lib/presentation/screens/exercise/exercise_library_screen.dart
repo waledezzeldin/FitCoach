@@ -290,7 +290,10 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
             ),
           ),
           
-          const Icon(Icons.chevron_right, color: AppColors.textDisabled),
+          Icon(
+            isArabic ? Icons.chevron_left : Icons.chevron_right,
+            color: AppColors.textDisabled,
+          ),
         ],
       ),
     );

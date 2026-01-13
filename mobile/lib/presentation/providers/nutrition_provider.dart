@@ -35,6 +35,41 @@ class NutritionProvider extends ChangeNotifier {
     };
   }
 
+  List<DayMealPlan> get dayPlans => _activePlan?.days ?? const <DayMealPlan>[];
+
+  int getTodayDayNumber() {
+    final days = dayPlans;
+    if (days.isEmpty) return 1;
+
+    final start = _activePlan?.startDate;
+    if (start == null) {
+      // Fall back to the first day.
+      return days.first.dayNumber;
+    }
+
+    final diff = DateTime.now().difference(DateTime(start.year, start.month, start.day)).inDays;
+    final normalized = (diff % days.length) + 1;
+    return normalized;
+  }
+
+  DayMealPlan? getDayPlanByNumber(int dayNumber) {
+    try {
+      return dayPlans.firstWhere((d) => d.dayNumber == dayNumber);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<Meal> getMealsForDayNumber(int dayNumber) {
+    final plan = getDayPlanByNumber(dayNumber);
+    if (plan != null) return plan.meals;
+    return _activePlan?.meals ?? const <Meal>[];
+  }
+
+  List<Meal> getMealsForToday() {
+    return getMealsForDayNumber(getTodayDayNumber());
+  }
+
   List<Map<String, dynamic>> get dailyMealPlan {
     final meals = _activePlan?.meals ?? [];
     return meals
@@ -82,83 +117,15 @@ class NutritionProvider extends ChangeNotifier {
     };
   }
 
-  NutritionPlan _buildFallbackPlan() {
-    final macroTargets = {
-      'calories': 2000,
-      'protein': 150,
-      'carbs': 250,
-      'fat': 70,
-    };
-
-    final mealMacros = MacroTargets(protein: 30, carbs: 40, fats: 15);
-    final meals = [
-      Meal(
-        id: 'meal1',
-        name: 'Breakfast',
-        nameAr: 'Breakfast',
-        nameEn: 'Breakfast',
-        type: 'breakfast',
-        time: '08:00',
-        foods: [],
-        macros: mealMacros,
-        calories: 400,
-      ),
-      Meal(
-        id: 'meal2',
-        name: 'Lunch',
-        nameAr: 'Lunch',
-        nameEn: 'Lunch',
-        type: 'lunch',
-        time: '13:00',
-        foods: [],
-        macros: mealMacros,
-        calories: 700,
-      ),
-      Meal(
-        id: 'meal3',
-        name: 'Dinner',
-        nameAr: 'Dinner',
-        nameEn: 'Dinner',
-        type: 'dinner',
-        time: '19:00',
-        foods: [],
-        macros: mealMacros,
-        calories: 900,
-      ),
-    ];
-
-    final day = DayMealPlan(
-      id: 'day1',
-      dayName: 'Day 1',
-      dayNumber: 1,
-      meals: meals,
-    );
-
-    return NutritionPlan(
-      id: 'fallback-plan',
-      userId: 'user',
-      name: 'Fallback Plan',
-      days: [day],
-      macros: {
-        'protein': 150.0,
-        'carbs': 250.0,
-        'fats': 70.0,
-      },
-      dailyCalories: 2000,
-      startDate: DateTime.now(),
-      createdAt: DateTime.now(),
-      macroTargets: macroTargets,
-    );
-  }
-
   Future<void> loadActivePlan() async {
     if (DemoConfig.isDemo) {
-      _activePlan = DemoData.nutritionPlan(userId: 'demo-user');
+      _activePlan = DemoData.nutritionPlan(userId: DemoConfig.demoUserId);
       _error = null;
       _isLoading = false;
       notifyListeners();
       return;
     }
+    _isLoading = true;
     _error = null;
     notifyListeners();
 
@@ -167,7 +134,7 @@ class NutritionProvider extends ChangeNotifier {
       _activePlan = plan;
     } catch (e) {
       _error = e.toString();
-      _activePlan ??= _buildFallbackPlan();
+      _activePlan = null;
     }
 
     _isLoading = false;
