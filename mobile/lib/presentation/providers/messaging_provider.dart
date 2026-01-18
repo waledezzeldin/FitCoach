@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../core/config/demo_config.dart';
-import '../../data/demo/demo_data.dart';
+import '../../core/config/demo_mode.dart';
+import '../../data/demo/repositories/demo_messaging_repository.dart';
 import '../../data/repositories/messaging_repository.dart';
 import '../../data/models/message.dart';
-import '../../data/models/coach_client.dart';
 
 class MessagingProvider extends ChangeNotifier {
   final MessagingRepository _repository;
+  final DemoMessagingRepository _demoRepository;
+  final DemoModeConfig _demoConfig;
   List<Message> _messages = [];
   List<Conversation> _conversations = [];
   Conversation? _activeConversation;
@@ -17,7 +19,12 @@ class MessagingProvider extends ChangeNotifier {
 
   String currentChatId = '';
 
-  MessagingProvider(this._repository);
+  MessagingProvider(
+    this._repository, {
+    DemoMessagingRepository? demoRepository,
+    DemoModeConfig? demoConfig,
+  })  : _demoRepository = demoRepository ?? DemoMessagingRepository(),
+        _demoConfig = demoConfig ?? const DemoModeConfig();
 
   List<Message> get messages => _messages;
   List<Conversation> get conversations => List.unmodifiable(_conversations);
@@ -32,14 +39,14 @@ class MessagingProvider extends ChangeNotifier {
     String coachId, {
     bool isArabic = false,
   }) async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       currentChatId = '${userId}_$coachId';
-      _activeConversation = DemoData.demoConversation(
+      _activeConversation = await _demoRepository.buildConversation(
         userId: userId,
         coachId: coachId,
         isArabic: isArabic,
       );
-      _messages = DemoData.chatMessages(
+      _messages = await _demoRepository.getMessages(
         conversationId: currentChatId,
         isArabic: isArabic,
       );
@@ -71,7 +78,7 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<void> _initializeSocket() async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       return;
     }
     try {
@@ -90,14 +97,14 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<void> connectSocket() async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       return;
     }
     await _initializeSocket();
   }
 
   Future<void> disconnect() async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       _isConnected = false;
       notifyListeners();
       return;
@@ -117,50 +124,18 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<void> loadConversations({bool isArabic = false}) async {
-    if (DemoConfig.isDemo) {
-      final List<CoachClient> clients = DemoData.coachClients();
-      final demoCoachId = DemoConfig.demoCoachId;
-      if (clients.isEmpty) {
-        final conversation = DemoData.demoConversation(
-          userId: DemoConfig.demoUserId,
-          coachId: demoCoachId,
-          isArabic: isArabic,
-        );
-        _conversations = [conversation];
-      } else {
-        _conversations = clients.asMap().entries.map((entry) {
-          final client = entry.value;
-          final base = DemoData.demoConversation(
-            userId: client.id,
-            coachId: demoCoachId,
-            isArabic: isArabic,
-          );
-          final offsetMinutes = entry.key * 9;
-          return Conversation(
-            id: base.id,
-            userId: client.id,
-            coachId: base.coachId,
-            lastMessageContent: base.lastMessageContent ??
-                (isArabic
-                    ? 'جاهز للجلسة القادمة؟'
-                    : 'Ready for the next check-in?'),
-            lastMessageAt: base.lastMessageAt?.subtract(
-                  Duration(minutes: offsetMinutes),
-                ) ??
-                DateTime.now().subtract(Duration(minutes: offsetMinutes + 4)),
-            unreadCount: entry.key == 0 ? 2 : 0,
-            createdAt: base.createdAt,
-            updatedAt:
-                base.updatedAt.subtract(Duration(minutes: offsetMinutes)),
-          );
-        }).toList();
-      }
+    if (_demoConfig.isDemo) {
+      _conversations = await _demoRepository.getConversations(
+        demoUserId: DemoConfig.demoUserId,
+        demoCoachId: DemoConfig.demoCoachId,
+        isArabic: isArabic,
+      );
 
       _activeConversation =
           _conversations.isNotEmpty ? _conversations.first : null;
       currentChatId = _activeConversation?.id ?? '';
       _messages = _activeConversation != null
-          ? DemoData.chatMessages(
+          ? await _demoRepository.getMessages(
               conversationId: _activeConversation!.id,
               isArabic: isArabic,
             )
@@ -192,18 +167,20 @@ class MessagingProvider extends ChangeNotifier {
 
   Future<void> loadConversation(String conversationId,
       {bool isArabic = false}) async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       final existing = _conversations.firstWhere(
         (c) => c.id == conversationId,
-        orElse: () => DemoData.demoConversation(
+        orElse: () => Conversation(
+          id: conversationId,
           userId: DemoConfig.demoUserId,
           coachId: DemoConfig.demoCoachId,
-          isArabic: isArabic,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         ),
       );
       _activeConversation = existing;
       currentChatId = conversationId;
-      _messages = DemoData.chatMessages(
+      _messages = await _demoRepository.getMessages(
         conversationId: conversationId,
         isArabic: isArabic,
       );
@@ -244,33 +221,14 @@ class MessagingProvider extends ChangeNotifier {
     await loadConversation(conversationId, isArabic: isArabic);
   }
 
-  Message _createLocalMessage(
-    String content, {
-    String senderId = 'user',
-    MessageType type = MessageType.text,
-    String? attachmentUrl,
-    String? attachmentType,
-  }) {
-    return Message(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      conversationId: currentChatId.isEmpty ? 'local' : currentChatId,
-      senderId: senderId,
-      receiverId: senderId == 'user' ? 'coach' : 'user',
-      content: content,
-      type: type,
-      attachmentUrl: attachmentUrl,
-      attachmentType: attachmentType,
-      isRead: false,
-      createdAt: DateTime.now(),
-    );
-  }
-
   Future<bool> sendMessage(String content,
       {MessageType type = MessageType.text}) async {
-    if (DemoConfig.isDemo) {
-      final message = _createLocalMessage(
-        content,
+    if (_demoConfig.isDemo) {
+      final message = await _demoRepository.buildOutgoingMessage(
+        conversationId: currentChatId.isEmpty ? 'local' : currentChatId,
         senderId: DemoConfig.demoUserId,
+        receiverId: DemoConfig.demoCoachId,
+        content: content,
         type: type,
       );
       _messages.add(message);
@@ -317,10 +275,12 @@ class MessagingProvider extends ChangeNotifier {
     String filePath,
     MessageType type,
   ) async {
-    if (DemoConfig.isDemo) {
-      final message = _createLocalMessage(
-        content,
+    if (_demoConfig.isDemo) {
+      final message = await _demoRepository.buildOutgoingMessage(
+        conversationId: currentChatId.isEmpty ? 'local' : currentChatId,
         senderId: DemoConfig.demoUserId,
+        receiverId: DemoConfig.demoCoachId,
+        content: content,
         type: type,
         attachmentUrl: filePath,
         attachmentType: type.name,
@@ -389,9 +349,9 @@ class MessagingProvider extends ChangeNotifier {
   }
 
   Future<List<Conversation>> getConversations() async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       return [
-        DemoData.demoConversation(
+        await _demoRepository.buildConversation(
           userId: DemoConfig.demoUserId,
           coachId: DemoConfig.demoCoachId,
         ),
@@ -452,3 +412,9 @@ class MessagingProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
+
+
+
+
+

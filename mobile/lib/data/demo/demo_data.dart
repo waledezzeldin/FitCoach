@@ -11,6 +11,7 @@ import '../models/nutrition_plan.dart';
 import '../models/revenue_analytics.dart';
 import '../models/user_profile.dart';
 import '../models/workout_plan.dart';
+import '../models/subscription_plan.dart';
 
 class DemoData {
   static UserProfile userProfile({required String role}) {
@@ -1239,6 +1240,174 @@ class DemoData {
         type: MessageType.text,
         isRead: false,
         createdAt: now.subtract(const Duration(minutes: 3)),
+      ),
+    ];
+  }
+
+  static List<SubscriptionPlan> subscriptionPlans() {
+    return [
+      SubscriptionPlan(
+        id: 'freemium',
+        name: 'Freemium',
+        description: 'Starter access with guided onboarding and essential chat quotas.',
+        monthlyPrice: 0,
+        yearlyPrice: 0,
+        currency: 'SAR',
+        badge: 'Starter',
+        accentColor: '#CBD5F5',
+        metadata: const {
+          'messagesLimit': 20,
+          'videoCallsLimit': 1,
+        },
+        features: const [
+          SubscriptionPlanFeature(
+            id: 'feat_workouts_lite',
+            label: 'Workout Library',
+            value: 'Foundational templates',
+            order: 0,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_messages_lite',
+            label: 'Coach Messaging',
+            value: '20 messages / month',
+            order: 1,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_calls_lite',
+            label: 'Video Calls',
+            value: '1 call / month',
+            order: 2,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_nutrition_trial',
+            label: 'Nutrition Coaching',
+            value: '14-day trial intake',
+            order: 3,
+          ),
+        ],
+      ),
+      SubscriptionPlan(
+        id: 'premium',
+        name: 'Premium',
+        description: 'On-demand messaging, adaptive programming, and priority support.',
+        monthlyPrice: 199,
+        yearlyPrice: 1990,
+        currency: 'SAR',
+        badge: 'Most Popular',
+        accentColor: '#7C3AED',
+        isRecommended: true,
+        metadata: const {
+          'messagesLimit': 200,
+          'videoCallsLimit': 4,
+        },
+        features: const [
+          SubscriptionPlanFeature(
+            id: 'feat_workouts_custom',
+            label: 'Workout Library',
+            value: 'Custom weekly plans',
+            order: 0,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_messages_plus',
+            label: 'Coach Messaging',
+            value: '200 messages / month',
+            order: 1,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_calls_plus',
+            label: 'Video Calls',
+            value: '4 calls / month',
+            order: 2,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_nutrition_full',
+            label: 'Nutrition Coaching',
+            value: 'Full meal plans & intake review',
+            order: 3,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_injury_engine',
+            label: 'Injury Substitutions',
+            value: 'AI-generated swaps',
+            order: 4,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_progress_analytics',
+            label: 'Progress Analytics',
+            value: 'Weekly readiness + body metrics',
+            order: 5,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_priority_support',
+            label: 'Priority Support',
+            value: 'Under 2h response time',
+            order: 6,
+          ),
+        ],
+      ),
+      SubscriptionPlan(
+        id: 'smart_premium',
+        name: 'Smart Premium',
+        description: 'Unlimited concierge coaching with advanced automation for pros.',
+        monthlyPrice: 399,
+        yearlyPrice: 3990,
+        currency: 'SAR',
+        badge: 'Elite',
+        accentColor: '#EC4899',
+        metadata: const {
+          'messagesLimit': -1,
+          'videoCallsLimit': 12,
+        },
+        features: const [
+          SubscriptionPlanFeature(
+            id: 'feat_workouts_elite',
+            label: 'Workout Library',
+            value: 'Dynamic goal-based builder',
+            order: 0,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_messages_unlimited',
+            label: 'Coach Messaging',
+            value: 'Unlimited conversations',
+            order: 1,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_calls_unlimited',
+            label: 'Video Calls',
+            value: '12 calls / month',
+            order: 2,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_nutrition_lab',
+            label: 'Nutrition Coaching',
+            value: 'Lab panels & Smart meal swaps',
+            order: 3,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_injury_engine_max',
+            label: 'Injury Substitutions',
+            value: 'Predictive movement engine',
+            order: 4,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_progress_ai',
+            label: 'Progress Analytics',
+            value: 'AI readiness + exports',
+            order: 5,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_priority_concierge',
+            label: 'Priority Support',
+            value: 'Dedicated concierge line',
+            order: 6,
+          ),
+          SubscriptionPlanFeature(
+            id: 'feat_file_attachments',
+            label: 'File Attachments',
+            value: 'Send media, PDFs, and scans',
+            order: 7,
+          ),
+        ],
       ),
     ];
   }

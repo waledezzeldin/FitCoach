@@ -5,8 +5,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 // ...existing code...
 import 'app.dart';
+import 'core/config/demo_mode.dart';
 import 'core/config/theme_config.dart';
 import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/demo_mode_provider.dart';
 import 'presentation/providers/user_provider.dart';
 import 'presentation/providers/language_provider.dart';
 import 'presentation/providers/theme_provider.dart';
@@ -19,6 +21,7 @@ import 'presentation/providers/admin_provider.dart';
 import 'presentation/providers/video_call_provider.dart';
 import 'presentation/providers/appointment_provider.dart';
 import 'presentation/providers/store_provider.dart';
+import 'presentation/providers/subscription_plan_provider.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/user_repository.dart';
 import 'data/repositories/workout_repository.dart';
@@ -28,6 +31,11 @@ import 'data/repositories/coach_repository.dart';
 import 'data/repositories/admin_repository.dart';
 import 'data/repositories/appointment_repository.dart';
 import 'data/repositories/store_repository.dart';
+import 'data/repositories/subscription_plan_repository.dart';
+import 'data/demo/repositories/demo_workout_repository.dart';
+import 'data/demo/repositories/demo_messaging_repository.dart';
+import 'data/demo/repositories/demo_subscription_plan_repository.dart';
+import 'data/demo/repositories/demo_metrics_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +67,29 @@ class FitCoachApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<DemoModeConfig>(
+          create: (_) => const DemoModeConfig(),
+        ),
+        ChangeNotifierProvider<DemoModeProvider>(
+          create: (context) => DemoModeProvider(
+            context.read<DemoModeConfig>(),
+          ),
+        ),
+
+        // Demo repositories
+        Provider<DemoWorkoutRepository>(
+          create: (_) => DemoWorkoutRepository(),
+        ),
+        Provider<DemoMessagingRepository>(
+          create: (_) => DemoMessagingRepository(),
+        ),
+        Provider<DemoSubscriptionPlanRepository>(
+          create: (_) => DemoSubscriptionPlanRepository(),
+        ),
+        Provider<DemoMetricsRepository>(
+          create: (_) => DemoMetricsRepository(),
+        ),
+
         // Repositories
         Provider<AuthRepository>(
           create: (_) => AuthRepository(),
@@ -86,6 +117,9 @@ class FitCoachApp extends StatelessWidget {
         ),
         Provider<StoreRepository>(
           create: (_) => StoreRepository(),
+        ),
+        Provider<SubscriptionPlanRepository>(
+          create: (_) => SubscriptionPlanRepository(),
         ),
         
         // Providers
@@ -120,9 +154,16 @@ class FitCoachApp extends StatelessWidget {
         ChangeNotifierProxyProvider<WorkoutRepository, WorkoutProvider>(
           create: (context) => WorkoutProvider(
             context.read<WorkoutRepository>(),
+            demoRepository: context.read<DemoWorkoutRepository>(),
+            demoConfig: context.read<DemoModeConfig>(),
           ),
           update: (context, workoutRepo, previous) =>
-              previous ?? WorkoutProvider(workoutRepo),
+              previous ??
+              WorkoutProvider(
+                workoutRepo,
+                demoRepository: context.read<DemoWorkoutRepository>(),
+                demoConfig: context.read<DemoModeConfig>(),
+              ),
         ),
         ChangeNotifierProxyProvider<NutritionRepository, NutritionProvider>(
           create: (context) => NutritionProvider(
@@ -134,9 +175,16 @@ class FitCoachApp extends StatelessWidget {
         ChangeNotifierProxyProvider<MessagingRepository, MessagingProvider>(
           create: (context) => MessagingProvider(
             context.read<MessagingRepository>(),
+            demoRepository: context.read<DemoMessagingRepository>(),
+            demoConfig: context.read<DemoModeConfig>(),
           ),
           update: (context, messagingRepo, previous) =>
-              previous ?? MessagingProvider(messagingRepo),
+              previous ??
+              MessagingProvider(
+                messagingRepo,
+                demoRepository: context.read<DemoMessagingRepository>(),
+                demoConfig: context.read<DemoModeConfig>(),
+              ),
         ),
         ChangeNotifierProxyProvider<UserRepository, QuotaProvider>(
           create: (context) => QuotaProvider(
@@ -171,6 +219,19 @@ class FitCoachApp extends StatelessWidget {
             context.read<StoreRepository>(),
           ),
           update: (context, repo, previous) => previous ?? StoreProvider(repo),
+        ),
+        ChangeNotifierProxyProvider<SubscriptionPlanRepository, SubscriptionPlanProvider>(
+          create: (context) => SubscriptionPlanProvider(
+            context.read<SubscriptionPlanRepository>(),
+            demoRepository: context.read<DemoSubscriptionPlanRepository>(),
+            demoConfig: context.read<DemoModeConfig>(),
+          ),
+          update: (context, repo, previous) => previous ??
+              SubscriptionPlanProvider(
+                repo,
+                demoRepository: context.read<DemoSubscriptionPlanRepository>(),
+                demoConfig: context.read<DemoModeConfig>(),
+              ),
         ),
       ],
       child: Consumer2<LanguageProvider, ThemeProvider>(

@@ -390,9 +390,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
           child: TextField(
             controller: _conversationSearchController,
             decoration: InputDecoration(
-              hintText: isArabic
-                  ? 'ابحث عن عميل أو رسالة'
-                  : 'Search client or message',
+              hintText: lang.t('coach_search_hint'),
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _conversationQuery.isEmpty
                   ? null
@@ -411,7 +409,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
         ),
         const SizedBox(width: 12),
         IconButton(
-          tooltip: isArabic ? 'تحديث المحادثات' : 'Refresh inbox',
+          tooltip: lang.t('coach_refresh_inbox'),
           onPressed: () =>
               messagingProvider.loadConversations(isArabic: isArabic),
           icon: const Icon(Icons.refresh),
@@ -442,7 +440,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                lang.isArabic ? 'لا محادثات بعد' : 'No conversations yet',
+                lang.t('coach_no_conversations_title'),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -450,9 +448,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                lang.isArabic
-                    ? 'أرسل رسالة أولية إلى عميلك لبدء المتابعة.'
-                    : 'Send your first check-in to kick off the relationship.',
+                lang.t('coach_no_conversations_desc'),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -491,11 +487,10 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     CoachProvider coachProvider,
   ) {
     final isActive = provider.activeConversation?.id == conversation.id;
-    final isArabic = lang.isArabic;
     final displayName =
         _resolveClientName(conversation.userId, coachProvider, lang);
     final initials = _conversationInitials(displayName);
-    final snippet = _conversationSnippet(conversation, isArabic);
+    final snippet = _conversationSnippet(conversation, lang);
     final subtitle = _conversationSubtitle(conversation, lang);
     final isLoading =
         _pendingConversationId == conversation.id && provider.isLoading;
@@ -635,7 +630,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     if (DemoConfig.isDemo && userId == DemoConfig.demoUserId) {
       return lang.t('auth_demo_user');
     }
-    return lang.isArabic ? 'عميل' : 'Client';
+    return lang.t('coach_client_fallback');
   }
 
   String? _resolveClientNameForFilter(
@@ -664,21 +659,19 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   ) {
     final timestamp = conversation.lastMessageAt;
     if (timestamp == null) {
-      return lang.isArabic ? 'بلا نشاط' : 'Awaiting activity';
+      return lang.t('coach_awaiting_activity');
     }
     final formatter = DateFormat(
-      'MMM d • h:mm a',
+      'MMM d \u2022 h:mm a',
       lang.isArabic ? 'ar' : 'en',
     );
     return formatter.format(timestamp);
   }
 
-  String _conversationSnippet(Conversation conversation, bool isArabic) {
+  String _conversationSnippet(Conversation conversation, LanguageProvider lang) {
     final content = conversation.lastMessageContent;
     if (content == null || content.isEmpty) {
-      return isArabic
-          ? 'ابدأ محادثة مخصصة لعميلك.'
-          : 'Kick off a tailored check-in.';
+      return lang.t('coach_kickoff_prompt');
     }
     return content;
   }
@@ -751,7 +744,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                       Expanded(child: Text(appointmentProvider.error!)),
                       TextButton(
                         onPressed: _refreshAppointments,
-                        child: Text(lang.isArabic ? 'إعادة المحاولة' : 'Retry'),
+                        child: Text(lang.t('retry')),
                       ),
                     ],
                   ),
@@ -848,13 +841,11 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     AppointmentProvider provider,
   ) {
     final dateText = _formatSessionDate(appointment, isArabic);
-    final countdown = _formatCountdown(appointment, isArabic);
+    final countdown = _formatCountdown(appointment, lang);
     final canJoin = provider.canJoin(appointment);
     final isVideo = _isVideoSession(appointment);
     final isJoining = _joiningAppointmentId == appointment.id;
-    final joinHint = isArabic
-        ? 'سيتوفر زر الانضمام قبل 10 دقائق من بداية الجلسة'
-        : 'Join opens 10 minutes before the start time';
+    final joinHint = lang.t('coach_join_hint');
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -870,7 +861,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isArabic ? 'المكالمة القادمة' : 'Next video call',
+            lang.t('coach_next_video_call'),
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 4),
@@ -914,7 +905,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
           TextButton(
             onPressed: () => _openAppointmentDetails(appointment),
             style: TextButton.styleFrom(foregroundColor: Colors.white),
-            child: Text(isArabic ? 'تفاصيل الجلسة' : 'Session details'),
+            child: Text(lang.t('coach_session_details')),
           ),
         ],
       ),
@@ -927,7 +918,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     List<Appointment> appointments,
     AppointmentProvider provider,
   ) {
-    final title = isArabic ? 'جلساتك القادمة' : 'Upcoming sessions';
+    final title = lang.t('coach_upcoming_sessions');
     if (appointments.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
@@ -942,9 +933,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                 size: 40, color: AppColors.textSecondary),
             const SizedBox(height: 12),
             Text(
-              isArabic
-                  ? 'لا توجد جلسات مجدولة حالياً'
-                  : 'No sessions scheduled yet',
+              lang.t('coach_no_sessions_title'),
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
@@ -991,9 +980,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     final isVideo = _isVideoSession(appointment);
     final canJoin = provider.canJoin(appointment);
     final isJoining = _joiningAppointmentId == appointment.id;
-    final hint = isArabic
-        ? 'يمكنك الانضمام قبل 10 دقائق من الموعد'
-        : 'Join becomes available 10 minutes before the start';
+    final hint = lang.t('coach_join_hint');
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1064,7 +1051,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               const SizedBox(width: 12),
               TextButton(
                 onPressed: () => _openAppointmentDetails(appointment),
-                child: Text(isArabic ? 'التفاصيل' : 'Details'),
+                child: Text(lang.t('details')),
               ),
             ],
           ),
@@ -1102,14 +1089,14 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     final locale = isArabic ? 'ar' : 'en';
     try {
       final date = DateTime.parse(appointment.scheduledAt);
-      final formatter = DateFormat('EEEE, MMM d • h:mm a', locale);
+      final formatter = DateFormat('EEEE, MMM d \u2022 h:mm a', locale);
       return formatter.format(date);
     } catch (_) {
       return appointment.scheduledAt;
     }
   }
 
-  String? _formatCountdown(Appointment appointment, bool isArabic) {
+  String? _formatCountdown(Appointment appointment, LanguageProvider lang) {
     try {
       final date = DateTime.parse(appointment.scheduledAt);
       final diff = date.difference(DateTime.now());
@@ -1117,16 +1104,22 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       final hours = diff.inHours;
       final minutes = diff.inMinutes.remainder(60);
       if (hours <= 0 && minutes <= 0) {
-        return isArabic ? 'يبدأ الآن' : 'Starting now';
+        return lang.t('coach_starting_now');
       }
       if (hours <= 0) {
-        return isArabic ? 'يبدأ بعد $minutes دقيقة' : 'Starts in $minutes min';
+        return lang.t('coach_starts_in_minutes', args: {
+          'minutes': '$minutes',
+        });
       }
-      final minutesPart =
-          minutes > 0 ? (isArabic ? ' و $minutes دقيقة' : ' ${minutes}m') : '';
-      return isArabic
-          ? 'يبدأ بعد $hours ساعة$minutesPart'
-          : 'Starts in ${hours}h$minutesPart';
+      if (minutes > 0) {
+        return lang.t('coach_starts_in_hours_minutes', args: {
+          'hours': '$hours',
+          'minutes': '$minutes',
+        });
+      }
+      return lang.t('coach_starts_in_hours', args: {
+        'hours': '$hours',
+      });
     } catch (_) {
       return null;
     }
@@ -1141,7 +1134,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       case 'assessment':
         return lang.t('assessment');
       default:
-        return lang.isArabic ? 'جلسة' : 'Session';
+        return lang.t('session');
     }
   }
 
@@ -1550,7 +1543,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _formatTime(message.createdAt),
+                  _formatTime(message.createdAt, lang),
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.textDisabled,
@@ -1605,7 +1598,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
             IconButton(
               icon: const Icon(Icons.attach_file),
               onPressed:
-                  canSend ? () => _showAttachmentOptions(lang, isArabic) : null,
+                  canSend ? () => _showAttachmentOptions(lang) : null,
               color: AppColors.textSecondary,
             ),
           Expanded(
@@ -1676,7 +1669,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   }
 
 
-  void _showAttachmentOptions(LanguageProvider lang, bool isArabic) {
+  void _showAttachmentOptions(LanguageProvider lang) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -1688,7 +1681,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               title: Text(lang.t('photo')),
               onTap: () {
                 Navigator.pop(context);
-                _pickAttachment('image');
+                _pickAttachment('image', lang);
               },
             ),
             ListTile(
@@ -1696,7 +1689,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               title: Text(lang.t('video')),
               onTap: () {
                 Navigator.pop(context);
-                _pickAttachment('video');
+                _pickAttachment('video', lang);
               },
             ),
             ListTile(
@@ -1705,7 +1698,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
               title: Text(lang.t('file')),
               onTap: () {
                 Navigator.pop(context);
-                _pickAttachment('file');
+                _pickAttachment('file', lang);
               },
             ),
           ],
@@ -1714,7 +1707,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     );
   }
 
-  Future<void> _pickAttachment(String type) async {
+  Future<void> _pickAttachment(String type, LanguageProvider lang) async {
     final messagingProvider = context.read<MessagingProvider>();
     final quotaProvider = context.read<QuotaProvider>();
 
@@ -1745,9 +1738,9 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
           if (kIsWeb && filePath == null) {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content:
-                      Text('File attachments are not supported on web yet.')),
+              SnackBar(
+                content: Text(lang.t('coach_file_unsupported_web')),
+              ),
             );
             return;
           }
@@ -1760,10 +1753,10 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
 
       final content = (displayName == null || displayName.isEmpty)
           ? (type == 'image'
-              ? 'Image'
+              ? lang.t('photo')
               : type == 'video'
-                  ? 'Video'
-                  : 'File')
+                  ? lang.t('video')
+                  : lang.t('file'))
           : displayName;
 
       final success = await messagingProvider.sendMessageWithAttachment(
@@ -1837,18 +1830,25 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     );
   }
 
-  String _formatTime(DateTime timestamp) {
+  String _formatTime(DateTime timestamp, LanguageProvider lang) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
 
     if (difference.inDays > 0) {
-      return '${timestamp.day}/${timestamp.month}';
+      return lang.t('time_date_short', args: {
+        'day': '${timestamp.day}',
+        'month': '${timestamp.month}',
+      });
     } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
+      return lang.t('time_hours_ago', args: {
+        'hours': '${difference.inHours}',
+      });
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
+      return lang.t('time_minutes_ago', args: {
+        'minutes': '${difference.inMinutes}',
+      });
     } else {
-      return 'Just now';
+      return lang.t('time_just_now');
     }
   }
 }

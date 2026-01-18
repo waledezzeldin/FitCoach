@@ -387,7 +387,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   ) {
     final planTitle = _localizedPlanName(plan, lang, isArabic);
     final dayNumber = currentDay?.dayNumber ?? 1;
-    final durationLabel = _estimateWorkoutDuration(currentDay);
+    final durationLabel = _estimateWorkoutDuration(currentDay, lang);
 
     return Container(
       width: double.infinity,
@@ -592,7 +592,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     bool isArabic,
   ) {
     final totalExercises = currentDay?.exercises.length ?? 0;
-    final durationLabel = _estimateWorkoutDuration(currentDay);
+    final durationLabel = _estimateWorkoutDuration(currentDay, lang);
     final planTitle = _localizedPlanName(plan, lang, isArabic);
     final difficultyLabel = _localizedPlanDifficulty(plan, lang, isArabic);
 
@@ -751,7 +751,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
   }
 
-  String _estimateWorkoutDuration(WorkoutDay? currentDay) {
+  String _estimateWorkoutDuration(WorkoutDay? currentDay, LanguageProvider lang) {
     if (currentDay == null) {
       return '';
     }
@@ -760,7 +760,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       return '';
     }
     final minutes = (exercisesCount * 6).clamp(20, 90);
-    return '${minutes.toInt()} min';
+    return '${minutes.toInt()} ${lang.t('minute_short')}';
   }
 
   String _localizedPlanName(WorkoutPlan plan, LanguageProvider lang, bool isArabic) {

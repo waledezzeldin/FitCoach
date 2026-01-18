@@ -115,9 +115,7 @@ class _ScheduleSessionSheetState extends State<_ScheduleSessionSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            lang.isArabic
-                ? 'تمت جدولة جلسة مع ${widget.clientName}'
-                : 'Session scheduled with ${widget.clientName}',
+            lang.t('coach_schedule_success', args: {'client': widget.clientName}),
           ),
           backgroundColor: AppColors.success,
         ),
@@ -126,9 +124,7 @@ class _ScheduleSessionSheetState extends State<_ScheduleSessionSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            lang.isArabic
-                ? 'تعذر جدولة الجلسة. حاول مرة أخرى.'
-                : 'Could not schedule the session. Please try again.',
+            lang.t('coach_schedule_failure'),
           ),
           backgroundColor: AppColors.error,
         ),
@@ -159,7 +155,7 @@ class _ScheduleSessionSheetState extends State<_ScheduleSessionSheet> {
             children: [
               Expanded(
                 child: Text(
-                  isArabic ? 'جدولة جلسة' : 'Schedule Session',
+                  lang.t('coach_schedule_title'),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -173,34 +169,32 @@ class _ScheduleSessionSheetState extends State<_ScheduleSessionSheet> {
             ],
           ),
           Text(
-            isArabic
-                ? 'سيتم جدولة جلسة فيديو مع ${widget.clientName}'
-                : 'Book a video check-in with ${widget.clientName}',
+            lang.t('coach_schedule_subtitle', args: {'client': widget.clientName}),
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 16),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.calendar_today),
-            title: Text(isArabic ? 'التاريخ' : 'Date'),
+            title: Text(lang.t('coach_schedule_date')),
             subtitle: Text(formattedDate),
             trailing: TextButton(
               onPressed: () => _pickDate(lang),
-              child: Text(isArabic ? 'تغيير' : 'Change'),
+              child: Text(lang.t('coach_schedule_change')),
             ),
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.schedule),
-            title: Text(isArabic ? 'الوقت' : 'Time'),
+            title: Text(lang.t('coach_schedule_time')),
             subtitle: Text(formattedTime),
             trailing: TextButton(
               onPressed: _pickTime,
-              child: Text(isArabic ? 'تغيير' : 'Change'),
+              child: Text(lang.t('coach_schedule_change')),
             ),
           ),
           const SizedBox(height: 12),
-          Text(isArabic ? 'المدة (دقائق)' : 'Duration (minutes)'),
+          Text(lang.t('coach_schedule_duration_label')),
           const SizedBox(height: 4),
           DropdownButton<int>(
             value: _durationMinutes,
@@ -225,7 +219,7 @@ class _ScheduleSessionSheetState extends State<_ScheduleSessionSheet> {
             minLines: 2,
             maxLines: 4,
             decoration: InputDecoration(
-              labelText: isArabic ? 'ملاحظات إضافية' : 'Additional notes',
+              labelText: lang.t('coach_schedule_notes_label'),
               border: const OutlineInputBorder(),
             ),
           ),
@@ -242,7 +236,7 @@ class _ScheduleSessionSheetState extends State<_ScheduleSessionSheet> {
                     )
                   : const Icon(Icons.video_call),
               label: Text(
-                isArabic ? 'تأكيد الجلسة' : 'Confirm session',
+                lang.t('coach_schedule_confirm'),
               ),
             ),
           ),

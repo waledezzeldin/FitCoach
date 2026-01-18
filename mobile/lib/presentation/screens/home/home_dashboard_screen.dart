@@ -155,6 +155,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
     final tier = user?.subscriptionTier ?? 'Freemium';
+    final tierLabel = _tierLabel(lang, tier);
     final firstName = (user?.name ?? lang.t('welcome')).split(' ').first;
     final fitnessScore = user?.fitnessScore ?? (DemoConfig.isDemo ? 72 : 0);
     final fitnessUpdatedBy = user?.fitnessScoreUpdatedBy;
@@ -182,8 +183,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
     final todayWorkout = DemoConfig.isDemo
         ? {
-            'name': 'Upper Body Strength',
-            'duration': '45 min',
+            'name': lang.t('home_demo_workout_name'),
+            'durationMinutes': 45,
             'exercises': 6,
           }
         : null;
@@ -215,7 +216,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       lang,
                       isArabic,
                       firstName,
-                      tier,
+                      tierLabel,
                       fitnessScore,
                       fitnessUpdatedBy,
                       stats,
@@ -231,7 +232,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                             delay: const Duration(milliseconds: 120),
                             offset: const Offset(0, 0.16),
                             initialScale: 0.94,
-                            child: _buildNextSessionLoadingCard(),
+                            child: _buildNextSessionLoadingCard(lang),
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -312,7 +313,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     LanguageProvider lang,
     bool isArabic,
     String firstName,
-    String tier,
+    String tierLabel,
     int fitnessScore,
     String? fitnessUpdatedBy,
     Map<String, int> stats,
@@ -356,7 +357,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  tier,
+                  tierLabel,
                   style: AppTextStyles.smallMedium.copyWith(color: Colors.white),
                 ),
               ),
@@ -506,7 +507,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-  Widget _buildNextSessionLoadingCard() {
+  Widget _buildNextSessionLoadingCard(LanguageProvider lang) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -516,13 +517,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
-        children: const [
-          CircularProgressIndicator(strokeWidth: 2),
-          SizedBox(width: 16),
+        children: [
+          const CircularProgressIndicator(strokeWidth: 2),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
-              'Loading your upcoming sessions...',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              lang.t('home_loading_sessions'),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -537,13 +538,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     AppointmentProvider provider,
   ) {
     final dateLabel = _formatHomeSessionDate(appointment, isArabic);
-    final countdown = _formatHomeCountdown(appointment, isArabic);
+    final countdown = _formatHomeCountdown(appointment, lang);
     final canJoin = provider.canJoin(appointment);
     final isVideo = _homeIsVideoSession(appointment);
     final isJoining = _joiningAppointmentId == appointment.id;
-    final joinHint = isArabic
-        ? 'يمكنك الانضمام قبل 10 دقائق من الموعد'
-        : 'Join becomes available 10 minutes before start';
+    final joinHint = lang.t('home_join_available_hint');
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -560,7 +559,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isArabic ? 'جلستك القادمة' : 'Your next session',
+            lang.t('home_next_session'),
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 6),
@@ -597,7 +596,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Colors.white),
                 onPressed: () => _openAppointmentDetailsFromHome(appointment),
-                child: Text(isArabic ? 'التفاصيل' : 'Details'),
+                child: Text(lang.t('details')),
               ),
             ],
           ),
@@ -618,13 +617,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final locale = isArabic ? 'ar' : 'en';
     try {
       final date = DateTime.parse(appointment.scheduledAt);
-      return DateFormat('EEE, MMM d • h:mm a', locale).format(date);
+      return DateFormat('EEE, MMM d \u2022 h:mm a', locale).format(date);
     } catch (_) {
       return appointment.scheduledAt;
     }
   }
 
-  String? _formatHomeCountdown(Appointment appointment, bool isArabic) {
+  String? _formatHomeCountdown(Appointment appointment, LanguageProvider lang) {
     try {
       final date = DateTime.parse(appointment.scheduledAt);
       final diff = date.difference(DateTime.now());
@@ -632,17 +631,22 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       final hours = diff.inHours;
       final minutes = diff.inMinutes.remainder(60);
       if (hours <= 0 && minutes <= 0) {
-        return isArabic ? 'يبدأ الآن' : 'Starting now';
+        return lang.t('home_starting_now');
       }
       if (hours <= 0) {
-        return isArabic ? 'يبدأ بعد $minutes دقيقة' : 'Starts in $minutes min';
+        return lang.t('home_starts_in_minutes', args: {
+          'minutes': '$minutes',
+        });
       }
-      final minutesLabel = minutes > 0
-          ? (isArabic ? ' و $minutes دقيقة' : ' ${minutes}m')
-          : '';
-      return isArabic
-          ? 'يبدأ بعد $hours ساعة$minutesLabel'
-          : 'Starts in ${hours}h$minutesLabel';
+      if (minutes > 0) {
+        return lang.t('home_starts_in_hours_minutes', args: {
+          'hours': '$hours',
+          'minutes': '$minutes',
+        });
+      }
+      return lang.t('home_starts_in_hours', args: {
+        'hours': '$hours',
+      });
     } catch (_) {
       return null;
     }
@@ -688,6 +692,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     bool isArabic,
     Map<String, dynamic> workout,
   ) {
+    final durationMinutes = workout['durationMinutes'] as int? ?? 0;
+    final durationLabel = lang.t('home_duration_minutes', args: {
+      'minutes': '$durationMinutes',
+    });
     return CustomCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -728,7 +736,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Row(
             children: [
               Text(
-                workout['duration'] as String,
+                durationLabel,
                 style: AppTextStyles.small.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(width: 8),
@@ -1100,7 +1108,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           _buildActivityRow(
             title: lang.t('home_completed_push_day'),
             subtitle: lang.t('home_hours_ago'),
-            badge: '+250 cal',
+            badge: lang.t('home_calories_badge', args: {'calories': '250'}),
             color: const Color(0xFF22C55E),
           ),
           const SizedBox(height: 8),
@@ -1212,6 +1220,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final name = user?.name ?? lang.t('welcome');
     final firstName = name.split(' ').first;
     final tier = user?.subscriptionTier ?? 'Freemium';
+    final tierLabel = _tierLabel(lang, tier);
     final fitnessScore = user?.fitnessScore ?? (DemoConfig.isDemo ? 72 : 0);
     final fitnessUpdatedBy = user?.fitnessScoreUpdatedBy;
     final caloriesBurned = DemoConfig.isDemo ? 2850 : 0;
@@ -1256,7 +1265,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  tier,
+                  tierLabel,
                   style: AppTextStyles.smallMedium.copyWith(color: Colors.white),
                 ),
               ),
@@ -1514,10 +1523,24 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
+  String _tierLabel(LanguageProvider lang, String tier) {
+    switch (tier) {
+      case 'Smart Premium':
+        return lang.t('tier_smart_premium');
+      case 'Premium':
+        return lang.t('tier_premium');
+      case 'Freemium':
+        return lang.t('tier_freemium');
+      default:
+        return tier;
+    }
+  }
+
   
   Widget _buildSubscriptionBadge(LanguageProvider lang, bool isArabic) {
     final authProvider = context.watch<AuthProvider>();
     final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
+    final tierLabel = _tierLabel(lang, tier);
     
     Color getColor() {
       switch (tier) {
@@ -1560,7 +1583,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  tier,
+                  tierLabel,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -1900,9 +1923,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Demo Mode',
-          style: TextStyle(
+        Text(
+          lang.t('home_demo_mode'),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
@@ -1913,9 +1936,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Switch role and open dashboards',
-                style: TextStyle(
+              Text(
+                lang.t('home_demo_mode_desc'),
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -1925,17 +1948,17 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 spacing: 8,
                 children: [
                   ChoiceChip(
-                    label: const Text('User'),
+                    label: Text(lang.t('home_role_user')),
                     selected: role == 'user',
                     onSelected: (_) => authProvider.setDemoRole('user'),
                   ),
                   ChoiceChip(
-                    label: const Text('Coach'),
+                    label: Text(lang.t('home_role_coach')),
                     selected: role == 'coach',
                     onSelected: (_) => authProvider.setDemoRole('coach'),
                   ),
                   ChoiceChip(
-                    label: const Text('Admin'),
+                    label: Text(lang.t('home_role_admin')),
                     selected: role == 'admin',
                     onSelected: (_) => authProvider.setDemoRole('admin'),
                   ),
@@ -1953,7 +1976,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                           ),
                         );
                       },
-                      child: const Text('Coach Dashboard'),
+                      child: Text(lang.t('home_coach_dashboard')),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1966,7 +1989,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                           ),
                         );
                       },
-                      child: const Text('Admin Dashboard'),
+                      child: Text(lang.t('home_admin_dashboard')),
                     ),
                   ),
                 ],
@@ -2075,7 +2098,8 @@ class _HomeNavItem {
     this.background,
     required this.index,
     this.locked = false,
-    this.lockedLabel = 'Locked',
+    this.lockedLabel = '',
     this.badge,
   });
 }
+

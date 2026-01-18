@@ -155,6 +155,33 @@ class AdminRepository {
     }
   }
 
+  /// Create a new coach and optionally send invitation email
+  Future<AdminCoach> createCoach({
+    required String fullName,
+    required String email,
+    String? phoneNumber,
+    List<String>? specializations,
+    bool sendInvitation = true,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/admin/coaches',
+        data: {
+          'fullName': fullName,
+          'email': email,
+          if (phoneNumber != null && phoneNumber.isNotEmpty) 'phoneNumber': phoneNumber,
+          if (specializations != null && specializations.isNotEmpty) 'specializations': specializations,
+          'sendInvitation': sendInvitation,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return AdminCoach.fromJson(data['coach'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to create coach');
+    }
+  }
+
   /// Approve coach
   Future<void> approveCoach(String id) async {
     try {

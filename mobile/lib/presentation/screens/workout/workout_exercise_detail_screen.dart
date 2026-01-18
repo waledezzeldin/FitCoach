@@ -281,8 +281,8 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                                           SnackBar(
                                             content: Text(
                                               isArabic
-                                                  ? 'الفيديو غير متوفر في هذا الإصدار حالياً'
-                                                  : 'Video is not available in this build yet',
+                                                ? lang.t('exercise_video_unavailable')
+                                                : lang.t('exercise_video_unavailable'),
                                             ),
                                           ),
                                         );
@@ -308,7 +308,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                                 label: lang.t('exercise_reps'),
                               ),
                               _QuickStat(
-                                value: exercise.restTime ?? '60s',
+                                value: exercise.restTime ?? lang.t('exercise_rest_default'),
                                 label: lang.t('exercise_rest'),
                               ),
                             ],

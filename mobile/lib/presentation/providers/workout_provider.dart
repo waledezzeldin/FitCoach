@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../core/config/demo_config.dart';
-import '../../data/demo/demo_data.dart';
+import '../../core/config/demo_mode.dart';
+import '../../data/demo/repositories/demo_workout_repository.dart';
 import '../../data/repositories/workout_repository.dart';
 import '../../data/models/workout_plan.dart';
 
 class WorkoutProvider extends ChangeNotifier {
   final WorkoutRepository _repository;
+  final DemoWorkoutRepository _demoRepository;
+  final DemoModeConfig _demoConfig;
 
   WorkoutPlan? _activePlan;
   List<Exercise> _exerciseLibrary = [];
@@ -14,7 +17,12 @@ class WorkoutProvider extends ChangeNotifier {
   int? _currentDayIndex;
   final Map<String, bool> _completedExercises = {};
 
-  WorkoutProvider(this._repository);
+  WorkoutProvider(
+    this._repository, {
+    DemoWorkoutRepository? demoRepository,
+    DemoModeConfig? demoConfig,
+  })  : _demoRepository = demoRepository ?? DemoWorkoutRepository(),
+        _demoConfig = demoConfig ?? const DemoModeConfig();
 
   WorkoutPlan? get activePlan => _activePlan;
   List<Exercise> get exerciseLibrary => _exerciseLibrary;
@@ -29,8 +37,10 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> loadActivePlan() async {
-    if (DemoConfig.isDemo) {
-      _activePlan = DemoData.workoutPlan(userId: DemoConfig.demoUserId);
+    if (_demoConfig.isDemo) {
+      _activePlan = await _demoRepository.getActivePlan(
+        userId: DemoConfig.demoUserId,
+      );
       _currentDayIndex = 0;
       _error = null;
       _isLoading = false;
@@ -55,8 +65,8 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> loadExerciseLibrary() async {
-    if (DemoConfig.isDemo) {
-      _exerciseLibrary = DemoData.exerciseLibrary();
+    if (_demoConfig.isDemo) {
+      _exerciseLibrary = await _demoRepository.getExerciseLibrary();
       _error = null;
       _isLoading = false;
       notifyListeners();
@@ -84,7 +94,7 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<bool> completeExercise(String exerciseId) async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       _completedExercises[exerciseId] = true;
       notifyListeners();
       return true;
@@ -103,17 +113,8 @@ class WorkoutProvider extends ChangeNotifier {
     String exerciseId,
     List<String> userInjuries,
   ) async {
-    if (DemoConfig.isDemo) {
-      final sourceExercise = _findExerciseById(exerciseId);
-      final alternativeIds = sourceExercise?.alternatives ?? const <String>[];
-      final alternatives = alternativeIds
-          .map(_findExerciseById)
-          .whereType<Exercise>()
-          .toList();
-      if (alternatives.isNotEmpty) {
-        return alternatives;
-      }
-      return _exerciseLibrary.where((ex) => ex.id != exerciseId).toList();
+    if (_demoConfig.isDemo) {
+      return _demoRepository.getExerciseAlternatives(exerciseId);
     }
     _isLoading = true;
     notifyListeners();
@@ -152,7 +153,7 @@ class WorkoutProvider extends ChangeNotifier {
     String originalExerciseId,
     String newExerciseId,
   ) async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       _error = null;
       notifyListeners();
       return true;
@@ -172,7 +173,7 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<bool> logWorkout(Map<String, dynamic> workoutData) async {
-    if (DemoConfig.isDemo) {
+    if (_demoConfig.isDemo) {
       return true;
     }
     try {

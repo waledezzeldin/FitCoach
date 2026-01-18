@@ -4,6 +4,7 @@ import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/custom_card.dart';
+import '../../widgets/custom_button.dart';
 import '../../../data/models/admin_coach.dart';
 
 class AdminCoachesScreen extends StatefulWidget {
@@ -32,6 +33,54 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
       search: _searchController.text.isNotEmpty ? _searchController.text : null,
       status: _statusFilter,
       approved: _showPendingOnly ? 'false' : null,
+    );
+  }
+
+  void _showCreateCoachSheet(bool isArabic) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return _CreateCoachSheet(
+          isArabic: isArabic,
+          onSubmit: (payload) async {
+            final adminProvider = context.read<AdminProvider>();
+            final success = await adminProvider.createCoach(
+              fullName: payload.fullName,
+              email: payload.email,
+              phoneNumber: payload.phoneNumber,
+              specializations: payload.specializations,
+              sendInvitation: payload.sendInvite,
+            );
+
+            if (!mounted) return false;
+
+            if (success) {
+              Navigator.of(sheetContext).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    isArabic ? 'تم إنشاء حساب المدرب وإرسال الدعوة' : 'Coach account created and invite sent',
+                  ),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+              _loadCoaches();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    adminProvider.error ??
+                        (isArabic ? 'تعذر إنشاء المدرب، حاول مرة أخرى' : 'Failed to create coach'),
+                  ),
+                  backgroundColor: AppColors.error,
+                ),
+              );
+            }
+            return success;
+          },
+        );
+      },
     );
   }
 
@@ -236,6 +285,11 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                           ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showCreateCoachSheet(isArabic),
+        icon: const Icon(Icons.person_add_alt_1),
+        label: Text(isArabic ? 'إضافة مدرب' : 'Add Coach'),
       ),
     );
   }
@@ -640,4 +694,266 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
+}
+
+class _CreateCoachSheet extends StatefulWidget {
+  final bool isArabic;
+  final Future<bool> Function(_CoachInvitePayload payload) onSubmit;
+
+  const _CreateCoachSheet({
+    required this.isArabic,
+    required this.onSubmit,
+  });
+
+  @override
+  State<_CreateCoachSheet> createState() => _CreateCoachSheetState();
+}
+
+class _CreateCoachSheetState extends State<_CreateCoachSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _specializationController = TextEditingController();
+  final List<String> _specializations = [];
+  bool _sendInvite = true;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _specializationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isArabic = widget.isArabic;
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 46,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              Text(
+                isArabic ? 'إنشاء حساب مدرب' : 'Create Coach Account',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isArabic
+                    ? 'سنرسل دعوة للمدرب بنفس البريد الإلكتروني ليكمل ملفه الشخصي ويحدد كلمة المرور.'
+                    : 'We will email an invite so the coach can finish onboarding and set a password.',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _fullNameController,
+                decoration: InputDecoration(
+                  labelText: isArabic ? 'الاسم الكامل' : 'Full name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return isArabic ? 'الاسم مطلوب' : 'Name is required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: isArabic ? 'البريد الإلكتروني' : 'Email',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return isArabic ? 'البريد الإلكتروني مطلوب' : 'Email is required';
+                  }
+                  if (!value.contains('@')) {
+                    return isArabic ? 'صيغة البريد غير صحيحة' : 'Invalid email address';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: isArabic ? 'رقم الهاتف (اختياري)' : 'Phone (optional)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isArabic ? 'التخصصات' : 'Specializations',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _specializationController,
+                      decoration: InputDecoration(
+                        hintText: isArabic ? 'أدخل تخصص المدرب' : 'Add a specialty',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onSubmitted: (_) => _addSpecialization(),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: _addSpecialization,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    child: Text(isArabic ? 'إضافة' : 'Add'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (_specializations.isNotEmpty)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _specializations.map((spec) {
+                    return Chip(
+                      label: Text(spec),
+                      deleteIcon: const Icon(Icons.close, size: 16),
+                      onDeleted: () => _removeSpecialization(spec),
+                    );
+                  }).toList(),
+                )
+              else
+                Text(
+                  isArabic ? 'لا توجد تخصصات مضافة بعد' : 'No specializations yet',
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+              const SizedBox(height: 16),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                value: _sendInvite,
+                onChanged: (value) {
+                  setState(() => _sendInvite = value);
+                },
+                title: Text(isArabic ? 'إرسال دعوة عبر البريد' : 'Send onboarding email invite'),
+                subtitle: Text(
+                  isArabic
+                      ? 'سيتلقى المدرب رابطاً لإكمال حسابه بنفس البريد.'
+                      : 'Coach receives a link to finish the profile with this email.',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+              ),
+              const SizedBox(height: 24),
+              CustomButton(
+                text: _isSubmitting
+                    ? (isArabic ? 'جاري الإرسال...' : 'Sending...')
+                    : (isArabic ? 'إرسال الدعوة' : 'Send Invite'),
+                onPressed: _isSubmitting ? null : _handleSubmit,
+                fullWidth: true,
+                size: ButtonSize.large,
+                icon: Icons.send,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _addSpecialization() {
+    final value = _specializationController.text.trim();
+    if (value.isEmpty) return;
+    setState(() {
+      _specializations.add(value);
+      _specializationController.clear();
+    });
+  }
+
+  void _removeSpecialization(String spec) {
+    setState(() {
+      _specializations.remove(spec);
+    });
+  }
+
+  Future<void> _handleSubmit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final payload = _CoachInvitePayload(
+      fullName: _fullNameController.text.trim(),
+      email: _emailController.text.trim(),
+      phoneNumber: _phoneController.text.trim().isEmpty
+          ? null
+          : _phoneController.text.trim(),
+      specializations: List<String>.from(_specializations),
+      sendInvite: _sendInvite,
+    );
+
+    final success = await widget.onSubmit(payload);
+
+    if (mounted && !success) {
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
+  }
+}
+
+class _CoachInvitePayload {
+  final String fullName;
+  final String email;
+  final String? phoneNumber;
+  final List<String> specializations;
+  final bool sendInvite;
+
+  const _CoachInvitePayload({
+    required this.fullName,
+    required this.email,
+    this.phoneNumber,
+    this.specializations = const [],
+    this.sendInvite = true,
+  });
 }

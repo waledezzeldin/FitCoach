@@ -280,6 +280,62 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
+  /// Create a coach invitation
+  Future<bool> createCoach({
+    required String fullName,
+    required String email,
+    String? phoneNumber,
+    List<String> specializations = const [],
+    bool sendInvitation = true,
+  }) async {
+    if (DemoConfig.isDemo) {
+      final now = DateTime.now();
+      final tempId = now.microsecondsSinceEpoch.toString();
+      final newCoach = AdminCoach(
+        id: 'coach_$tempId',
+        userId: 'user_$tempId',
+        fullName: fullName,
+        email: email,
+        phoneNumber: phoneNumber,
+        profilePhotoUrl: null,
+        specializations: specializations,
+        clientCount: 0,
+        totalEarnings: 0,
+        averageRating: null,
+        isApproved: false,
+        isActive: true,
+        createdAt: now,
+        approvedAt: null,
+      );
+      _coaches = [newCoach, ..._coaches];
+      notifyListeners();
+      return true;
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final createdCoach = await _repository.createCoach(
+        fullName: fullName,
+        email: email,
+        phoneNumber: phoneNumber,
+        specializations: specializations,
+        sendInvitation: sendInvitation,
+      );
+      _coaches = [createdCoach, ..._coaches];
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Approve coach
   Future<bool> approveCoach(String id) async {
     if (DemoConfig.isDemo) {

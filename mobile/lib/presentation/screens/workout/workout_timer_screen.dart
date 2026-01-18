@@ -324,7 +324,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [30, 45, 60, 90, 120].map((seconds) {
             return ListTile(
-              title: Text(lang.isArabic ? '$seconds ثانية' : '$seconds seconds'),
+              title: Text(lang.t('workouts_seconds_label', args: {'seconds': '$seconds'})),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Update rest time

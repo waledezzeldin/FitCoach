@@ -6,8 +6,11 @@ import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/subscription_plan_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/subscription_comparison_table.dart';
+import '../../../data/models/subscription_plan.dart';
 
 class SubscriptionManagerScreen extends StatefulWidget {
   const SubscriptionManagerScreen({super.key});
@@ -17,387 +20,460 @@ class SubscriptionManagerScreen extends StatefulWidget {
 }
 
 class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
-  final List<Map<String, dynamic>> _plans = [
-    {
-      'tier': 'Freemium',
-      'price': 0,
-      'features': [
-        'basic_workout',
-        'nutrition_trial',
-        'limited_messages',
-        'one_video_call',
-      ],
-      'messagesLimit': 20,
-      'videoCallsLimit': 1,
-    },
-    {
-      'tier': 'Premium',
-      'price': 199,
-      'features': [
-        'full_workout',
-        'full_nutrition',
-        'priority_messages',
-        'two_video_calls',
-        'progress_tracking',
-      ],
-      'messagesLimit': 200,
-      'videoCallsLimit': 2,
-    },
-    {
-      'tier': 'Smart Premium',
-      'price': 399,
-      'features': [
-        'personalized_plans',
-        'unlimited_messages',
-        'four_video_calls',
-        'inbody_analysis',
-        'priority_support',
-        'advanced_analytics',
-      ],
-      'messagesLimit': -1, // Unlimited
-      'videoCallsLimit': 4,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SubscriptionPlanProvider>().loadPlans();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final authProvider = context.watch<AuthProvider>();
+    final planProvider = context.watch<SubscriptionPlanProvider>();
     final isArabic = languageProvider.isArabic;
+    String tr(String key, {Map<String, String>? args}) =>
+        languageProvider.t(key, args: args);
     final currentTier = authProvider.user?.subscriptionTier ?? 'Freemium';
+    final plans = _sortedPlans(planProvider.plans);
+    SubscriptionPlan? currentPlan = planProvider.matchTier(currentTier);
+    currentPlan ??= planProvider.freemiumPlan ?? (plans.isNotEmpty ? plans.first : null);
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'إدارة الاشتراك' : 'Manage Subscription'),
+        title: Text(tr('subscription_manage_title')),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Current plan card
-            CustomCard(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: planProvider.isLoading && !planProvider.hasLoaded
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: () => planProvider.loadPlans(forceRefresh: true),
+              child: ListView(
+                padding: const EdgeInsets.all(16),
                 children: [
-                  Text(
-                    isArabic ? 'خطتك الحالية' : 'Your Current Plan',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        currentTier,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
+                  _buildCurrentPlanCard(currentPlan, currentTier, languageProvider),
+                  const SizedBox(height: 24),
+                  if (planProvider.error != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      if (currentTier != 'Freemium')
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.success.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            isArabic ? 'نشط' : 'Active',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.success,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                      child: Text(
+                        planProvider.error!,
+                        style: const TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  if (plans.isNotEmpty) ...[
+                    Text(
+                      tr('subscription_compare_title'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SubscriptionComparisonTable(
+                      plans: plans,
+                      featureLabels: planProvider.comparisonFeatureLabels,
+                      currentPlanId: currentPlan?.id,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  if (plans.isNotEmpty)
+                    Text(
+                      tr('subscription_choose_plan'),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  if (plans.isNotEmpty)
+                    ...plans.map((plan) => _buildPlanCard(
+                          plan,
+                          currentPlan,
+                          plans,
+                          languageProvider,
+                        )),
                 ],
               ),
             ),
-            
-            const SizedBox(height: 24),
-            
-            // Plans
-            Text(
-              isArabic ? 'خطط الاشتراك' : 'Subscription Plans',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            ..._plans.map((plan) => _buildPlanCard(
-              plan,
-              currentTier,
-              isArabic,
-            )).toList(),
-          ],
-        ),
-      ),
     );
   }
-  
-  Widget _buildPlanCard(
-    Map<String, dynamic> plan,
-    String currentTier,
-    bool isArabic,
+
+  Widget _buildCurrentPlanCard(
+    SubscriptionPlan? plan,
+    String fallbackTier,
+    LanguageProvider languageProvider,
   ) {
-    final isCurrent = plan['tier'] == currentTier;
-    final tier = plan['tier'] as String;
-    final price = plan['price'] as int;
-    final features = plan['features'] as List<String>;
-    
+    final metadata = plan?.metadata ?? const {};
+    final isArabic = languageProvider.isArabic;
+    String tr(String key, {Map<String, String>? args}) =>
+        languageProvider.t(key, args: args);
     return CustomCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      border: isCurrent
-          ? Border.all(color: AppColors.primary, width: 2)
-          : null,
+      color: AppColors.primary.withValues(alpha: 0.08),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          Text(
+            tr('subscription_current_plan_label'),
+            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    tier,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        price == 0
-                            ? isArabic ? 'مجاني' : 'Free'
-                            : '$price ${isArabic ? 'ر.س' : 'SAR'}',
-                        style: TextStyle(
-                          fontSize: price == 0 ? 18 : 28,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      if (price > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4, left: 4, right: 4),
-                          child: Text(
-                            isArabic ? '/شهر' : '/month',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
+              Text(
+                plan?.name ?? fallbackTier,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
-              if (isCurrent)
+              if (plan != null && !plan.isFree)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: AppColors.success.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    isArabic ? 'الحالية' : 'Current',
+                    tr('subscription_status_active'),
                     style: const TextStyle(
                       fontSize: 12,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                      color: AppColors.success,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
             ],
           ),
-          
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 16),
-          
-          // Features
-          ...features.map((feature) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
+          const SizedBox(height: 12),
+          if (plan != null)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: AppColors.success,
-                  size: 20,
+                _MetricChip(
+                  icon: Icons.chat_bubble_outline,
+                  label: tr('subscription_coach_messages'),
+                  value: _formatLimit(metadata['messagesLimit'], languageProvider),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _getFeatureLabel(feature, isArabic),
-                    style: const TextStyle(fontSize: 14),
-                  ),
+                _MetricChip(
+                  icon: Icons.videocam_outlined,
+                  label: tr('subscription_video_calls'),
+                  value: _formatLimit(metadata['videoCallsLimit'], languageProvider),
                 ),
               ],
-            ),
-          )).toList(),
-          
-          const SizedBox(height: 16),
-          
-          // Action button
-          if (!isCurrent)
-            SizedBox(
-              width: double.infinity,
-              child: CustomButton(
-                text: _getButtonLabel(tier, currentTier, isArabic),
-                onPressed: () => _handlePlanAction(tier, currentTier, isArabic),
-                variant: _isUpgrade(tier, currentTier)
-                    ? ButtonVariant.primary
-                    : ButtonVariant.secondary,
-                size: ButtonSize.large,
-                fullWidth: true,
-              ),
+            )
+          else
+            Text(
+              tr('subscription_plan_loading_message'),
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
         ],
       ),
     );
   }
-  
-  bool _isUpgrade(String targetTier, String currentTier) {
-    final tierOrder = ['Freemium', 'Premium', 'Smart Premium'];
-    return tierOrder.indexOf(targetTier) > tierOrder.indexOf(currentTier);
+
+  Widget _buildPlanCard(
+    SubscriptionPlan plan,
+    SubscriptionPlan? currentPlan,
+    List<SubscriptionPlan> allPlans,
+    LanguageProvider languageProvider,
+  ) {
+    final isCurrent = currentPlan != null && plan.id == currentPlan.id;
+    final isUpgrade = currentPlan == null || _isUpgrade(plan, currentPlan, allPlans);
+    final metadata = plan.metadata;
+    final isArabic = languageProvider.isArabic;
+    String tr(String key, {Map<String, String>? args}) =>
+        languageProvider.t(key, args: args);
+    final monthUnitShort = tr('subscription_unit_month_short');
+    final yearUnitShort = tr('subscription_unit_year_short');
+
+    return CustomCard(
+      margin: const EdgeInsets.only(bottom: 16),
+      border: isCurrent ? Border.all(color: AppColors.primary, width: 2) : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      plan.name,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      plan.description,
+                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              if (plan.badge != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    plan.badge!,
+                    style: const TextStyle(fontSize: 11, color: AppColors.primary),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                plan.isFree
+                    ? tr('subscription_free_label')
+                    : '${plan.monthlyPrice.toStringAsFixed(0)} ${plan.currency}/$monthUnitShort',
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+              if (plan.yearlyPrice != null && plan.yearlyPrice! > 0)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, bottom: 2),
+                  child: Text(
+                    tr(
+                      'subscription_yearly_price_label',
+                      args: {
+                        'price': plan.yearlyPrice!.toStringAsFixed(0),
+                        'currency': plan.currency,
+                        'unit': yearUnitShort,
+                      },
+                    ),
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _MetricChip(
+                icon: Icons.chat_bubble_outline,
+                label: tr('subscription_coach_messages'),
+                value: _formatLimit(metadata['messagesLimit'], languageProvider),
+              ),
+              _MetricChip(
+                icon: Icons.videocam_outlined,
+                label: tr('subscription_video_calls'),
+                value: _formatLimit(metadata['videoCallsLimit'], languageProvider),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...plan.features.take(5).map((feature) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: AppColors.success, size: 18),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        feature.value == null
+                            ? feature.label
+                            : '${feature.label}: ${feature.value}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+          const SizedBox(height: 16),
+          CustomButton(
+            text: isCurrent
+                ? tr('subscription_current_plan_button')
+                : _getButtonLabel(isUpgrade, languageProvider),
+            onPressed: isCurrent
+                ? null
+                : () => _handlePlanAction(plan, currentPlan, languageProvider, allPlans),
+            variant: isUpgrade ? ButtonVariant.primary : ButtonVariant.secondary,
+            size: ButtonSize.large,
+            fullWidth: true,
+          ),
+        ],
+      ),
+    );
   }
-  
-  String _getButtonLabel(String targetTier, String currentTier, bool isArabic) {
-    if (_isUpgrade(targetTier, currentTier)) {
-      return isArabic ? 'ترقية' : 'Upgrade';
-    } else {
-      return isArabic ? 'التبديل إلى هذه الخطة' : 'Switch to this plan';
+
+  String _formatLimit(dynamic value, LanguageProvider languageProvider) {
+    String tr(String key, {Map<String, String>? args}) =>
+        languageProvider.t(key, args: args);
+    if (value == null) return tr('subscription_limit_flexible');
+    if (value is num && value.toInt() < 0) {
+      return tr('subscription_limit_unlimited');
     }
+    final parsed = value is num ? value.toInt() : int.tryParse(value.toString());
+    if (parsed == null) return value.toString();
+    return tr('subscription_limit_value', args: {'value': parsed.toString()});
   }
-  
-  String _getFeatureLabel(String feature, bool isArabic) {
-    final labels = {
-      'basic_workout': isArabic ? 'خطط تمرين أساسية' : 'Basic workout plans',
-      'full_workout': isArabic ? 'خطط تمرين كاملة' : 'Full workout plans',
-      'personalized_plans': isArabic ? 'خطط شخصية مخصصة' : 'Personalized plans',
-      'nutrition_trial': isArabic ? 'تجربة تغذية 14 يوم' : '14-day nutrition trial',
-      'full_nutrition': isArabic ? 'خطط تغذية كاملة' : 'Full nutrition plans',
-      'limited_messages': isArabic ? '20 رسالة شهرياً' : '20 messages/month',
-      'priority_messages': isArabic ? '200 رسالة شهرياً' : '200 messages/month',
-      'unlimited_messages': isArabic ? 'رسائل غير محدودة' : 'Unlimited messages',
-      'one_video_call': isArabic ? 'مكالمة فيديو واحدة شهرياً' : '1 video call/month',
-      'two_video_calls': isArabic ? 'مكالمتان فيديو شهرياً' : '2 video calls/month',
-      'four_video_calls': isArabic ? '4 مكالمات فيديو شهرياً' : '4 video calls/month',
-      'progress_tracking': isArabic ? 'تتبع التقدم' : 'Progress tracking',
-      'inbody_analysis': isArabic ? 'تحليل InBody' : 'InBody analysis',
-      'priority_support': isArabic ? 'دعم أولوية' : 'Priority support',
-      'advanced_analytics': isArabic ? 'تحليلات متقدمة' : 'Advanced analytics',
-    };
-    return labels[feature] ?? feature;
-  }
-  
-  void _handlePlanAction(String targetTier, String currentTier, bool isArabic) {
-    final isUpgrade = _isUpgrade(targetTier, currentTier);
-    
+
+  void _handlePlanAction(
+    SubscriptionPlan targetPlan,
+    SubscriptionPlan? currentPlan,
+    LanguageProvider languageProvider,
+    List<SubscriptionPlan> plans,
+  ) {
+    final isUpgrade = currentPlan == null || _isUpgrade(targetPlan, currentPlan, plans);
+    String tr(String key, {Map<String, String>? args}) =>
+        languageProvider.t(key, args: args);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
           isUpgrade
-              ? (isArabic ? 'تأكيد الترقية' : 'Confirm Upgrade')
-              : (isArabic ? 'تأكيد التبديل' : 'Confirm Switch'),
+              ? tr('subscription_upgrade_confirm_title')
+              : tr('subscription_switch_confirm_title'),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isUpgrade
-                  ? (isArabic
-                      ? 'هل تريد الترقية إلى $targetTier؟'
-                      : 'Do you want to upgrade to $targetTier?')
-                  : (isArabic
-                      ? 'هل تريد التبديل إلى $targetTier؟'
-                      : 'Do you want to switch to $targetTier?'),
-            ),
-            if (isUpgrade) ...[
-              const SizedBox(height: 16),
-              Text(
-                isArabic
-                    ? 'سيتم تطبيق الترقية فوراً'
-                    : 'Upgrade will be applied immediately',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ],
+        content: Text(
+          isUpgrade
+              ? tr('subscription_upgrade_confirm_body', args: {'plan': targetPlan.name})
+              : tr('subscription_switch_confirm_body', args: {'plan': targetPlan.name}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(tr('cancel')),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _processPlanChange(targetTier, currentTier, isArabic);
+              _processPlanChange(targetPlan, currentPlan, languageProvider);
             },
-            child: Text(isArabic ? 'تأكيد' : 'Confirm'),
+            child: Text(tr('confirm')),
           ),
         ],
       ),
     );
   }
-  
-  void _processPlanChange(String targetTier, String currentTier, bool isArabic) async {
-    // Simulate API call
+
+  Future<void> _processPlanChange(
+    SubscriptionPlan targetPlan,
+    SubscriptionPlan? currentPlan,
+    LanguageProvider languageProvider,
+  ) async {
+    final authProvider = context.read<AuthProvider>();
+    String tr(String key, {Map<String, String>? args}) =>
+        languageProvider.t(key, args: args);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          isArabic
-              ? '?? ????? ???????? ?????'
-              : 'Subscription changed successfully',
+          tr('subscription_update_success'),
         ),
         backgroundColor: AppColors.success,
       ),
     );
 
-    // Update user tier (would be done through provider in real app)
-    final authProvider = context.read<AuthProvider>();
     if (DemoConfig.isDemo) {
       final userProvider = context.read<UserProvider>();
-      await userProvider.updateSubscription(targetTier);
+      await userProvider.updateSubscription(targetPlan.name);
       if (userProvider.profile != null) {
         authProvider.updateUser(userProvider.profile!);
       }
     }
 
-    final isUpgradeFromFreemium = currentTier == 'Freemium' &&
-        (targetTier == 'Premium' || targetTier == 'Smart Premium');
-    if (isUpgradeFromFreemium) {
+    final wasFreemium = currentPlan?.isFree ?? (authProvider.user?.subscriptionTier == 'Freemium');
+    if (wasFreemium && !targetPlan.isFree) {
       final authUserId = authProvider.user?.id;
       final userId = authUserId ?? (DemoConfig.isDemo ? DemoConfig.demoUserId : null);
-      if (userId == null) return;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('pending_nutrition_intake_$userId', true);
-      await prefs.setBool('nutrition_preferences_completed_$userId', false);
+      if (userId != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('pending_nutrition_intake_$userId', true);
+        await prefs.setBool('nutrition_preferences_completed_$userId', false);
+      }
     }
+  }
+
+  bool _isUpgrade(
+    SubscriptionPlan target,
+    SubscriptionPlan current,
+    List<SubscriptionPlan> plans,
+  ) {
+    final ids = plans.map((plan) => plan.id).toList();
+    final targetIndex = ids.indexOf(target.id);
+    final currentIndex = ids.indexOf(current.id);
+    if (targetIndex == -1 || currentIndex == -1) {
+      return target.monthlyPrice > current.monthlyPrice;
+    }
+    return targetIndex > currentIndex;
+  }
+
+  String _getButtonLabel(bool isUpgrade, LanguageProvider languageProvider) {
+    return isUpgrade
+        ? languageProvider.t('subscription_upgrade_cta')
+        : languageProvider.t('subscription_switch_cta');
+  }
+
+  List<SubscriptionPlan> _sortedPlans(List<SubscriptionPlan> plans) {
+    final sorted = [...plans];
+    sorted.sort((a, b) => a.monthlyPrice.compareTo(b.monthlyPrice));
+    return sorted;
+  }
+
+}
+
+class _MetricChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _MetricChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: AppColors.textSecondary),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              ),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

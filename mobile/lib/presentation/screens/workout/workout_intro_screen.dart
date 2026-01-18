@@ -19,25 +19,25 @@ class WorkoutIntroScreen extends StatelessWidget {
     final featureCards = [
       {
         'icon': Icons.track_changes,
-        'color': const Color(0xFF7BA7FF),
+        'color': AppColors.chart1,
         'title': languageProvider.t('workouts_intro_feature1_title'),
         'description': languageProvider.t('workouts_intro_feature1_desc'),
       },
       {
         'icon': Icons.check_circle_outline,
-        'color': const Color(0xFF74E1A8),
+        'color': AppColors.chart4,
         'title': languageProvider.t('workouts_intro_feature2_title'),
         'description': languageProvider.t('workouts_intro_feature2_desc'),
       },
       {
         'icon': Icons.trending_up,
-        'color': const Color(0xFFC9A8FF),
+        'color': AppColors.chart2,
         'title': languageProvider.t('workouts_intro_feature3_title'),
         'description': languageProvider.t('workouts_intro_feature3_desc'),
       },
       {
         'icon': Icons.calendar_today,
-        'color': const Color(0xFFFFC48B),
+        'color': AppColors.chart3,
         'title': languageProvider.t('workouts_intro_feature4_title'),
         'description': languageProvider.t('workouts_intro_feature4_desc'),
       },
@@ -57,12 +57,12 @@ class WorkoutIntroScreen extends StatelessWidget {
           ),
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xB2000000),
-                    Color(0x99000000),
-                    Color(0xCC000000),
+                    AppColors.backgroundDark.withValues(alpha: 0.8),
+                    AppColors.backgroundDark.withValues(alpha: 0.65),
+                    AppColors.backgroundDark.withValues(alpha: 0.85),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,

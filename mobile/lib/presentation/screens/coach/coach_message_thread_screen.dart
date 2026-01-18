@@ -93,7 +93,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
         title: Text(widget.clientName),
         actions: [
           IconButton(
-            tooltip: lang.isArabic ? 'جدولة مكالمة' : 'Schedule call',
+            tooltip: lang.t('coach_schedule_call'),
             icon: const Icon(Icons.video_call),
             onPressed: () => showCoachScheduleSessionSheet(
               context,
@@ -112,7 +112,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
           else
             Expanded(
               child: messagingProvider.messages.isEmpty
-                  ? _buildEmptyState(isArabic)
+                  ? _buildEmptyState(lang)
                   : ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.symmetric(
@@ -121,9 +121,10 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
                       itemBuilder: (context, index) {
                         final message = messagingProvider.messages[index];
                         final isCoach = message.senderId != widget.clientId;
-                        final timestamp =
-                            DateFormat('MMM d • HH:mm', isArabic ? 'ar' : 'en')
-                                .format(message.createdAt);
+                        final timestamp = DateFormat(
+                          'MMM d, HH:mm',
+                          isArabic ? 'ar' : 'en',
+                        ).format(message.createdAt);
                         return Align(
                           alignment: isCoach
                               ? Alignment.centerRight
@@ -180,7 +181,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
     );
   }
 
-  Widget _buildEmptyState(bool isArabic) {
+  Widget _buildEmptyState(LanguageProvider lang) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -192,9 +193,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            isArabic
-                ? 'ابدأ المحادثة مع العميل.'
-                : 'Start the conversation with your client.',
+            lang.t('coach_start_conversation_prompt'),
             style: const TextStyle(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),

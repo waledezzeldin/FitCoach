@@ -773,10 +773,16 @@ class _AuthScreenState extends State<AuthScreen> {
                       style: const TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Email: user@fitcoach.com / Password: any',
+                    Text(
+                      languageProvider.t(
+                        'auth_demo_credentials_detail',
+                        args: {
+                          'email': 'user@fitcoach.com',
+                          'password': languageProvider.t('auth_demo_password_any'),
+                        },
+                      ),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                      style: const TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -785,10 +791,16 @@ class _AuthScreenState extends State<AuthScreen> {
                       style: const TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Email: coach@fitcoach.com / Password: any',
+                    Text(
+                      languageProvider.t(
+                        'auth_demo_credentials_detail',
+                        args: {
+                          'email': 'coach@fitcoach.com',
+                          'password': languageProvider.t('auth_demo_password_any'),
+                        },
+                      ),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                      style: const TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -797,10 +809,16 @@ class _AuthScreenState extends State<AuthScreen> {
                       style: const TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Email: admin@fitcoach.com / Password: any',
+                    Text(
+                      languageProvider.t(
+                        'auth_demo_credentials_detail',
+                        args: {
+                          'email': 'admin@fitcoach.com',
+                          'password': languageProvider.t('auth_demo_password_any'),
+                        },
+                      ),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                      style: const TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                     if (isRTL) const SizedBox(height: 8),
                   ],
