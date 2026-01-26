@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../core/constants/colors.dart';
@@ -32,12 +32,12 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
   void _loadAppointments() {
     final authProvider = context.read<AuthProvider>();
     final coachProvider = context.read<CoachProvider>();
-    
+
     if (authProvider.user?.id != null) {
-      // Load appointments for the current month
+      // Load appointments for the current month.
       final startDate = DateTime(_focusedDay.year, _focusedDay.month, 1);
       final endDate = DateTime(_focusedDay.year, _focusedDay.month + 1, 0);
-      
+
       coachProvider.loadAppointments(
         coachId: authProvider.user!.id,
         startDate: startDate,
@@ -46,7 +46,10 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
     }
   }
 
-  List<Appointment> _getAppointmentsForDay(DateTime day, List<Appointment> appointments) {
+  List<Appointment> _getAppointmentsForDay(
+    DateTime day,
+    List<Appointment> appointments,
+  ) {
     return appointments.where((appointment) {
       DateTime? scheduledDate;
       try {
@@ -55,17 +58,16 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
         return false;
       }
       return scheduledDate.year == day.year &&
-             scheduledDate.month == day.month &&
-             scheduledDate.day == day.day;
+          scheduledDate.month == day.month &&
+          scheduledDate.day == day.day;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = context.watch<LanguageProvider>();
+    final lang = context.watch<LanguageProvider>();
     final authProvider = context.watch<AuthProvider>();
     final coachProvider = context.watch<CoachProvider>();
-    final isArabic = languageProvider.isArabic;
 
     final selectedDayAppointments = _selectedDay != null
         ? _getAppointmentsForDay(_selectedDay!, coachProvider.appointments)
@@ -73,7 +75,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'التقويم' : 'Calendar'),
+        title: Text(lang.t('coach_tab_calendar')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -81,18 +83,22 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _showCreateAppointmentDialog(authProvider, isArabic),
+            onPressed: () => _showCreateAppointmentDialog(authProvider, lang),
           ),
         ],
       ),
-      body: coachProvider.isLoading
+      body: coachProvider.isAppointmentsLoading
           ? const Center(child: CircularProgressIndicator())
           : coachProvider.error != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: AppColors.error,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         coachProvider.error!,
@@ -102,7 +108,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadAppointments,
-                        child: Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                        child: Text(lang.t('retry')),
                       ),
                     ],
                   ),
@@ -116,7 +122,8 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                         firstDay: DateTime.utc(2020, 1, 1),
                         lastDay: DateTime.utc(2030, 12, 31),
                         focusedDay: _focusedDay,
-                        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                        selectedDayPredicate: (day) =>
+                            isSameDay(_selectedDay, day),
                         calendarFormat: _calendarFormat,
                         onDaySelected: (selectedDay, focusedDay) {
                           setState(() {
@@ -136,7 +143,10 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                           _loadAppointments();
                         },
                         eventLoader: (day) {
-                          return _getAppointmentsForDay(day, coachProvider.appointments);
+                          return _getAppointmentsForDay(
+                            day,
+                            coachProvider.appointments,
+                          );
                         },
                         calendarStyle: CalendarStyle(
                           markerDecoration: const BoxDecoration(
@@ -167,8 +177,13 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                         children: [
                           Text(
                             _selectedDay != null
-                                ? '${isArabic ? 'المواعيد في' : 'Appointments on'} ${_formatDate(_selectedDay!)}'
-                                : (isArabic ? 'المواعيد' : 'Appointments'),
+                                ? lang.t(
+                                    'coach_calendar_appointments_on',
+                                    args: {
+                                      'date': _formatDate(_selectedDay!),
+                                    },
+                                  )
+                                : lang.t('coach_calendar_appointments_title'),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -176,7 +191,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                           ),
                           Text(
                             '${selectedDayAppointments.length}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               color: AppColors.textSecondary,
                             ),
@@ -200,7 +215,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    isArabic ? 'لا توجد مواعيد' : 'No appointments',
+                                    lang.t('coach_calendar_no_appointments_day'),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       color: AppColors.textSecondary,
@@ -210,11 +225,17 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                               ),
                             )
                           : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               itemCount: selectedDayAppointments.length,
                               itemBuilder: (context, index) {
-                                final appointment = selectedDayAppointments[index];
-                                return _buildAppointmentCard(appointment, authProvider, isArabic);
+                                final appointment =
+                                    selectedDayAppointments[index];
+                                return _buildAppointmentCard(
+                                  appointment,
+                                  authProvider,
+                                  lang,
+                                );
                               },
                             ),
                     ),
@@ -223,7 +244,11 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
     );
   }
 
-  Widget _buildAppointmentCard(Appointment appointment, AuthProvider authProvider, bool isArabic) {
+  Widget _buildAppointmentCard(
+    Appointment appointment,
+    AuthProvider authProvider,
+    LanguageProvider lang,
+  ) {
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -235,9 +260,13 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
               children: [
                 // Time
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: _getTypeColor(appointment.type ?? '').withValues(alpha: 0.1),
+                    color: _getTypeColor(appointment.type ?? '')
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -258,7 +287,9 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        appointment.userName ?? appointment.coachName ?? 'Unknown Client',
+                        appointment.userName ??
+                            appointment.coachName ??
+                            lang.t('unknown'),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -274,7 +305,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${_getTypeDisplayName(appointment.type, context.read<LanguageProvider>())} • ${appointment.durationMinutes ?? '-'} ${context.read<LanguageProvider>().t('minute_short')}',
+                            '${_getTypeDisplayName(appointment.type, lang)} - ${appointment.durationMinutes ?? '-'} ${lang.t('minute_short')}',
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,
@@ -288,16 +319,17 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
 
                 // Status badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getStatusColor(appointment.status),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    _getStatusDisplayName(appointment.status, isArabic),
+                    _getStatusDisplayName(appointment.status, lang),
                     style: const TextStyle(
                       fontSize: 10,
-                      color: Colors.white,
+                      color: AppColors.textWhite,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -324,15 +356,23 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
               children: [
                 if (appointment.status == 'scheduled') ...[
                   TextButton.icon(
-                    onPressed: () => _showUpdateAppointmentDialog(appointment, authProvider, isArabic),
+                    onPressed: () => _showUpdateAppointmentDialog(
+                      appointment,
+                      authProvider,
+                      lang,
+                    ),
                     icon: const Icon(Icons.edit, size: 16),
-                    label: Text(isArabic ? 'تعديل' : 'Edit'),
+                    label: Text(lang.t('coach_edit')),
                   ),
                   const SizedBox(width: 8),
                   TextButton.icon(
-                    onPressed: () => _cancelAppointment(appointment, authProvider, isArabic),
+                    onPressed: () => _cancelAppointment(
+                      appointment,
+                      authProvider,
+                      lang,
+                    ),
                     icon: const Icon(Icons.cancel, size: 16),
-                    label: Text(isArabic ? 'إلغاء' : 'Cancel'),
+                    label: Text(lang.t('auth_cancel')),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.error,
                     ),
@@ -346,10 +386,13 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
     );
   }
 
-  void _showCreateAppointmentDialog(AuthProvider authProvider, bool isArabic) {
+  void _showCreateAppointmentDialog(
+    AuthProvider authProvider,
+    LanguageProvider lang,
+  ) {
     final coachProvider = context.read<CoachProvider>();
-    
-    // First, load clients to select from
+
+    // First, load clients to select from.
     if (coachProvider.clients.isEmpty) {
       coachProvider.loadClients(coachId: authProvider.user!.id);
     }
@@ -365,7 +408,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(isArabic ? 'إنشاء موعد' : 'Create Appointment'),
+          title: Text(lang.t('coach_calendar_create_title')),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -374,7 +417,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                 DropdownButtonFormField<String>(
                   value: selectedClientId,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'العميل' : 'Client',
+                    labelText: lang.t('coach_calendar_client_label'),
                     border: const OutlineInputBorder(),
                   ),
                   items: coachProvider.clients.map((client) {
@@ -394,7 +437,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
 
                 // Date picker
                 ListTile(
-                  title: Text(isArabic ? 'التاريخ' : 'Date'),
+                  title: Text(lang.t('coach_schedule_date')),
                   subtitle: Text(_formatDate(selectedDate)),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () async {
@@ -414,7 +457,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
 
                 // Time picker
                 ListTile(
-                  title: Text(isArabic ? 'الوقت' : 'Time'),
+                  title: Text(lang.t('coach_schedule_time')),
                   subtitle: Text(selectedTime.format(context)),
                   trailing: const Icon(Icons.access_time),
                   onTap: () async {
@@ -436,13 +479,13 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                 DropdownButtonFormField<int>(
                   value: duration,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'المدة' : 'Duration',
+                    labelText: lang.t('coach_schedule_duration_label'),
                     border: const OutlineInputBorder(),
                   ),
                   items: [15, 30, 45, 60, 90].map((min) {
                     return DropdownMenuItem(
                       value: min,
-                      child: Text('$min ${isArabic ? 'دقيقة' : 'minutes'}'),
+                      child: Text('$min ${lang.t('minute_short')}'),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -458,21 +501,21 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                 DropdownButtonFormField<String>(
                   value: type,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'النوع' : 'Type',
+                    labelText: lang.t('coach_calendar_type_label'),
                     border: const OutlineInputBorder(),
                   ),
                   items: [
                     DropdownMenuItem(
                       value: 'video',
-                      child: Text(isArabic ? 'مكالمة فيديو' : 'Video Call'),
+                      child: Text(lang.t('video_call')),
                     ),
                     DropdownMenuItem(
                       value: 'chat',
-                      child: Text(isArabic ? 'دردشة' : 'Chat'),
+                      child: Text(lang.t('chat')),
                     ),
                     DropdownMenuItem(
                       value: 'assessment',
-                      child: Text(isArabic ? 'تقييم' : 'Assessment'),
+                      child: Text(lang.t('assessment')),
                     ),
                   ],
                   onChanged: (value) {
@@ -488,7 +531,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                 TextField(
                   controller: notesController,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'ملاحظات' : 'Notes',
+                    labelText: lang.t('coach_schedule_notes_label'),
                     border: const OutlineInputBorder(),
                   ),
                   maxLines: 3,
@@ -499,7 +542,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+              child: Text(lang.t('auth_cancel')),
             ),
             ElevatedButton(
               onPressed: selectedClientId == null
@@ -521,14 +564,16 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                         scheduledAt: scheduledAt,
                         duration: duration,
                         type: type,
-                        notes: notesController.text.isNotEmpty ? notesController.text : null,
+                        notes: notesController.text.isNotEmpty
+                            ? notesController.text
+                            : null,
                       );
 
                       if (success && mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              isArabic ? 'تم إنشاء الموعد بنجاح' : 'Appointment created successfully',
+                              lang.t('coach_calendar_create_success'),
                             ),
                             backgroundColor: AppColors.success,
                           ),
@@ -537,13 +582,16 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                       } else if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(coachProvider.error ?? 'Failed to create appointment'),
+                            content: Text(
+                              coachProvider.error ??
+                                  lang.t('coach_calendar_create_failed'),
+                            ),
                             backgroundColor: AppColors.error,
                           ),
                         );
                       }
                     },
-              child: Text(isArabic ? 'إنشاء' : 'Create'),
+              child: Text(lang.t('coach_calendar_create_action')),
             ),
           ],
         ),
@@ -551,9 +599,14 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
     );
   }
 
-  void _showUpdateAppointmentDialog(Appointment appointment, AuthProvider authProvider, bool isArabic) {
+  void _showUpdateAppointmentDialog(
+    Appointment appointment,
+    AuthProvider authProvider,
+    LanguageProvider lang,
+  ) {
     DateTime selectedDate = DateTime.parse(appointment.scheduledAt);
-    TimeOfDay selectedTime = TimeOfDay.fromDateTime(DateTime.parse(appointment.scheduledAt));
+    TimeOfDay selectedTime =
+        TimeOfDay.fromDateTime(DateTime.parse(appointment.scheduledAt));
     int duration = appointment.durationMinutes ?? 30;
     final notesController = TextEditingController(text: appointment.notes);
 
@@ -561,14 +614,14 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(isArabic ? 'تعديل الموعد' : 'Update Appointment'),
+          title: Text(lang.t('coach_calendar_update_title')),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Date picker
                 ListTile(
-                  title: Text(isArabic ? 'التاريخ' : 'Date'),
+                  title: Text(lang.t('coach_schedule_date')),
                   subtitle: Text(_formatDate(selectedDate)),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () async {
@@ -588,7 +641,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
 
                 // Time picker
                 ListTile(
-                  title: Text(isArabic ? 'الوقت' : 'Time'),
+                  title: Text(lang.t('coach_schedule_time')),
                   subtitle: Text(selectedTime.format(context)),
                   trailing: const Icon(Icons.access_time),
                   onTap: () async {
@@ -610,13 +663,13 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                 DropdownButtonFormField<int>(
                   value: duration,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'المدة' : 'Duration',
+                    labelText: lang.t('coach_schedule_duration_label'),
                     border: const OutlineInputBorder(),
                   ),
                   items: [15, 30, 45, 60, 90].map((min) {
                     return DropdownMenuItem(
                       value: min,
-                      child: Text('$min ${isArabic ? 'دقيقة' : 'minutes'}'),
+                      child: Text('$min ${lang.t('minute_short')}'),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -632,7 +685,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                 TextField(
                   controller: notesController,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'ملاحظات' : 'Notes',
+                    labelText: lang.t('coach_schedule_notes_label'),
                     border: const OutlineInputBorder(),
                   ),
                   maxLines: 3,
@@ -643,7 +696,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+              child: Text(lang.t('auth_cancel')),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -663,15 +716,15 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                   appointmentId: appointment.id,
                   scheduledAt: scheduledAt,
                   duration: duration,
-                  notes: notesController.text.isNotEmpty ? notesController.text : null,
+                  notes: notesController.text.isNotEmpty
+                      ? notesController.text
+                      : null,
                 );
 
                 if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        isArabic ? 'تم تحديث الموعد بنجاح' : 'Appointment updated successfully',
-                      ),
+                      content: Text(lang.t('coach_calendar_update_success')),
                       backgroundColor: AppColors.success,
                     ),
                   );
@@ -679,13 +732,16 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
                 } else if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(coachProvider.error ?? 'Failed to update appointment'),
+                      content: Text(
+                        coachProvider.error ??
+                            lang.t('coach_calendar_update_failed'),
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
                 }
               },
-              child: Text(isArabic ? 'تحديث' : 'Update'),
+              child: Text(lang.t('coach_calendar_update_action')),
             ),
           ],
         ),
@@ -693,20 +749,20 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
     );
   }
 
-  void _cancelAppointment(Appointment appointment, AuthProvider authProvider, bool isArabic) {
+  void _cancelAppointment(
+    Appointment appointment,
+    AuthProvider authProvider,
+    LanguageProvider lang,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'إلغاء الموعد' : 'Cancel Appointment'),
-        content: Text(
-          isArabic
-              ? 'هل أنت متأكد من إلغاء هذا الموعد؟'
-              : 'Are you sure you want to cancel this appointment?',
-        ),
+        title: Text(lang.t('coach_calendar_cancel_title')),
+        content: Text(lang.t('coach_calendar_cancel_confirm')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'لا' : 'No'),
+            child: Text(lang.t('auth_cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -722,9 +778,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      isArabic ? 'تم إلغاء الموعد' : 'Appointment cancelled',
-                    ),
+                    content: Text(lang.t('coach_calendar_cancel_success')),
                     backgroundColor: AppColors.success,
                   ),
                 );
@@ -732,7 +786,10 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
               } else if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(coachProvider.error ?? 'Failed to cancel appointment'),
+                    content: Text(
+                      coachProvider.error ??
+                          lang.t('coach_calendar_cancel_failed'),
+                    ),
                     backgroundColor: AppColors.error,
                   ),
                 );
@@ -741,7 +798,7 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: Text(isArabic ? 'نعم، إلغاء' : 'Yes, Cancel'),
+            child: Text(lang.t('coach_calendar_cancel_action')),
           ),
         ],
       ),
@@ -812,20 +869,20 @@ class _CoachCalendarScreenState extends State<CoachCalendarScreen> {
     }
   }
 
-  String _getStatusDisplayName(String? status, bool isArabic) {
+  String _getStatusDisplayName(String? status, LanguageProvider lang) {
     switch (status) {
       case 'scheduled':
-        return isArabic ? 'مجدول' : 'Scheduled';
+        return lang.t('coach_status_scheduled');
       case 'in_progress':
-        return isArabic ? 'قيد التنفيذ' : 'In Progress';
+        return lang.t('coach_status_in_progress');
       case 'completed':
-        return isArabic ? 'مكتمل' : 'Completed';
+        return lang.t('coach_status_completed');
       case 'cancelled':
-        return isArabic ? 'ملغي' : 'Cancelled';
+        return lang.t('coach_status_cancelled');
       case 'missed':
-        return isArabic ? 'فات' : 'Missed';
+        return lang.t('coach_status_missed');
       default:
-        return isArabic ? 'غير معروف' : 'Unknown';
+        return lang.t('unknown');
     }
   }
 }

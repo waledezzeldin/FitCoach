@@ -54,6 +54,9 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
     final authProvider = context.watch<AuthProvider>();
     final isArabic = languageProvider.isArabic;
     final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
+    final hasAssignedCoach =
+        DemoConfig.isDemo || authProvider.user?.coachId != null;
+    final coachData = _resolveCoachData(languageProvider, authProvider);
 
     final callsUsed = DemoConfig.isDemo ? 1 : 0;
     final callsLimit = _getCallsLimit(tier);
@@ -78,7 +81,8 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                     _buildNoCallsWarning(languageProvider, isArabic),
 
                   // Assigned coach card
-                  if (DemoConfig.isDemo) _buildCoachCard(languageProvider, isArabic),
+                  if (hasAssignedCoach)
+                    _buildCoachCard(languageProvider, isArabic, coachData),
                   const SizedBox(height: 20),
 
                   // Date selection
@@ -255,20 +259,46 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
     );
   }
 
-  Widget _buildCoachCard(LanguageProvider lang, bool isArabic) {
+  Map<String, dynamic> _resolveCoachData(
+    LanguageProvider lang,
+    AuthProvider authProvider,
+  ) {
+    if (DemoConfig.isDemo) {
+      return _assignedCoach;
+    }
+    final coachName = lang.t('coach');
+    return {
+      'id': authProvider.user?.coachId ?? 'coach',
+      'name': coachName,
+      'nameAr': coachName,
+      'specialties': <String>[],
+      'specialtiesAr': <String>[],
+      'rating': null,
+      'yearsExperience': null,
+      'availableSlots': _allTimeSlots,
+    };
+  }
+
+  Widget _buildCoachCard(
+    LanguageProvider lang,
+    bool isArabic,
+    Map<String, dynamic> coachData,
+  ) {
     final coachName = isArabic
-        ? (_assignedCoach['nameAr'] ?? _assignedCoach['name'])
-        : _assignedCoach['name'];
+        ? (coachData['nameAr'] ?? coachData['name'])
+        : coachData['name'];
     final specialties = isArabic
-        ? (_assignedCoach['specialtiesAr'] as List<String>)
-        : (_assignedCoach['specialties'] as List<String>);
+        ? (coachData['specialtiesAr'] as List<String>)
+        : (coachData['specialties'] as List<String>);
+    final rating = coachData['rating'] as num?;
+    final yearsExperience = coachData['yearsExperience'] as num?;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3E8FF),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE9D5FF)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
@@ -282,7 +312,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
             ),
             child: Center(
               child: Text(
-                _assignedCoach['name'].toString().split(' ').map((n) => n[0]).join(''),
+                coachData['name'].toString().split(' ').map((n) => n[0]).join(''),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -302,7 +332,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                   isArabic ? 'المدرب المعين لك' : 'Your Assigned Coach',
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF7C3AED),
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -312,27 +342,40 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Color(0xFFFBBF24), size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${_assignedCoach['rating']}',
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '${_assignedCoach['yearsExperience']} ${isArabic ? 'سنوات خبرة' : 'years exp'}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
+                if (rating != null || yearsExperience != null)
+                  Row(
+                    children: [
+                      if (rating != null) ...[
+                        const Icon(
+                          Icons.star,
+                          color: Color(0xFFFBBF24),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$rating',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                      if (yearsExperience != null) ...[
+                        if (rating != null) const SizedBox(width: 12),
+                        Text(
+                          '$yearsExperience ${isArabic ? 'سنوات خبرة' : 'years exp'}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -340,12 +383,16 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                   children: specialties.take(3).map((s) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
                     ),
                     child: Text(
                       s,
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF6B21A8)),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   )).toList(),
                 ),

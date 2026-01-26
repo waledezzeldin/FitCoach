@@ -98,7 +98,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF7C3AED), Color(0xFFEC4899)],
+          colors: [AppColors.primary, AppColors.secondaryForeground],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -114,7 +114,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                   onPressed: () => Navigator.of(context).maybePop(),
                   icon: Icon(
                     isArabic ? Icons.arrow_forward : Icons.arrow_back,
-                    color: Colors.white,
+                    color: AppColors.textWhite,
                   ),
                 ),
                 Expanded(
@@ -124,7 +124,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                       Text(
                         languageProvider.t('admin_subscription_management'),
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textWhite,
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
@@ -133,7 +133,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                       Text(
                         languageProvider.t('admin_manage_plans'),
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: AppColors.textWhite,
                           fontSize: 12,
                         ),
                       ),
@@ -142,10 +142,10 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                 ),
                 TextButton.icon(
                   onPressed: () => planProvider.loadPlans(forceRefresh: true),
-                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  icon: const Icon(Icons.refresh, color: AppColors.textWhite),
                   label: Text(
                     languageProvider.t('refresh'),
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppColors.textWhite),
                   ),
                 ),
               ],
@@ -154,7 +154,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             Text(
               languageProvider.t('subscription_admin_header_description'),
               style: const TextStyle(
-                color: Colors.white70,
+                color: AppColors.textWhite,
                 fontSize: 13,
               ),
             ),

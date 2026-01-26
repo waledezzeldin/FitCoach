@@ -339,13 +339,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   children: [
                     Text(
                       '${lang.t('home_hello')}, $firstName!',
-                      style: AppTextStyles.h3.copyWith(color: Colors.white),
+                      style: AppTextStyles.h3.copyWith(color: AppColors.textWhite),
                       textAlign: isArabic ? TextAlign.right : TextAlign.left,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       lang.t('home_ready'),
-                      style: AppTextStyles.small.copyWith(color: Colors.white70),
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.7),
+                      ),
                     ),
                   ],
                 ),
@@ -353,17 +355,17 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: AppColors.textWhite.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   tierLabel,
-                  style: AppTextStyles.smallMedium.copyWith(color: Colors.white),
+                  style: AppTextStyles.smallMedium.copyWith(color: AppColors.textWhite),
                 ),
               ),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.person, color: Colors.white, size: 20),
+                icon: const Icon(Icons.person, color: AppColors.textWhite, size: 20),
                 onPressed: () => setState(() => _selectedIndex = 5),
               ),
             ],
@@ -372,7 +374,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: AppColors.textWhite.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -386,14 +388,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                         children: [
                           Text(
                             lang.t('home_fitness_score'),
-                            style: AppTextStyles.small.copyWith(color: Colors.white70),
+                            style: AppTextStyles.small.copyWith(
+                              color: AppColors.textWhite.withValues(alpha: 0.7),
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             fitnessUpdatedBy == 'coach'
                                 ? lang.t('home_updated_by_coach')
                                 : lang.t('home_auto_updated'),
-                            style: AppTextStyles.small.copyWith(color: Colors.white54),
+                            style: AppTextStyles.small.copyWith(
+                              color: AppColors.textWhite.withValues(alpha: 0.54),
+                            ),
                           ),
                         ],
                       ),
@@ -402,11 +408,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       children: [
                         Text(
                           '$fitnessScore',
-                          style: AppTextStyles.h2.copyWith(color: Colors.white),
+                          style: AppTextStyles.h2.copyWith(color: AppColors.textWhite),
                         ),
                         Text(
                           '/100',
-                          style: AppTextStyles.small.copyWith(color: Colors.white54),
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textWhite.withValues(alpha: 0.54),
+                          ),
                         ),
                       ],
                     ),
@@ -418,8 +426,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   child: LinearProgressIndicator(
                     value: fitnessScore / 100,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    backgroundColor: AppColors.textWhite.withValues(alpha: 0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.textWhite),
                   ),
                 ),
               ],
@@ -457,7 +465,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: AppColors.textWhite.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -467,11 +475,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   children: [
                     Text(
                       lang.t('home_weekly_progress'),
-                      style: AppTextStyles.small.copyWith(color: Colors.white70),
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.7),
+                      ),
                     ),
                     Text(
                       '${stats['weeklyProgress'] ?? 0}%',
-                      style: AppTextStyles.small.copyWith(color: Colors.white70),
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.7),
+                      ),
                     ),
                   ],
                 ),
@@ -481,8 +493,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   child: LinearProgressIndicator(
                     value: (stats['weeklyProgress'] ?? 0) / 100,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    backgroundColor: AppColors.textWhite.withValues(alpha: 0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.textWhite),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -491,11 +503,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   children: [
                     Text(
                       '${stats['workoutsCompleted'] ?? 0}/${stats['totalWorkouts'] ?? 0}',
-                      style: AppTextStyles.small.copyWith(color: Colors.white54),
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.54),
+                      ),
                     ),
                     Text(
                       lang.t('home_this_week'),
-                      style: AppTextStyles.small.copyWith(color: Colors.white54),
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.54),
+                      ),
                     ),
                   ],
                 ),
@@ -549,7 +565,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       decoration: BoxDecoration(
         // Keep strong gradient but soften a bit for readability
         gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF4F46E5)],
+          colors: [AppColors.primaryDark, AppColors.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -560,23 +576,37 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         children: [
           Text(
             lang.t('home_next_session'),
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(
+              color: AppColors.textWhite.withValues(alpha: 0.7),
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             appointment.coachName ?? lang.t('coach'),
-            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: AppColors.textWhite,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             dateLabel,
-            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: AppColors.textWhite,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           if (countdown != null) ...[
             const SizedBox(height: 4),
             Text(
               countdown,
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(
+                color: AppColors.textWhite.withValues(alpha: 0.7),
+                fontSize: 13,
+              ),
             ),
           ],
           const SizedBox(height: 16),
@@ -594,7 +624,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               ),
               const SizedBox(width: 12),
               TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.white),
+                style: TextButton.styleFrom(foregroundColor: AppColors.textWhite),
                 onPressed: () => _openAppointmentDetailsFromHome(appointment),
                 child: Text(lang.t('details')),
               ),
@@ -605,7 +635,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 joinHint,
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                style: TextStyle(
+                  color: AppColors.textWhite.withValues(alpha: 0.7),
+                  fontSize: 12,
+                ),
               ),
             ),
         ],
@@ -665,21 +698,23 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: AppColors.textWhite.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.white, size: 18),
+          Icon(icon, color: AppColors.textWhite, size: 18),
           const SizedBox(height: 6),
           Text(
             value,
-            style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textWhite),
           ),
           const SizedBox(height: 2),
           Text(
             label.split(' ').first,
-            style: AppTextStyles.small.copyWith(color: Colors.white70),
+            style: AppTextStyles.small.copyWith(
+              color: AppColors.textWhite.withValues(alpha: 0.7),
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -758,7 +793,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             child: DecoratedBox(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
+                  colors: [AppColors.secondaryForeground, AppColors.primaryDark],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -772,11 +807,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.fitness_center, size: 16, color: Colors.white),
+                      const Icon(Icons.fitness_center, size: 16, color: AppColors.textWhite),
                       const SizedBox(width: 6),
                       Text(
                         lang.t('home_start_workout'),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: AppColors.textWhite,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -796,36 +834,36 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         label: lang.t('home_workouts'),
         description: lang.t('home_workouts_desc'),
         icon: Icons.fitness_center,
-        color: const Color(0xFF3B82F6),
+        color: AppColors.primary,
         index: 1,
-        background: const Color(0xFFEFF6FF),
+        background: AppColors.primary.withValues(alpha: 0.12),
       ),
       _HomeNavItem(
         label: lang.t('home_nutrition'),
         description: lang.t('home_nutrition_desc'),
         icon: Icons.restaurant,
-        color: const Color(0xFF22C55E),
+        color: AppColors.chart4,
         index: 2,
         locked: isFreemium,
         lockedLabel: lang.t('home_tap_to_upgrade'),
-        background: const Color(0xFFF0FDF4),
+        background: AppColors.chart4.withValues(alpha: 0.12),
       ),
       _HomeNavItem(
         label: lang.t('home_coach'),
         description: lang.t('home_coach_desc'),
         icon: Icons.chat_bubble_outline,
-        color: const Color(0xFFF59E0B),
+        color: AppColors.accent,
         index: 3,
         badge: DemoConfig.isDemo ? '1' : null,
-        background: const Color(0xFFFFFBEB),
+        background: AppColors.accent.withValues(alpha: 0.12),
       ),
       _HomeNavItem(
         label: lang.t('home_store'),
         description: lang.t('home_store_desc'),
         icon: Icons.shopping_bag_outlined,
-        color: const Color(0xFF06B6D4),
+        color: AppColors.primaryLight,
         index: 4,
-        background: const Color(0xFFECFEFF),
+        background: AppColors.primaryLight.withValues(alpha: 0.12),
       ),
     ];
 
@@ -855,10 +893,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: item.locked ? const Color(0xFFFFF7ED) : item.background ?? Colors.white,
+          color: item.locked
+              ? AppColors.accent.withValues(alpha: 0.12)
+              : item.background ?? AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: item.locked ? const Color(0xFFFED7AA) : AppColors.border,
+            color: item.locked ? AppColors.accent.withValues(alpha: 0.35) : AppColors.border,
             width: item.locked ? 2 : 1,
           ),
         ),
@@ -874,20 +914,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     color: item.color,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(item.icon, color: Colors.white, size: 22),
+                  child: Icon(item.icon, color: AppColors.textWhite, size: 22),
                 ),
                 if (item.locked)
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFF97316), Color(0xFFEC4899)],
+                          colors: [AppColors.accent, AppColors.chart5],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(Icons.workspace_premium, color: Colors.white, size: 22),
+                      child: const Icon(Icons.workspace_premium, color: AppColors.textWhite, size: 22),
                     ),
                   ),
                 if (item.badge != null)
@@ -903,7 +943,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       ),
                       child: Text(
                         item.badge!,
-                        style: const TextStyle(color: Colors.white, fontSize: 10),
+                        style: const TextStyle(color: AppColors.textWhite, fontSize: 10),
                       ),
                     ),
                   ),
@@ -935,13 +975,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFE4C7),
+                  color: AppColors.accent.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   item.lockedLabel,
                   style: AppTextStyles.small.copyWith(
-                    color: const Color(0xFF9A3412),
+                    color: AppColors.textPrimary,
                     fontSize: 10,
                   ),
                 ),
@@ -989,25 +1029,25 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   _buildQuickAccessButton(
                     lang.t('home_book_video_session'),
                     Icons.videocam,
-                    const Color(0xFF9333EA),
+                    AppColors.secondaryForeground,
                     isArabic,
                     () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const VideoBookingScreen()),
                     ),
-                    background: const Color(0xFFF3E8FF),
-                    borderColor: const Color(0xFFE9D5FF),
+                    background: AppColors.secondary,
+                    borderColor: AppColors.secondaryForeground.withValues(alpha: 0.2),
                   ),
                   const SizedBox(height: 8),
                   _buildQuickAccessButton(
                     lang.t('home_manage_subscription'),
                     Icons.workspace_premium,
-                    const Color(0xFF7C3AED),
+                    AppColors.secondaryForeground,
                     isArabic,
                     () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const SubscriptionManagerScreen()),
                     ),
-                    background: const Color(0xFFF3E8FF),
-                    borderColor: const Color(0xFFE9D5FF),
+                    background: AppColors.secondary,
+                    borderColor: AppColors.secondaryForeground.withValues(alpha: 0.2),
                   ),
                   const SizedBox(height: 8),
                   _buildQuickAccessButton(
@@ -1033,7 +1073,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   _buildQuickAccessButton(
                     lang.t('inbody_title'),
                     Icons.monitor_heart,
-                    const Color(0xFF2563EB),
+                    AppColors.primaryDark,
                     isArabic,
                     () => Navigator.of(context).push(
                       MaterialPageRoute(
@@ -1042,8 +1082,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                             : const SubscriptionManagerScreen(),
                       ),
                     ),
-                    background: const Color(0xFFDBEAFE),
-                    borderColor: const Color(0xFFBFDBFE),
+                    background: AppColors.primary.withValues(alpha: 0.12),
+                    borderColor: AppColors.primary.withValues(alpha: 0.25),
                   ),
                   const SizedBox(height: 8),
                   _buildQuickAccessButton(
@@ -1109,20 +1149,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             title: lang.t('home_completed_push_day'),
             subtitle: lang.t('home_hours_ago'),
             badge: lang.t('home_calories_badge', args: {'calories': '250'}),
-            color: const Color(0xFF22C55E),
+            color: AppColors.chart4,
           ),
           const SizedBox(height: 8),
           _buildActivityRow(
             title: lang.t('home_message_from_coach'),
             subtitle: lang.t('home_day_ago'),
             badge: lang.t('home_new'),
-            color: const Color(0xFF3B82F6),
+            color: AppColors.primary,
           ),
           const SizedBox(height: 8),
           _buildActivityRow(
             title: lang.t('home_weekly_progress_updated'),
             subtitle: lang.t('home_days_ago'),
-            color: const Color(0xFF7C3AED),
+            color: AppColors.secondaryForeground,
           ),
         ],
       ),
@@ -1169,27 +1209,30 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFF3E8FF), Color(0xFFE0F2FE)],
+        gradient: LinearGradient(
+          colors: [AppColors.secondary, AppColors.primaryLight.withValues(alpha: 0.2)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE9D5FF)),
+        border: Border.all(color: AppColors.secondary),
       ),
       child: Column(
         children: [
-          const Icon(Icons.workspace_premium, color: Color(0xFF7C3AED), size: 26),
+          const Icon(Icons.workspace_premium, color: AppColors.secondaryForeground, size: 26),
           const SizedBox(height: 8),
           Text(
             lang.t('home_unlock_premium'),
-            style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: const Color(0xFF4C1D95)),
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
             lang.t('home_premium_desc'),
-            style: AppTextStyles.small.copyWith(color: const Color(0xFF6D28D9)),
+            style: AppTextStyles.small.copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
@@ -1203,8 +1246,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               icon: const Icon(Icons.star, size: 14),
               label: Text(lang.t('home_upgrade_now')),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7C3AED),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.secondaryForeground,
+                foregroundColor: AppColors.textWhite,
               ),
             ),
           ),
@@ -1248,12 +1291,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   children: [
                     Text(
                       '${lang.t('home_hello')}, $firstName!',
-                      style: AppTextStyles.h3.copyWith(color: Colors.white),
+                      style: AppTextStyles.h3.copyWith(color: AppColors.textWhite),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       lang.t('home_ready'),
-                      style: AppTextStyles.small.copyWith(color: Colors.white70),
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.7),
+                      ),
                     ),
                   ],
                 ),
@@ -1261,17 +1306,17 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: AppColors.textWhite.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   tierLabel,
-                  style: AppTextStyles.smallMedium.copyWith(color: Colors.white),
+                  style: AppTextStyles.smallMedium.copyWith(color: AppColors.textWhite),
                 ),
               ),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.person_outline, color: Colors.white),
+                icon: const Icon(Icons.person_outline, color: AppColors.textWhite),
                 onPressed: () => setState(() => _selectedIndex = 5),
               ),
             ],
@@ -1280,7 +1325,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: AppColors.textWhite.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -1294,14 +1339,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                         children: [
                           Text(
                             lang.t('home_fitness_score'),
-                            style: AppTextStyles.small.copyWith(color: Colors.white70),
+                            style: AppTextStyles.small.copyWith(
+                              color: AppColors.textWhite.withValues(alpha: 0.7),
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             fitnessUpdatedBy == 'coach'
                                 ? lang.t('home_updated_by_coach')
                                 : lang.t('home_auto_updated'),
-                            style: AppTextStyles.small.copyWith(color: Colors.white54),
+                            style: AppTextStyles.small.copyWith(
+                              color: AppColors.textWhite.withValues(alpha: 0.54),
+                            ),
                           ),
                         ],
                       ),
@@ -1310,11 +1359,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       children: [
                         Text(
                           '$fitnessScore',
-                          style: AppTextStyles.h2.copyWith(color: Colors.white),
+                          style: AppTextStyles.h2.copyWith(color: AppColors.textWhite),
                         ),
                         Text(
                           '/100',
-                          style: AppTextStyles.small.copyWith(color: Colors.white54),
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textWhite.withValues(alpha: 0.54),
+                          ),
                         ),
                       ],
                     ),
@@ -1326,8 +1377,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   child: LinearProgressIndicator(
                     value: fitnessScore / 100,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    backgroundColor: AppColors.textWhite.withValues(alpha: 0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.textWhite),
                   ),
                 ),
               ],
@@ -1374,21 +1425,23 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: AppColors.textWhite.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.white, size: 18),
+          Icon(icon, color: AppColors.textWhite, size: 18),
           const SizedBox(height: 6),
           Text(
             value,
-            style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textWhite),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: AppTextStyles.small.copyWith(color: Colors.white70),
+            style: AppTextStyles.small.copyWith(
+              color: AppColors.textWhite.withValues(alpha: 0.7),
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1462,12 +1515,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.medium),
           border: Border.all(color: AppColors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: AppColors.textPrimary.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -1576,7 +1629,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       ),
       child: Row(
         children: [
-          Icon(getIcon(), color: Colors.white, size: 32),
+          Icon(getIcon(), color: AppColors.textWhite, size: 32),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -1587,7 +1640,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textWhite,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1595,7 +1648,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   lang.t('current_plan'),
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: AppColors.textWhite.withValues(alpha: 0.9),
                   ),
                 ),
               ],
@@ -1607,8 +1660,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 // Navigate to upgrade
               },
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white),
+                foregroundColor: AppColors.textWhite,
+                side: const BorderSide(color: AppColors.textWhite),
               ),
               child: Text(lang.t('upgrade')),
             ),

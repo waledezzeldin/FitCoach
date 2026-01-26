@@ -123,12 +123,16 @@ class MessagingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadConversations({bool isArabic = false}) async {
+  Future<void> loadConversations({
+    bool isArabic = false,
+    bool isCoach = false,
+  }) async {
     if (_demoConfig.isDemo) {
       _conversations = await _demoRepository.getConversations(
         demoUserId: DemoConfig.demoUserId,
         demoCoachId: DemoConfig.demoCoachId,
         isArabic: isArabic,
+        isCoach: isCoach,
       );
 
       _activeConversation =

@@ -81,13 +81,13 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     final languageProvider = context.watch<LanguageProvider>();
     final authProvider = context.watch<AuthProvider>();
     final coachProvider = context.watch<CoachProvider>();
-    final isArabic = languageProvider.isArabic;
     final client = coachProvider.selectedClient;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(client?.fullName ??
-            (isArabic ? 'تفاصيل العميل' : 'Client Details')),
+        title: Text(
+          client?.fullName ?? languageProvider.t('coach_client_detail_title'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -110,16 +110,14 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                       const SizedBox(height: 16),
                       Text(
                         coachProvider.error ??
-                            (isArabic
-                                ? 'فشل تحميل البيانات'
-                                : 'Failed to load data'),
+                            languageProvider.t('coach_client_detail_load_failed'),
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: AppColors.error),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadClientDetails,
-                        child: Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                        child: Text(languageProvider.t('retry')),
                       ),
                     ],
                   ),
@@ -133,7 +131,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Client header
-                        _buildClientHeader(client, isArabic),
+                        _buildClientHeader(client, languageProvider),
                         const SizedBox(height: 16),
                         _buildClientActions(client, languageProvider),
 
@@ -141,7 +139,10 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
 
                         // Fitness score section
                         _buildFitnessScoreSection(
-                            client, authProvider, isArabic),
+                          client,
+                          authProvider,
+                          languageProvider,
+                        ),
 
                         const SizedBox(height: 16),
 
@@ -157,12 +158,12 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                         const SizedBox(height: 16),
 
                         // Activity section
-                        _buildActivitySection(client, isArabic),
+                        _buildActivitySection(client, languageProvider),
 
                         const SizedBox(height: 16),
 
                         // Contact section
-                        _buildContactSection(client, isArabic),
+                        _buildContactSection(client, languageProvider),
                       ],
                     ),
                   ),
@@ -170,7 +171,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     );
   }
 
-  Widget _buildClientHeader(client, bool isArabic) {
+  Widget _buildClientHeader(client, LanguageProvider lang) {
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -226,7 +227,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                     client.subscriptionTier,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.white,
+                      color: AppColors.textWhite,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -244,7 +245,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                     client.statusText,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.white,
+                      color: AppColors.textWhite,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -277,13 +278,12 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
   }
 
   Widget _buildClientActions(client, LanguageProvider lang) {
-    final isArabic = lang.isArabic;
     return Row(
       children: [
         Expanded(
           child: ElevatedButton.icon(
             icon: const Icon(Icons.chat_bubble_outline),
-            label: Text(isArabic ? 'مراسلة العميل' : 'Message client'),
+            label: Text(lang.t('coach_message_client')),
             onPressed: () => _openMessageThread(client),
           ),
         ),
@@ -291,7 +291,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
         Expanded(
           child: OutlinedButton.icon(
             icon: const Icon(Icons.video_call),
-            label: Text(isArabic ? 'جدولة مكالمة' : 'Schedule call'),
+            label: Text(lang.t('coach_schedule_call')),
             onPressed: () => _openScheduleSheet(client),
           ),
         ),
@@ -319,7 +319,10 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
   }
 
   Widget _buildFitnessScoreSection(
-      client, AuthProvider authProvider, bool isArabic) {
+    client,
+    AuthProvider authProvider,
+    LanguageProvider lang,
+  ) {
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -330,7 +333,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isArabic ? 'نتيجة اللياقة' : 'Fitness Score',
+                  lang.t('coach_fitness_score'),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -338,9 +341,9 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 ),
                 TextButton.icon(
                   onPressed: () =>
-                      _showAssignScoreDialog(authProvider, isArabic),
+                      _showAssignScoreDialog(authProvider, lang),
                   icon: const Icon(Icons.edit, size: 16),
-                  label: Text(isArabic ? 'تعديل' : 'Edit'),
+                  label: Text(lang.t('coach_edit')),
                 ),
               ],
             ),
@@ -364,14 +367,14 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                         style: const TextStyle(
                           fontSize: 48,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textWhite,
                         ),
                       ),
                       Text(
-                        isArabic ? 'من 100' : 'out of 100',
+                        lang.t('coach_out_of_100'),
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.white,
+                          color: AppColors.textWhite,
                         ),
                       ),
                     ],
@@ -387,7 +390,6 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
 
   Widget _buildPlansSection(
       client, LanguageProvider lang, AuthProvider authProvider) {
-    final isArabic = lang.isArabic;
     final coachId = authProvider.user?.id;
     final workoutProgress = _calculateWorkoutProgress(_workoutPlan);
     final nutritionProgress = _calculateNutritionProgress(_nutritionPlan);
@@ -399,7 +401,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isArabic ? 'الخطط المعينة' : 'Assigned Plans',
+              lang.t('coach_assigned_plans_title'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -418,7 +420,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 lang: lang,
                 icon: Icons.fitness_center,
                 color: AppColors.primary,
-                title: isArabic ? 'خطة التمرين' : 'Workout Plan',
+                title: lang.t('coach_workout_plan_title'),
                 assignedName: client.workoutPlanName,
                 progress: workoutProgress,
                 onView: _workoutPlan != null
@@ -432,7 +434,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 lang: lang,
                 icon: Icons.restaurant,
                 color: AppColors.success,
-                title: isArabic ? 'خطة التغذية' : 'Nutrition Plan',
+                title: lang.t('coach_nutrition_plan_title'),
                 assignedName: client.nutritionPlanName,
                 progress: nutritionProgress,
                 onView: _nutritionPlan != null
@@ -459,8 +461,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     VoidCallback? onView,
     VoidCallback? onEdit,
   }) {
-    final isArabic = lang.isArabic;
-    final planName = assignedName ?? (isArabic ? 'غير معينة' : 'Not assigned');
+    final planName = assignedName ?? lang.t('coach_plan_not_assigned');
     final hasProgress = progress != null;
 
     return Column(
@@ -502,7 +503,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${(progress * 100).round()}% ${isArabic ? 'إنجاز' : 'complete'}',
+                      '${(progress * 100).round()}% ${lang.t('complete')}',
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -510,7 +511,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                     ),
                   ] else
                     Text(
-                      isArabic ? 'لا يوجد نشاط بعد' : 'No progress tracked yet',
+                      lang.t('coach_no_progress_yet'),
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -527,7 +528,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
             Expanded(
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.remove_red_eye_outlined),
-                label: Text(isArabic ? 'عرض الخطة' : 'View plan'),
+                label: Text(lang.t('coach_view_plan')),
                 onPressed: onView,
               ),
             ),
@@ -535,7 +536,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
             Expanded(
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.edit),
-                label: Text(isArabic ? 'تعديل الخطة' : 'Edit plan'),
+                label: Text(lang.t('coach_edit_plan')),
                 onPressed: onEdit,
               ),
             ),
@@ -553,7 +554,6 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     if (snapshot == null) {
       return const SizedBox.shrink();
     }
-    final isArabic = lang.isArabic;
 
     return CustomCard(
       child: Padding(
@@ -565,7 +565,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isArabic ? 'مرآة التقدم' : 'Progress mirror',
+                  lang.t('coach_progress_mirror_title'),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -574,7 +574,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 TextButton.icon(
                   onPressed: () => _openProgressPeekSheet(snapshot, lang),
                   icon: const Icon(Icons.timeline, size: 16),
-                  label: Text(isArabic ? 'الخط الزمني' : 'Timeline'),
+                  label: Text(lang.t('coach_timeline')),
                 ),
               ],
             ),
@@ -583,43 +583,43 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
               children: [
                 Expanded(
                   child: _buildProgressStatTile(
-                    title: isArabic ? 'التزام التمرين' : 'Workout adherence',
+                    title: lang.t('coach_workout_adherence'),
                     value: snapshot.workoutCompletion,
                     icon: Icons.fitness_center,
                     color: AppColors.primary,
-                    isArabic: isArabic,
+                    lang: lang,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildProgressStatTile(
-                    title: isArabic ? 'التزام التغذية' : 'Nutrition adherence',
+                    title: lang.t('coach_nutrition_adherence'),
                     value: snapshot.nutritionCompletion,
                     icon: Icons.restaurant,
                     color: AppColors.success,
-                    isArabic: isArabic,
+                    lang: lang,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            _buildStreakPill(snapshot.streakDays, isArabic),
+            _buildStreakPill(snapshot.streakDays, lang),
             const SizedBox(height: 16),
             _buildTrendStrip(
-              title: isArabic ? 'أيام التدريب' : 'Training days',
+              title: lang.t('coach_training_days'),
               color: AppColors.primary,
               points: snapshot.workoutTrend,
-              isArabic: isArabic,
+              lang: lang,
             ),
             const SizedBox(height: 12),
             _buildTrendStrip(
-              title: isArabic ? 'أيام التغذية' : 'Nutrition days',
+              title: lang.t('coach_nutrition_days'),
               color: AppColors.success,
               points: snapshot.nutritionTrend,
-              isArabic: isArabic,
+              lang: lang,
             ),
             const SizedBox(height: 16),
-            _buildFlagWrap(snapshot.flags, isArabic),
+            _buildFlagWrap(snapshot.flags, lang),
           ],
         ),
       ),
@@ -631,14 +631,14 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     required double? value,
     required IconData icon,
     required Color color,
-    required bool isArabic,
+    required LanguageProvider lang,
   }) {
     final display = value != null ? '${(value * 100).round()}%' : '--';
     final subtitle = value != null
         ? (value >= 0.7
-            ? (isArabic ? 'على المسار' : 'On track')
-            : (isArabic ? 'بحاجة لتحسين' : 'Needs focus'))
-        : (isArabic ? 'لا توجد بيانات' : 'No data yet');
+            ? lang.t('coach_on_track')
+            : lang.t('coach_needs_focus'))
+        : lang.t('coach_no_data_yet');
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -703,11 +703,11 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     required String title,
     required Color color,
     required List<_TrendPoint> points,
-    required bool isArabic,
+    required LanguageProvider lang,
   }) {
     if (points.isEmpty) {
       return Text(
-        isArabic ? 'لم يتم تسجيل بيانات حتى الآن' : 'No timeline captured yet',
+        lang.t('coach_no_timeline_captured'),
         style: const TextStyle(
           fontSize: 12,
           color: AppColors.textSecondary,
@@ -781,10 +781,10 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     );
   }
 
-  Widget _buildStreakPill(int streak, bool isArabic) {
+  Widget _buildStreakPill(int streak, LanguageProvider lang) {
     final label = streak > 0
-        ? (isArabic ? 'متتالي $streak يوم' : '$streak day streak')
-        : (isArabic ? 'لا يوجد تسلسل' : 'No active streak');
+        ? lang.t('coach_day_streak', args: {'days': '$streak'})
+        : lang.t('coach_no_active_streak');
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -808,10 +808,10 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     );
   }
 
-  Widget _buildFlagWrap(Set<_ProgressFlag> flags, bool isArabic) {
+  Widget _buildFlagWrap(Set<_ProgressFlag> flags, LanguageProvider lang) {
     if (flags.isEmpty) {
       return Text(
-        isArabic ? 'كل شيء على المسار الصحيح' : 'Everything looks on track',
+        lang.t('coach_all_on_track'),
         style: const TextStyle(
           fontSize: 12,
           color: AppColors.textSecondary,
@@ -831,7 +831,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                _flagLabel(flag, isArabic),
+                _flagLabel(flag, lang),
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -851,13 +851,13 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => CoachProgressPeekSheet(
         snapshot: snapshot,
-        isArabic: lang.isArabic,
+        lang: lang,
       ),
     );
   }
@@ -954,18 +954,18 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     return streak;
   }
 
-  String _flagLabel(_ProgressFlag flag, bool isArabic) {
+  String _flagLabel(_ProgressFlag flag, LanguageProvider lang) {
     switch (flag) {
       case _ProgressFlag.lowWorkout:
-        return isArabic ? 'التزام التمرين منخفض' : 'Low workout adherence';
+        return lang.t('coach_low_workout_adherence');
       case _ProgressFlag.lowNutrition:
-        return isArabic ? 'التزام التغذية منخفض' : 'Low nutrition adherence';
+        return lang.t('coach_low_nutrition_adherence');
       case _ProgressFlag.inactive:
-        return isArabic ? 'لم يسجل نشاطاً مؤخراً' : 'Needs new activity';
+        return lang.t('coach_needs_new_activity');
     }
   }
 
-  Widget _buildActivitySection(client, bool isArabic) {
+  Widget _buildActivitySection(client, LanguageProvider lang) {
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -973,7 +973,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isArabic ? 'النشاط' : 'Activity',
+              lang.t('coach_activity_title'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -986,7 +986,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
             if (client.assignedDate != null)
               _buildInfoRow(
                 icon: Icons.calendar_today,
-                label: isArabic ? 'تاريخ التعيين' : 'Assigned Date',
+                label: lang.t('coach_assigned_date'),
                 value: _formatDate(client.assignedDate!),
               ),
 
@@ -996,7 +996,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
             if (client.lastActivity != null)
               _buildInfoRow(
                 icon: Icons.access_time,
-                label: isArabic ? 'آخر نشاط' : 'Last Activity',
+                label: lang.t('coach_last_activity'),
                 value: _formatDate(client.lastActivity!),
               ),
 
@@ -1005,7 +1005,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
             // Message count
             _buildInfoRow(
               icon: Icons.message,
-              label: isArabic ? 'عدد الرسائل' : 'Messages',
+              label: lang.t('messages'),
               value: '${client.messageCount}',
             ),
           ],
@@ -1014,7 +1014,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     );
   }
 
-  Widget _buildContactSection(client, bool isArabic) {
+  Widget _buildContactSection(client, LanguageProvider lang) {
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -1022,7 +1022,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isArabic ? 'معلومات الاتصال' : 'Contact Information',
+              lang.t('coach_contact_information'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -1035,7 +1035,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
             if (client.email != null)
               _buildInfoRow(
                 icon: Icons.email,
-                label: isArabic ? 'البريد الإلكتروني' : 'Email',
+                label: lang.t('email'),
                 value: client.email!,
               ),
 
@@ -1046,7 +1046,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
             if (client.phoneNumber != null)
               _buildInfoRow(
                 icon: Icons.phone,
-                label: isArabic ? 'الهاتف' : 'Phone',
+                label: lang.t('coach_phone_label'),
                 value: client.phoneNumber!,
               ),
           ],
@@ -1168,7 +1168,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
     );
   }
 
-  void _showAssignScoreDialog(AuthProvider authProvider, bool isArabic) {
+  void _showAssignScoreDialog(AuthProvider authProvider, LanguageProvider lang) {
     final coachProvider = context.read<CoachProvider>();
     final client = coachProvider.selectedClient;
     if (client == null) return;
@@ -1181,7 +1181,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title:
-              Text(isArabic ? 'تعيين نتيجة اللياقة' : 'Assign Fitness Score'),
+              Text(lang.t('coach_assign_fitness_score')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1209,8 +1209,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
               TextField(
                 controller: notesController,
                 decoration: InputDecoration(
-                  labelText:
-                      isArabic ? 'ملاحظات (اختياري)' : 'Notes (optional)',
+                  labelText: lang.t('coach_notes_optional'),
                   border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
@@ -1220,7 +1219,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+              child: Text(lang.t('auth_cancel')),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -1238,11 +1237,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                 if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        isArabic
-                            ? 'تم تعيين النتيجة بنجاح'
-                            : 'Fitness score assigned successfully',
-                      ),
+                      content: Text(lang.t('coach_assign_fitness_score_success')),
                       backgroundColor: AppColors.success,
                     ),
                   );
@@ -1250,13 +1245,13 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content:
-                          Text(coachProvider.error ?? 'Failed to assign score'),
+                          Text(coachProvider.error ?? lang.t('coach_assign_fitness_score_failed')),
                       backgroundColor: AppColors.error,
                     ),
                   );
                 }
               },
-              child: Text(isArabic ? 'تعيين' : 'Assign'),
+              child: Text(lang.t('coach_assign')),
             ),
           ],
         ),
@@ -1271,7 +1266,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
   Color _getTierColor(String tier) {
     switch (tier.toLowerCase()) {
       case 'smart premium':
-        return const Color(0xFFFFD700);
+        return AppColors.accent;
       case 'premium':
         return AppColors.primary;
       case 'freemium':
@@ -1340,12 +1335,12 @@ enum _ProgressFlag {
 
 class CoachProgressPeekSheet extends StatelessWidget {
   final _ClientProgressSnapshot snapshot;
-  final bool isArabic;
+  final LanguageProvider lang;
 
   const CoachProgressPeekSheet({
     super.key,
     required this.snapshot,
-    required this.isArabic,
+    required this.lang,
   });
 
   @override
@@ -1374,7 +1369,7 @@ class CoachProgressPeekSheet extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              isArabic ? 'خط زمني للتقدم' : 'Progress timeline',
+              lang.t('coach_progress_timeline_title'),
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -1382,9 +1377,7 @@ class CoachProgressPeekSheet extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              isArabic
-                  ? 'آخر 7 أيام من التدريب والتغذية'
-                  : 'Last 7 days across workouts and meals',
+              lang.t('coach_progress_timeline_subtitle'),
               style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
@@ -1395,7 +1388,7 @@ class CoachProgressPeekSheet extends StatelessWidget {
               children: [
                 Expanded(
                   child: _PeekStatTile(
-                    label: isArabic ? 'التمارين' : 'Workouts',
+                    label: lang.t('coach_workouts_label'),
                     value: snapshot.workoutCompletion,
                     color: AppColors.primary,
                   ),
@@ -1403,7 +1396,7 @@ class CoachProgressPeekSheet extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _PeekStatTile(
-                    label: isArabic ? 'التغذية' : 'Nutrition',
+                    label: lang.t('coach_nutrition_label'),
                     value: snapshot.nutritionCompletion,
                     color: AppColors.success,
                   ),
@@ -1412,13 +1405,13 @@ class CoachProgressPeekSheet extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _buildPeekTimeline(
-              title: isArabic ? 'سجل التدريب' : 'Workout log',
+              title: lang.t('coach_workout_log'),
               points: snapshot.workoutTrend,
               color: AppColors.primary,
             ),
             const SizedBox(height: 20),
             _buildPeekTimeline(
-              title: isArabic ? 'سجل التغذية' : 'Nutrition log',
+              title: lang.t('coach_nutrition_log'),
               points: snapshot.nutritionTrend,
               color: AppColors.success,
             ),
@@ -1446,7 +1439,7 @@ class CoachProgressPeekSheet extends StatelessWidget {
         const SizedBox(height: 12),
         if (points.isEmpty)
           Text(
-            isArabic ? 'لم يتم تسجيل بيانات' : 'No entries captured yet',
+            lang.t('coach_no_entries_captured'),
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,

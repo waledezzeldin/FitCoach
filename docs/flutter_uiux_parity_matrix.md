@@ -45,28 +45,38 @@ Suggested order:
 ## Progress Checklist
 | Screen/Module                       | Localization | Theming | Navigation | Demo Mode | Status |
 |-------------------------------------|--------------|---------|------------|-----------|--------|
-| OnboardingScreen                    | ✅           | ✅      | ✅         |           | In progress |
-| LoginScreen                         | ✅           | ✅      | ✅         |           | In progress |
-| HomeDashboardScreen                 | ?            |         |            | ?         | In progress |
-| WorkoutScreen                       | ?            |         |            | ?         | In progress |
-| WorkoutIntroScreen                  | ✅           | ✅      | ✅         |           | In progress |
-| WorkoutTimerScreen                  | ✅           | ✅      | ✅         |           | In progress |
-| SubscriptionManagerScreen           |              |         |            |           |        |
-| NotificationSettingsScreen          |              |         |            |           |        |
-| ProfileEditScreen                   |              |         |            |           |        |
-| CoachDashboardScreen                |              |         |            |           |        |
-| CoachClientsScreen                  |              |         |            |           |        |
-| CoachClientDetailScreen             |              |         |            |           |        |
-| CoachMessagingScreen                | ✅           |         |            |           | In progress |
-| CoachMessageThreadScreen            | ✅           | ✅      | ✅         |         | In progress |
-| CoachScheduleSessionSheet           | ✅           |         |            |           | In progress |
-| AdminDashboardScreen                |              |         |            |           |        |
-| AdminUsersScreen                    |              |         |            |           |        |
-| AdminCoachesScreen                  |              |         |            |           |        |
-| AdminRevenueScreen                  |              |         |            |           |        |
-| AdminAuditLogsScreen                |              |         |            |           |        |
-| StoreManagementScreen               |              |         |            |           |        |
-| SubscriptionManagementScreen        |              |         |            |           |        |
+| OnboardingScreen                    | ✅           | ✅      | ✅         | ✅        | Done |
+| LoginScreen                         | ✅           | ✅      | ✅         | ✅        | Done |
+| HomeDashboardScreen                 | ✅           | ✅      | ✅         | ✅        | Done |
+| WorkoutScreen                       | ✅           | ✅      | ✅         | ✅        | Done |
+| WorkoutExerciseDetailScreen         | ✅           | ✅      | ✅         | ✅        | Done |
+| WorkoutIntroScreen                  | ✅           | ✅      | ✅         | ✅        | Done |
+| WorkoutTimerScreen                  | ✅           | ✅      | ✅         | ✅        | Done |
+| SubscriptionManagerScreen           | ✅           | ✅      | ✅         | ✅        | Done |
+| NotificationSettingsScreen          | ✅           | ✅      | ✅         | ✅        | Done |
+| ProfileEditScreen                   | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachDashboardScreen                | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachClientsScreen                  | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachClientDetailScreen             | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachWorkoutPlanViewerScreen        | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachNutritionPlanViewerScreen      | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachMessagingScreen                | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachMessageThreadScreen            | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachScheduleSessionSheet           | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachCalendarScreen                 | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachWorkoutPlanBuilderScreen       | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachWorkoutPlanEditorScreen        | ✅           | ✅      | ✅         | ✅        | Done |
+| NutritionPlanBuilderScreen          | ✅           | ✅      | ✅         | ✅        | Done |
+| NutritionPlanEditorScreen           | ✅           | ✅      | ✅         | ✅        | Done |
+| CoachEarningsScreen                 | ✅           | ✅      | ✅         | ✅        | Done |
+| PublicCoachProfileScreen            | ✅           | ✅      | ✅         | ✅        | Done |
+| AdminDashboardScreen                | ✅           | ✅      | ✅         | ✅        | Done |
+| AdminUsersScreen                    | ✅           | ✅      | ✅         | ✅        | Done |
+| AdminCoachesScreen                  | ✅           | ✅      | ✅         | ✅        | Done |
+| AdminRevenueScreen                  | ✅           | ✅      | ✅         | ✅        | Done |
+| AdminAuditLogsScreen                | ✅           | ✅      | ✅         | ✅        | Done |
+| StoreManagementScreen               | ✅           | ✅      | ✅         | ✅        | Done |
+| SubscriptionManagementScreen        | ✅           | ✅      | ✅         | ✅        | Done |
 | ... (add additional screens as needed) ...
 
 ## 'Done' Criteria

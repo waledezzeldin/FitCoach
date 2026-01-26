@@ -87,7 +87,10 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                 return SizedBox(
                   height: 200,
                   child: Center(
-                    child: Text(lang.t('exercise_no_alternatives')),
+                    child: Text(
+                      lang.t('exercise_no_alternatives'),
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
                   ),
                 );
               }
@@ -101,6 +104,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -115,9 +119,18 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                               borderRadius: BorderRadius.circular(12),
                               side: BorderSide(color: AppColors.border),
                             ),
-                            title: Text(alt.nameEn),
+                            title: Text(
+                              alt.nameEn,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             subtitle: Text(
                               '${alt.sets} ${lang.t('sets')} \u2022 ${alt.reps} ${lang.t('reps')}',
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                               trailing: Icon(
                                 Directionality.of(context) == TextDirection.rtl
@@ -207,7 +220,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF2C5EA8), Color(0xFF24528F)],
+                        colors: [AppColors.primary, AppColors.primaryDark],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -218,7 +231,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                           onPressed: () => Navigator.pop(context),
                           icon: Icon(
                             isArabic ? Icons.arrow_forward : Icons.arrow_back,
-                            color: Colors.white,
+                            color: AppColors.textWhite,
                           ),
                         ),
                         Expanded(
@@ -230,13 +243,16 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                  color: AppColors.textWhite,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '${exercise.muscleGroup ?? ''} \u2022 ${exercise.category ?? ''}',
-                                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                style: TextStyle(
+                                  color: AppColors.textWhite.withValues(alpha: 0.7),
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                             ),
@@ -245,7 +261,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                           _DifficultyBadge(label: exercise.difficulty!),
                         IconButton(
                           onPressed: _showAlternatives,
-                          icon: const Icon(Icons.swap_horiz, color: Colors.white),
+                          icon: const Icon(Icons.swap_horiz, color: AppColors.textWhite),
                         ),
                       ],
                     ),
@@ -414,7 +430,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                                                           child: Text(
                                                             '$idx',
                                                             style: const TextStyle(
-                                                              color: Colors.white,
+                                                              color: AppColors.textWhite,
                                                               fontWeight: FontWeight.w600,
                                                               fontSize: 12,
                                                             ),
@@ -557,20 +573,20 @@ class _DifficultyBadge extends StatelessWidget {
     Color foreground;
     switch (normalized) {
       case 'beginner':
-        background = const Color(0xFFD1FAE5);
-        foreground = const Color(0xFF065F46);
+        background = AppColors.success.withValues(alpha: 0.2);
+        foreground = AppColors.success;
         break;
       case 'intermediate':
-        background = const Color(0xFFFEF3C7);
-        foreground = const Color(0xFF92400E);
+        background = AppColors.warning.withValues(alpha: 0.2);
+        foreground = AppColors.warning;
         break;
       case 'advanced':
-        background = const Color(0xFFFEE2E2);
-        foreground = const Color(0xFF991B1B);
+        background = AppColors.error.withValues(alpha: 0.2);
+        foreground = AppColors.error;
         break;
       default:
-        background = Colors.white.withValues(alpha: 0.2);
-        foreground = Colors.white;
+        background = AppColors.textWhite.withValues(alpha: 0.2);
+        foreground = AppColors.textWhite;
     }
 
     return Container(
@@ -627,7 +643,7 @@ class _TutorialOverlay extends StatelessWidget {
     final lang = context.watch<LanguageProvider>();
     return Positioned.fill(
       child: Container(
-        color: Colors.black.withValues(alpha: 0.6),
+        color: AppColors.textPrimary.withValues(alpha: 0.7),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

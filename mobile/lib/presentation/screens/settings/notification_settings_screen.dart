@@ -127,6 +127,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -185,6 +186,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -255,6 +257,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -325,6 +328,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -415,8 +419,17 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     return SwitchListTile(
       value: value,
       onChanged: onChanged,
-      title: Text(title),
-      subtitle: Text(subtitle),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(color: AppColors.textSecondary),
+      ),
       secondary: Icon(icon, color: AppColors.primary),
       activeColor: AppColors.primary,
     );

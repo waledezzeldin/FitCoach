@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/language_provider.dart';
@@ -42,19 +42,18 @@ class _NutritionPlanBuilderScreenState
 
   void _initializeMeals() {
     _meals = [
-      {'type': 'breakfast', 'name': 'Breakfast', 'foods': []},
-      {'type': 'lunch', 'name': 'Lunch', 'foods': []},
-      {'type': 'dinner', 'name': 'Dinner', 'foods': []},
-      {'type': 'snack', 'name': 'Snack', 'foods': []},
+      {'type': 'breakfast', 'foods': []},
+      {'type': 'lunch', 'foods': []},
+      {'type': 'dinner', 'foods': []},
+      {'type': 'snack', 'foods': []},
     ];
   }
 
-  void _applyTemplate(String templateKey, bool isArabic) {
+  void _applyTemplate(String templateKey, LanguageProvider lang) {
     setState(() {
       if (templateKey == 'fat_loss') {
         _selectedGoal = 'fat_loss';
-        _planNameController.text =
-            isArabic ? 'قالب حرق الدهون' : 'Fat Loss Template';
+        _planNameController.text = lang.t('coach_nutrition_template_fat_loss');
         _caloriesController.text = '1900';
         _proteinController.text = '160';
         _carbsController.text = '170';
@@ -62,7 +61,7 @@ class _NutritionPlanBuilderScreenState
       } else if (templateKey == 'muscle_gain') {
         _selectedGoal = 'muscle_gain';
         _planNameController.text =
-            isArabic ? 'قالب بناء العضلات' : 'Muscle Gain Template';
+            lang.t('coach_nutrition_template_muscle_gain');
         _caloriesController.text = '2600';
         _proteinController.text = '170';
         _carbsController.text = '320';
@@ -70,7 +69,7 @@ class _NutritionPlanBuilderScreenState
       } else {
         _selectedGoal = 'maintenance';
         _planNameController.text =
-            isArabic ? 'قالب متوازن' : 'Balanced Template';
+            lang.t('coach_nutrition_template_balanced');
         _caloriesController.text = '2200';
         _proteinController.text = '150';
         _carbsController.text = '240';
@@ -148,17 +147,16 @@ class _NutritionPlanBuilderScreenState
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
+    final lang = context.watch<LanguageProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'إنشاء خطة تغذية' : 'Create Nutrition Plan'),
+        title: Text(lang.t('coach_nutrition_builder_title')),
         actions: [
           TextButton(
-            onPressed: () => _savePlan(isArabic),
+            onPressed: () => _savePlan(lang),
             child: Text(
-              isArabic ? 'حفظ' : 'Save',
+              lang.t('save'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -180,14 +178,14 @@ class _NutritionPlanBuilderScreenState
                   const CircleAvatar(
                     radius: 24,
                     backgroundColor: AppColors.success,
-                    child: Icon(Icons.restaurant, color: Colors.white),
+                    child: Icon(Icons.restaurant, color: AppColors.textWhite),
                   ),
                   const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isArabic ? 'العميل' : 'Client',
+                        lang.t('coach_nutrition_builder_client_label'),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
@@ -210,7 +208,7 @@ class _NutritionPlanBuilderScreenState
 
             // Plan name
             Text(
-              isArabic ? 'اسم الخطة' : 'Plan Name',
+              lang.t('coach_nutrition_builder_plan_name_label'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -220,8 +218,7 @@ class _NutritionPlanBuilderScreenState
             TextField(
               controller: _planNameController,
               decoration: InputDecoration(
-                hintText:
-                    isArabic ? 'مثال: خطة حرق الدهون' : 'e.g., Fat Loss Plan',
+                hintText: lang.t('coach_nutrition_builder_plan_name_hint'),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -232,7 +229,7 @@ class _NutritionPlanBuilderScreenState
 
             // Daily targets
             Text(
-              isArabic ? 'الأهداف اليومية' : 'Daily Targets',
+              lang.t('coach_nutrition_builder_daily_targets'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -245,7 +242,7 @@ class _NutritionPlanBuilderScreenState
                 Expanded(
                   child: _buildMacroInput(
                     controller: _caloriesController,
-                    label: isArabic ? 'السعرات' : 'Calories',
+                    label: lang.t('calories'),
                     hint: '2000',
                     icon: Icons.local_fire_department,
                     color: AppColors.error,
@@ -255,7 +252,7 @@ class _NutritionPlanBuilderScreenState
                 Expanded(
                   child: _buildMacroInput(
                     controller: _proteinController,
-                    label: isArabic ? 'البروتين (جم)' : 'Protein (g)',
+                    label: lang.t('protein'),
                     hint: '150',
                     icon: Icons.egg,
                     color: AppColors.primary,
@@ -271,7 +268,7 @@ class _NutritionPlanBuilderScreenState
                 Expanded(
                   child: _buildMacroInput(
                     controller: _carbsController,
-                    label: isArabic ? 'الكربوهيدرات (جم)' : 'Carbs (g)',
+                    label: lang.t('carbs'),
                     hint: '200',
                     icon: Icons.grain,
                     color: AppColors.warning,
@@ -281,7 +278,7 @@ class _NutritionPlanBuilderScreenState
                 Expanded(
                   child: _buildMacroInput(
                     controller: _fatController,
-                    label: isArabic ? 'الدهون (جم)' : 'Fat (g)',
+                    label: lang.t('fat'),
                     hint: '60',
                     icon: Icons.water_drop,
                     color: AppColors.success,
@@ -294,7 +291,7 @@ class _NutritionPlanBuilderScreenState
 
             // Goal
             Text(
-              isArabic ? 'الهدف' : 'Goal',
+              lang.t('coach_nutrition_builder_goal_label'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -306,7 +303,7 @@ class _NutritionPlanBuilderScreenState
               children: ['fat_loss', 'muscle_gain', 'maintenance'].map((goal) {
                 final isSelected = _selectedGoal == goal;
                 return FilterChip(
-                  label: Text(_getGoalLabel(goal, isArabic)),
+                  label: Text(_getGoalLabel(goal, lang)),
                   selected: isSelected,
                   onSelected: (selected) {
                     setState(() {
@@ -326,22 +323,22 @@ class _NutritionPlanBuilderScreenState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isArabic ? 'الوجبات' : 'Meals',
+                  lang.t('coach_nutrition_builder_meals_label'),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: () => _addFromTemplate(isArabic),
+                  onPressed: () => _addFromTemplate(lang),
                   icon: const Icon(Icons.file_copy, size: 18),
-                  label: Text(isArabic ? 'من قالب' : 'From Template'),
+                  label: Text(lang.t('coach_nutrition_builder_from_template')),
                 ),
               ],
             ),
             const SizedBox(height: 12),
 
-            ..._meals.map((meal) => _buildMealCard(meal, isArabic)).toList(),
+            ..._meals.map((meal) => _buildMealCard(meal, lang)).toList(),
 
             const SizedBox(height: 32),
 
@@ -349,8 +346,8 @@ class _NutritionPlanBuilderScreenState
             SizedBox(
               width: double.infinity,
               child: CustomButton(
-                text: isArabic ? 'حفظ الخطة' : 'Save Plan',
-                onPressed: () => _savePlan(isArabic),
+                text: lang.t('coach_nutrition_builder_save_plan'),
+                onPressed: () => _savePlan(lang),
                 variant: ButtonVariant.primary,
                 size: ButtonSize.large,
                 fullWidth: true,
@@ -383,7 +380,7 @@ class _NutritionPlanBuilderScreenState
     );
   }
 
-  Widget _buildMealCard(Map<String, dynamic> meal, bool isArabic) {
+  Widget _buildMealCard(Map<String, dynamic> meal, LanguageProvider lang) {
     final foods = meal['foods'] as List;
     final mealType = meal['type'] as String;
 
@@ -404,7 +401,7 @@ class _NutritionPlanBuilderScreenState
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    _getMealLabel(mealType, isArabic),
+                    _getMealLabel(mealType, lang),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -414,7 +411,7 @@ class _NutritionPlanBuilderScreenState
               ),
               IconButton(
                 icon: const Icon(Icons.add, size: 20),
-                onPressed: () => _addFood(mealType, isArabic),
+                onPressed: () => _addFood(mealType, lang),
               ),
             ],
           ),
@@ -423,7 +420,7 @@ class _NutritionPlanBuilderScreenState
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
                 child: Text(
-                  isArabic ? 'لا توجد أطعمة' : 'No foods',
+                  lang.t('coach_nutrition_builder_no_foods'),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                   ),
@@ -442,8 +439,8 @@ class _NutritionPlanBuilderScreenState
                   style: const TextStyle(fontSize: 11),
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.delete,
-                      size: 20, color: AppColors.error),
+                  icon:
+                      const Icon(Icons.delete, size: 20, color: AppColors.error),
                   onPressed: () {
                     setState(() {
                       foods.removeAt(index);
@@ -472,26 +469,29 @@ class _NutritionPlanBuilderScreenState
     }
   }
 
-  String _getMealLabel(String type, bool isArabic) {
-    final labels = {
-      'breakfast': isArabic ? 'إفطار' : 'Breakfast',
-      'lunch': isArabic ? 'غداء' : 'Lunch',
-      'dinner': isArabic ? 'عشاء' : 'Dinner',
-      'snack': isArabic ? 'وجبة خفيفة' : 'Snack',
-    };
-    return labels[type] ?? type;
+  String _getMealLabel(String type, LanguageProvider lang) {
+    switch (type) {
+      case 'breakfast':
+        return lang.t('coach_nutrition_builder_meal_breakfast');
+      case 'lunch':
+        return lang.t('coach_nutrition_builder_meal_lunch');
+      case 'dinner':
+        return lang.t('coach_nutrition_builder_meal_dinner');
+      case 'snack':
+        return lang.t('coach_nutrition_builder_meal_snack');
+      default:
+        return type;
+    }
   }
 
-  String _getGoalLabel(String goal, bool isArabic) {
-    final labels = {
-      'fat_loss': isArabic ? 'حرق دهون' : 'Fat Loss',
-      'muscle_gain': isArabic ? 'بناء عضلات' : 'Muscle Gain',
-      'maintenance': isArabic ? 'حفاظ' : 'Maintenance',
-    };
-    return labels[goal] ?? goal;
+  String _getGoalLabel(String goal, LanguageProvider lang) {
+    if (goal == 'maintenance') {
+      return lang.t('maintenance');
+    }
+    return lang.t(goal);
   }
 
-  void _addFood(String mealType, bool isArabic) {
+  void _addFood(String mealType, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) {
@@ -502,21 +502,21 @@ class _NutritionPlanBuilderScreenState
         int fat = 0;
 
         return AlertDialog(
-          title: Text(isArabic ? 'إضافة طعام' : 'Add Food'),
+          title: Text(lang.t('coach_nutrition_builder_add_food_title')),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'اسم الطعام' : 'Food Name',
+                    labelText: lang.t('coach_nutrition_builder_food_name_label'),
                   ),
                   onChanged: (value) => foodName = value,
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'السعرات' : 'Calories',
+                    labelText: lang.t('calories'),
                   ),
                   keyboardType: TextInputType.number,
                   onChanged: (value) => calories = int.tryParse(value) ?? 0,
@@ -527,7 +527,7 @@ class _NutritionPlanBuilderScreenState
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          labelText: isArabic ? 'بروتين' : 'Protein',
+                          labelText: lang.t('protein'),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (value) =>
@@ -538,7 +538,7 @@ class _NutritionPlanBuilderScreenState
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          labelText: isArabic ? 'كارب' : 'Carbs',
+                          labelText: lang.t('carbs'),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (value) => carbs = int.tryParse(value) ?? 0,
@@ -548,7 +548,7 @@ class _NutritionPlanBuilderScreenState
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          labelText: isArabic ? 'دهون' : 'Fat',
+                          labelText: lang.t('fat'),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (value) => fat = int.tryParse(value) ?? 0,
@@ -562,14 +562,13 @@ class _NutritionPlanBuilderScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+              child: Text(lang.t('cancel')),
             ),
             TextButton(
               onPressed: () {
                 if (foodName.isNotEmpty) {
                   setState(() {
-                    final meal =
-                        _meals.firstWhere((m) => m['type'] == mealType);
+                    final meal = _meals.firstWhere((m) => m['type'] == mealType);
                     (meal['foods'] as List).add({
                       'name': foodName,
                       'calories': calories,
@@ -581,7 +580,7 @@ class _NutritionPlanBuilderScreenState
                   Navigator.pop(context);
                 }
               },
-              child: Text(isArabic ? 'إضافة' : 'Add'),
+              child: Text(lang.t('add')),
             ),
           ],
         );
@@ -589,34 +588,33 @@ class _NutritionPlanBuilderScreenState
     );
   }
 
-  void _addFromTemplate(bool isArabic) {
+  void _addFromTemplate(LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'اختر قالب' : 'Choose Template'),
+        title: Text(lang.t('coach_nutrition_builder_choose_template')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: Text(isArabic ? 'قالب حرق الدهون' : 'Fat Loss Template'),
+              title: Text(lang.t('coach_nutrition_template_fat_loss')),
               onTap: () {
                 Navigator.pop(context);
-                _applyTemplate('fat_loss', isArabic);
+                _applyTemplate('fat_loss', lang);
               },
             ),
             ListTile(
-              title:
-                  Text(isArabic ? 'قالب بناء العضلات' : 'Muscle Gain Template'),
+              title: Text(lang.t('coach_nutrition_template_muscle_gain')),
               onTap: () {
                 Navigator.pop(context);
-                _applyTemplate('muscle_gain', isArabic);
+                _applyTemplate('muscle_gain', lang);
               },
             ),
             ListTile(
-              title: Text(isArabic ? 'قالب متوازن' : 'Balanced Template'),
+              title: Text(lang.t('coach_nutrition_template_balanced')),
               onTap: () {
                 Navigator.pop(context);
-                _applyTemplate('balanced', isArabic);
+                _applyTemplate('balanced', lang);
               },
             ),
           ],
@@ -625,12 +623,12 @@ class _NutritionPlanBuilderScreenState
     );
   }
 
-  Future<void> _savePlan(bool isArabic) async {
+  Future<void> _savePlan(LanguageProvider lang) async {
     if (_planNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic ? 'الرجاء إدخال اسم الخطة' : 'Please enter plan name',
+            lang.t('coach_nutrition_plan_name_required'),
           ),
           backgroundColor: AppColors.error,
         ),
@@ -646,9 +644,7 @@ class _NutritionPlanBuilderScreenState
     if (coachId == null || coachId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isArabic
-              ? 'تعذر تحديد حساب المدرب'
-              : 'Unable to determine coach account'),
+          content: Text(lang.t('coach_nutrition_coach_missing')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -663,9 +659,7 @@ class _NutritionPlanBuilderScreenState
     if (dailyCalories <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isArabic
-              ? 'الرجاء إدخال السعرات اليومية'
-              : 'Please enter daily calories'),
+          content: Text(lang.t('coach_nutrition_calories_required')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -700,16 +694,15 @@ class _NutritionPlanBuilderScreenState
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                isArabic ? 'تم حفظ الخطة بنجاح' : 'Plan saved successfully'),
+            content: Text(lang.t('coach_nutrition_plan_saved')),
             backgroundColor: AppColors.success,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(coachProvider.error ??
-                (isArabic ? 'فشل حفظ الخطة' : 'Failed to save plan')),
+            content:
+                Text(coachProvider.error ?? lang.t('coach_nutrition_plan_save_failed')),
             backgroundColor: AppColors.error,
           ),
         );

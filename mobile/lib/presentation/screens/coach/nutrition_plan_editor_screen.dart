@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../data/models/nutrition_plan.dart';
 import '../../providers/coach_provider.dart';
@@ -71,17 +71,13 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
   }
 
   Future<void> _savePlan() async {
-    final languageProvider =
-        Provider.of<LanguageProvider>(context, listen: false);
-    final isArabic = languageProvider.isArabic;
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
 
     // Validate
     if (_caloriesController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            isArabic ? 'الرجاء إدخال السعرات' : 'Please enter calories',
-          ),
+          content: Text(lang.t('coach_nutrition_editor_calories_required')),
         ),
       );
       return;
@@ -116,11 +112,9 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic
-                ? 'تم تحديث خطة التغذية بنجاح'
-                : 'Nutrition plan updated successfully',
+            lang.t('coach_nutrition_editor_update_success'),
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
       Navigator.of(context).pop(true); // Go back with success
@@ -128,11 +122,9 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic
-                ? 'فشل تحديث خطة التغذية'
-                : 'Failed to update nutrition plan',
+            lang.t('coach_nutrition_editor_update_failed'),
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -150,12 +142,11 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
+    final lang = context.watch<LanguageProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'تعديل خطة التغذية' : 'Edit Nutrition Plan'),
+        title: Text(lang.t('coach_nutrition_editor_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -181,12 +172,12 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.info_outline,
+                                const Icon(Icons.info_outline,
                                     color: AppColors.primary),
                                 const SizedBox(width: 8),
                                 Text(
-                                  isArabic ? 'الخطة الحالية' : 'Current Plan',
-                                  style: TextStyle(
+                                  lang.t('coach_nutrition_editor_current_plan'),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.primary,
                                   ),
@@ -196,11 +187,11 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                             const SizedBox(height: 8),
                             if (_currentPlan!.customizedByCoach == true)
                               Text(
-                                isArabic
-                                    ? '✓ مخصصة من قبل المدرب'
-                                    : '✓ Customized by coach',
+                                lang.t(
+                                  'coach_nutrition_editor_customized_by_coach',
+                                ),
                                 style: const TextStyle(
-                                  color: Colors.green,
+                                  color: AppColors.success,
                                   fontSize: 12,
                                 ),
                               ),
@@ -213,7 +204,7 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
 
                   // Calories section
                   Text(
-                    isArabic ? 'السعرات اليومية' : 'Daily Calories',
+                    lang.t('coach_nutrition_editor_daily_calories'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -224,9 +215,9 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                     controller: _caloriesController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: isArabic ? 'السعرات' : 'Calories',
+                      labelText: lang.t('calories'),
                       hintText: '2000',
-                      suffixText: isArabic ? 'سعرة' : 'kcal',
+                      suffixText: lang.t('coach_nutrition_kcal'),
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -235,7 +226,7 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
 
                   // Macros section
                   Text(
-                    isArabic ? 'التوزيع الغذائي' : 'Macronutrients',
+                    lang.t('coach_nutrition_editor_macronutrients'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -250,9 +241,9 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                           controller: _proteinController,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            labelText: isArabic ? 'البروتين' : 'Protein',
+                            labelText: lang.t('protein'),
                             hintText: '150',
-                            suffixText: isArabic ? 'جم' : 'g',
+                            suffixText: lang.t('coach_nutrition_grams'),
                             border: const OutlineInputBorder(),
                           ),
                         ),
@@ -263,9 +254,9 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                           controller: _carbsController,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            labelText: isArabic ? 'الكربوهيدرات' : 'Carbs',
+                            labelText: lang.t('carbs'),
                             hintText: '200',
-                            suffixText: isArabic ? 'جم' : 'g',
+                            suffixText: lang.t('coach_nutrition_grams'),
                             border: const OutlineInputBorder(),
                           ),
                         ),
@@ -279,9 +270,9 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                     controller: _fatsController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: isArabic ? 'الدهون' : 'Fats',
+                      labelText: lang.t('fat'),
                       hintText: '65',
-                      suffixText: isArabic ? 'جم' : 'g',
+                      suffixText: lang.t('coach_nutrition_grams'),
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -290,7 +281,7 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
 
                   // Meal plan preview
                   Text(
-                    isArabic ? 'خطة الوجبات' : 'Meal Plan',
+                    lang.t('coach_nutrition_editor_meal_plan'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -306,10 +297,10 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                         children: [
                           if (_mealPlan.isEmpty)
                             Text(
-                              isArabic
-                                  ? 'لا توجد وجبات محددة'
-                                  : 'No meals specified',
-                              style: TextStyle(color: Colors.grey[600]),
+                              lang.t('coach_nutrition_editor_no_meals'),
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                              ),
                             )
                           else
                             Column(
@@ -319,7 +310,7 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 4),
                                   child: Text(
-                                    '• $mealType: ${_mealPlan[mealType].length} ${isArabic ? 'وجبات' : 'meals'}',
+                                    '- $mealType: ${_mealPlan[mealType].length} ${lang.t('coach_nutrition_builder_meals_label')}',
                                   ),
                                 );
                               }).toList(),
@@ -331,16 +322,15 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    isArabic
-                                        ? 'استخدم منشئ الوجبات الكامل'
-                                        : 'Use full meal plan builder',
+                                    lang.t('coach_nutrition_editor_use_builder'),
                                   ),
                                 ),
                               );
                             },
                             icon: const Icon(Icons.edit),
                             label: Text(
-                                isArabic ? 'تعديل الوجبات' : 'Edit Meals'),
+                              lang.t('coach_nutrition_editor_edit_meals'),
+                            ),
                           ),
                         ],
                       ),
@@ -351,7 +341,7 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
 
                   // Notes
                   Text(
-                    isArabic ? 'ملاحظات' : 'Notes',
+                    lang.t('coach_nutrition_editor_notes'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -362,9 +352,7 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
                     controller: _notesController,
                     maxLines: 3,
                     decoration: InputDecoration(
-                      hintText: isArabic
-                          ? 'أضف ملاحظات للعميل'
-                          : 'Add notes for client',
+                      hintText: lang.t('coach_nutrition_editor_notes_hint'),
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -373,7 +361,7 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
 
                   // Save button
                   CustomButton(
-                    text: isArabic ? 'حفظ التغييرات' : 'Save Changes',
+                    text: lang.t('coach_nutrition_editor_save_changes'),
                     onPressed: _savePlan,
                     icon: Icons.save,
                   ),
@@ -382,7 +370,7 @@ class _NutritionPlanEditorScreenState extends State<NutritionPlanEditorScreen> {
 
                   // Cancel button
                   CustomButton(
-                    text: isArabic ? 'إلغاء' : 'Cancel',
+                    text: lang.t('cancel'),
                     onPressed: () => Navigator.of(context).pop(),
                     variant: ButtonVariant.secondary,
                   ),

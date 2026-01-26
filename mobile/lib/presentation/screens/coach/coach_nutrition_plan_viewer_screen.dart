@@ -42,7 +42,7 @@ class _CoachNutritionPlanViewerScreenState
     if (coachId == null) {
       setState(() {
         _isLoading = false;
-        _error = 'Missing coach information';
+        _error = context.read<LanguageProvider>().t('coach_missing_coach_info');
       });
       return;
     }
@@ -61,7 +61,9 @@ class _CoachNutritionPlanViewerScreenState
     setState(() {
       _plan = plan;
       _isLoading = false;
-      _error = plan == null ? 'No nutrition plan assigned' : null;
+      _error = plan == null
+          ? context.read<LanguageProvider>().t('coach_nutrition_plan_missing')
+          : null;
     });
   }
 
@@ -75,16 +77,15 @@ class _CoachNutritionPlanViewerScreenState
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
-    final isArabic = lang.isArabic;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'خطة التغذية' : 'Nutrition Plan'),
+        title: Text(lang.t('coach_nutrition_plan_title')),
         actions: [
           if (_plan != null)
             IconButton(
               icon: const Icon(Icons.edit),
-              tooltip: isArabic ? 'تعديل الخطة' : 'Edit plan',
+              tooltip: lang.t('coach_edit_plan'),
               onPressed: _openEditor,
             ),
         ],
@@ -92,7 +93,7 @@ class _CoachNutritionPlanViewerScreenState
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _plan == null
-              ? _buildEmptyState(isArabic)
+              ? _buildEmptyState(lang)
               : RefreshIndicator(
                   onRefresh: _loadPlan,
                   child: ListView(
@@ -113,10 +114,10 @@ class _CoachNutritionPlanViewerScreenState
     final macroTargets = plan.macroTargets ?? const {};
     final start = plan.startDate != null
         ? DateFormat('MMM d', isArabic ? 'ar' : 'en').format(plan.startDate!)
-        : (isArabic ? 'غير محدد' : 'Not set');
+        : lang.t('coach_plan_not_specified');
     final end = plan.endDate != null
         ? DateFormat('MMM d', isArabic ? 'ar' : 'en').format(plan.endDate!)
-        : (isArabic ? 'غير محدد' : 'Not set');
+        : lang.t('coach_plan_not_specified');
 
     return Card(
       child: Padding(
@@ -125,7 +126,7 @@ class _CoachNutritionPlanViewerScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              plan.name ?? (isArabic ? 'خطة بدون اسم' : 'Untitled plan'),
+              plan.name ?? lang.t('coach_plan_untitled'),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             if (plan.description != null) ...[
@@ -136,34 +137,34 @@ class _CoachNutritionPlanViewerScreenState
               ),
             ],
             const SizedBox(height: 12),
-            Text(isArabic ? 'المدة' : 'Duration'),
-            Text('$start → $end'),
+            Text(lang.t('coach_plan_duration')),
+            Text('$start - $end'),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 _buildMacroChip(
-                  label: 'Calories',
+                  label: lang.t('calories'),
                   value:
                       '${macroTargets['calories'] ?? plan.dailyCalories ?? 0}',
                 ),
                 _buildMacroChip(
-                  label: 'Protein',
+                  label: lang.t('protein'),
                   value: '${macroTargets['protein'] ?? 0}g',
                 ),
                 _buildMacroChip(
-                  label: 'Carbs',
+                  label: lang.t('carbs'),
                   value: '${macroTargets['carbs'] ?? 0}g',
                 ),
                 _buildMacroChip(
-                  label: 'Fat',
+                  label: lang.t('fat'),
                   value: '${macroTargets['fat'] ?? macroTargets['fats'] ?? 0}g',
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Text(isArabic ? 'نسبة الالتزام' : 'Adherence'),
+            Text(lang.t('coach_adherence')),
             const SizedBox(height: 6),
             LinearProgressIndicator(value: progress, minHeight: 8),
             const SizedBox(height: 4),
@@ -175,7 +176,6 @@ class _CoachNutritionPlanViewerScreenState
   }
 
   Iterable<Widget> _buildDayMeals(LanguageProvider lang, NutritionPlan plan) {
-    final isArabic = lang.isArabic;
     final days = plan.days ?? [];
 
     if (days.isEmpty) {
@@ -185,7 +185,7 @@ class _CoachNutritionPlanViewerScreenState
             padding: const EdgeInsets.all(24),
             child: Center(
               child: Text(
-                isArabic ? 'لا توجد أيام طعام بعد.' : 'No meal days yet.',
+                lang.t('coach_no_meal_days'),
                 style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
@@ -200,7 +200,7 @@ class _CoachNutritionPlanViewerScreenState
         child: ExpansionTile(
           initiallyExpanded: day.dayNumber == 1,
           title: Text(day.dayName),
-          subtitle: Text('${day.meals.length} ${isArabic ? 'وجبات' : 'meals'}'),
+          subtitle: Text('${day.meals.length} ${lang.t('meals')}'),
           children: day.meals.map((meal) {
             return ListTile(
               leading: Icon(
@@ -209,7 +209,7 @@ class _CoachNutritionPlanViewerScreenState
                     meal.completed ? AppColors.success : AppColors.textDisabled,
               ),
               title: Text(meal.name),
-              subtitle: Text('${meal.calories} kcal • ${meal.time}'),
+              subtitle: Text('${meal.calories} kcal - ${meal.time}'),
             );
           }).toList(),
         ),
@@ -236,11 +236,8 @@ class _CoachNutritionPlanViewerScreenState
     );
   }
 
-  Widget _buildEmptyState(bool isArabic) {
-    final message = _error ??
-        (isArabic
-            ? 'لا توجد خطة تغذية لهذا العميل.'
-            : 'No nutrition plan assigned for this client.');
+  Widget _buildEmptyState(LanguageProvider lang) {
+    final message = _error ?? lang.t('coach_no_nutrition_plan_client');
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),

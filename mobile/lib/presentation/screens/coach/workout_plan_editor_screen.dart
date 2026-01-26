@@ -65,14 +65,13 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
   Future<void> _savePlan() async {
     final languageProvider =
         Provider.of<LanguageProvider>(context, listen: false);
-    final isArabic = languageProvider.isArabic;
 
     // Validate
     if (_planData.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic ? 'الرجاء إضافة تمارين' : 'Please add exercises',
+            languageProvider.t('coach_workout_editor_add_exercises_required'),
           ),
         ),
       );
@@ -104,11 +103,9 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic
-                ? 'تم تحديث خطة التمرين بنجاح'
-                : 'Workout plan updated successfully',
+            languageProvider.t('coach_workout_editor_updated_success'),
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
       Navigator.of(context).pop(true); // Go back with success
@@ -116,11 +113,9 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic
-                ? 'فشل تحديث خطة التمرين'
-                : 'Failed to update workout plan',
+            languageProvider.t('coach_workout_editor_update_failed'),
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -135,11 +130,10 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'تعديل خطة التمرين' : 'Edit Workout Plan'),
+        title: Text(languageProvider.t('coach_workout_editor_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -169,7 +163,7 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
                                     color: AppColors.primary),
                                 const SizedBox(width: 8),
                                 Text(
-                                  isArabic ? 'الخطة الحالية' : 'Current Plan',
+                                  languageProvider.t('coach_workout_editor_current_plan'),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.primary,
@@ -180,11 +174,9 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
                             const SizedBox(height: 8),
                             if (_currentPlan!.customizedByCoach == true)
                               Text(
-                                isArabic
-                                    ? '✓ مخصصة من قبل المدرب'
-                                    : '✓ Customized by coach',
+                                languageProvider.t('coach_workout_editor_customized_by_coach'),
                                 style: const TextStyle(
-                                  color: Colors.green,
+                                  color: AppColors.success,
                                   fontSize: 12,
                                 ),
                               ),
@@ -197,7 +189,7 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
 
                   // Plan editor
                   Text(
-                    isArabic ? 'تفاصيل الخطة' : 'Plan Details',
+                    languageProvider.t('coach_workout_editor_plan_details'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -215,10 +207,8 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
                     controller: _notesController,
                     maxLines: 3,
                     decoration: InputDecoration(
-                      labelText: isArabic ? 'ملاحظات' : 'Notes',
-                      hintText: isArabic
-                          ? 'أضف ملاحظات للعميل'
-                          : 'Add notes for client',
+                      labelText: languageProvider.t('coach_workout_editor_notes_label'),
+                      hintText: languageProvider.t('coach_workout_editor_notes_hint'),
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -227,7 +217,7 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
 
                   // Save button
                   CustomButton(
-                    text: isArabic ? 'حفظ التغييرات' : 'Save Changes',
+                    text: languageProvider.t('coach_workout_editor_save_changes'),
                     onPressed: _savePlan,
                     icon: Icons.save,
                   ),
@@ -236,7 +226,7 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
 
                   // Cancel button
                   CustomButton(
-                    text: isArabic ? 'إلغاء' : 'Cancel',
+                    text: languageProvider.t('cancel'),
                     onPressed: () => Navigator.of(context).pop(),
                     variant: ButtonVariant.secondary,
                   ),
@@ -248,7 +238,6 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
 
   Widget _buildWeeksList() {
     final languageProvider = context.read<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
 
     if (_planData['weeks'] == null) {
       _planData['weeks'] = [];
@@ -262,7 +251,7 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
         OutlinedButton.icon(
           onPressed: _addWeek,
           icon: const Icon(Icons.add),
-          label: Text(isArabic ? 'إضافة أسبوع' : 'Add Week'),
+          label: Text(languageProvider.t('coach_workout_editor_add_week')),
         ),
         const SizedBox(height: 16),
 
@@ -272,13 +261,11 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
             margin: const EdgeInsets.only(bottom: 16),
             child: ExpansionTile(
               title: Text(
-                isArabic
-                    ? 'الأسبوع ${weekIndex + 1}'
-                    : 'Week ${weekIndex + 1}',
+                languageProvider.t('coach_workout_editor_week_label', args: {'week': '${weekIndex + 1}'}),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
+                icon: const Icon(Icons.delete, color: AppColors.error),
                 onPressed: () => _removeWeek(weekIndex),
               ),
               children: [
@@ -288,7 +275,7 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isArabic ? 'الأيام' : 'Days',
+                        languageProvider.t('coach_workout_editor_days_label'),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
@@ -306,7 +293,6 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
 
   Widget _buildDaysList(int weekIndex) {
     final languageProvider = context.read<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
 
     List<dynamic> weeks = _planData['weeks'];
     if (weeks[weekIndex]['days'] == null) {
@@ -321,20 +307,20 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
         TextButton.icon(
           onPressed: () => _addDay(weekIndex),
           icon: const Icon(Icons.add),
-          label: Text(isArabic ? 'إضافة يوم' : 'Add Day'),
+          label: Text(languageProvider.t('coach_workout_editor_add_day')),
         ),
 
         // Days list
         ...List.generate(days.length, (dayIndex) {
           return ListTile(
             title: Text(
-              isArabic ? 'اليوم ${dayIndex + 1}' : 'Day ${dayIndex + 1}',
+              languageProvider.t('coach_workout_editor_day_label', args: {'day': '${dayIndex + 1}'}),
             ),
             subtitle: Text(
-              '${days[dayIndex]['exercises']?.length ?? 0} ${isArabic ? 'تمارين' : 'exercises'}',
+              languageProvider.t('coach_workout_editor_exercise_count', args: {'count': '${days[dayIndex]['exercises']?.length ?? 0}'}),
             ),
             trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete, color: AppColors.error),
               onPressed: () => _removeDay(weekIndex, dayIndex),
             ),
             onTap: () => _editDay(weekIndex, dayIndex),
@@ -384,24 +370,21 @@ class _WorkoutPlanEditorScreenState extends State<WorkoutPlanEditorScreen> {
 
   void _editDay(int weekIndex, int dayIndex) {
     final languageProvider = context.read<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
 
     // Show dialog to edit exercises
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          isArabic ? 'تمارين اليوم' : 'Day Exercises',
+          languageProvider.t('coach_workout_editor_day_exercises'),
         ),
         content: Text(
-          isArabic
-              ? 'استخدم شاشة بناء الخطة الكاملة لتعديل التمارين'
-              : 'Use the full plan builder to edit exercises',
+          languageProvider.t('coach_workout_editor_edit_exercises_hint'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(isArabic ? 'حسناً' : 'OK'),
+            child: Text(languageProvider.t('coach_workout_editor_ok')),
           ),
         ],
       ),

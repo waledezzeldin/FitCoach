@@ -29,7 +29,17 @@ class DemoMessagingRepository {
     required String demoUserId,
     required String demoCoachId,
     bool isArabic = false,
+    bool isCoach = false,
   }) async {
+    if (!isCoach) {
+      return [
+        DemoData.demoConversation(
+          userId: demoUserId,
+          coachId: demoCoachId,
+          isArabic: isArabic,
+        ),
+      ];
+    }
     final List<CoachClient> clients = DemoData.coachClients();
     if (clients.isEmpty) {
       final conversation = DemoData.demoConversation(

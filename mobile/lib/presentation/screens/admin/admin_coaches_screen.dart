@@ -36,13 +36,13 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
     );
   }
 
-  void _showCreateCoachSheet(bool isArabic) {
+  void _showCreateCoachSheet(LanguageProvider lang) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
         return _CreateCoachSheet(
-          isArabic: isArabic,
+          lang: lang,
           onSubmit: (payload) async {
             final adminProvider = context.read<AdminProvider>();
             final success = await adminProvider.createCoach(
@@ -60,7 +60,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    isArabic ? 'تم إنشاء حساب المدرب وإرسال الدعوة' : 'Coach account created and invite sent',
+                    lang.t('admin_coach_created_success'),
                   ),
                   backgroundColor: AppColors.success,
                 ),
@@ -71,7 +71,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                 SnackBar(
                   content: Text(
                     adminProvider.error ??
-                        (isArabic ? 'تعذر إنشاء المدرب، حاول مرة أخرى' : 'Failed to create coach'),
+                        (lang.t('admin_create_coach_failed')),
                   ),
                   backgroundColor: AppColors.error,
                 ),
@@ -94,11 +94,11 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final adminProvider = context.watch<AdminProvider>();
-    final isArabic = languageProvider.isArabic;
+    final lang = languageProvider;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'المدربون' : 'Coaches'),
+        title: Text(lang.t('admin_coaches_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -120,9 +120,12 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      isArabic
-                          ? '${adminProvider.pendingCoaches.length} مدرب بانتظار الموافقة'
-                          : '${adminProvider.pendingCoaches.length} coaches pending approval',
+                      lang.t(
+                        'admin_coaches_pending_banner',
+                        args: {
+                          'count': '${adminProvider.pendingCoaches.length}',
+                        },
+                      ),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -133,7 +136,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                       });
                       _loadCoaches();
                     },
-                    child: Text(isArabic ? 'عرض' : 'View'),
+                    child: Text(lang.t('admin_view')),
                   ),
                 ],
               ),
@@ -148,7 +151,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: isArabic ? 'بحث...' : 'Search...',
+                    hintText: lang.t('admin_coaches_search_hint'),
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -181,7 +184,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                       child: DropdownButtonFormField<String?>(
                         value: _statusFilter,
                         decoration: InputDecoration(
-                          labelText: isArabic ? 'الحالة' : 'Status',
+                          labelText: lang.t('admin_users_filter_status'),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -189,15 +192,15 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                         items: [
                           DropdownMenuItem(
                             value: null,
-                            child: Text(isArabic ? 'الكل' : 'All'),
+                            child: Text(lang.t('admin_filter_all')),
                           ),
                           DropdownMenuItem(
                             value: 'active',
-                            child: Text(isArabic ? 'نشط' : 'Active'),
+                            child: Text(lang.t('admin_status_active')),
                           ),
                           DropdownMenuItem(
                             value: 'inactive',
-                            child: Text(isArabic ? 'غير نشط' : 'Inactive'),
+                            child: Text(lang.t('admin_status_inactive')),
                           ),
                         ],
                         onChanged: (value) {
@@ -211,7 +214,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilterChip(
-                        label: Text(isArabic ? 'بانتظار الموافقة' : 'Pending Only'),
+                        label: Text(lang.t('admin_pending_only')),
                         selected: _showPendingOnly,
                         onSelected: (value) {
                           setState(() {
@@ -246,7 +249,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadCoaches,
-                              child: Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                              child: Text(lang.t('retry')),
                             ),
                           ],
                         ),
@@ -263,7 +266,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  isArabic ? 'لا يوجد مدربون' : 'No coaches found',
+                                  lang.t('admin_coaches_empty'),
                                   style: const TextStyle(
                                     fontSize: 18,
                                     color: AppColors.textSecondary,
@@ -279,7 +282,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                               itemCount: adminProvider.coaches.length,
                               itemBuilder: (context, index) {
                                 final coach = adminProvider.coaches[index];
-                                return _buildCoachCard(coach, isArabic);
+                                return _buildCoachCard(coach, lang);
                               },
                             ),
                           ),
@@ -287,18 +290,18 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateCoachSheet(isArabic),
+        onPressed: () => _showCreateCoachSheet(lang),
         icon: const Icon(Icons.person_add_alt_1),
-        label: Text(isArabic ? 'إضافة مدرب' : 'Add Coach'),
+        label: Text(lang.t('admin_add_coach')),
       ),
     );
   }
 
-  Widget _buildCoachCard(AdminCoach coach, bool isArabic) {
+  Widget _buildCoachCard(AdminCoach coach, LanguageProvider lang) {
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => _showCoachDetailsDialog(coach, isArabic),
+        onTap: () => _showCoachDetailsDialog(coach, lang),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -353,10 +356,10 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  isArabic ? 'بانتظار الموافقة' : 'PENDING',
+                                  lang.t('admin_pending_label'),
                                   style: const TextStyle(
                                     fontSize: 10,
-                                    color: Colors.white,
+                                    color: AppColors.textWhite,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -378,20 +381,20 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                             _buildStatChip(
                               Icons.people,
                               '${coach.clientCount}',
-                              isArabic ? 'عملاء' : 'clients',
+                              lang.t('admin_clients_label'),
                             ),
                             const SizedBox(width: 8),
                             _buildStatChip(
                               Icons.attach_money,
                               '\$${coach.totalEarnings.toStringAsFixed(0)}',
-                              isArabic ? 'أرباح' : 'earned',
+                              lang.t('admin_earned_label'),
                             ),
                             if (coach.averageRating != null) ...[
                               const SizedBox(width: 8),
                               _buildStatChip(
                                 Icons.star,
                                 coach.averageRating!.toStringAsFixed(1),
-                                isArabic ? 'تقييم' : 'rating',
+                                lang.t('admin_rating_label'),
                               ),
                             ],
                           ],
@@ -406,10 +409,10 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                     onSelected: (value) {
                       switch (value) {
                         case 'approve':
-                          _showApproveCoachDialog(coach, isArabic);
+                          _showApproveCoachDialog(coach, lang);
                           break;
                         case 'suspend':
-                          _showSuspendCoachDialog(coach, isArabic);
+                          _showSuspendCoachDialog(coach, lang);
                           break;
                       }
                     },
@@ -421,7 +424,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                             children: [
                               const Icon(Icons.check_circle, size: 18, color: AppColors.success),
                               const SizedBox(width: 8),
-                              Text(isArabic ? 'الموافقة' : 'Approve'),
+                              Text(lang.t('admin_approve')),
                             ],
                           ),
                         ),
@@ -431,7 +434,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
                           children: [
                             const Icon(Icons.block, size: 18, color: AppColors.error),
                             const SizedBox(width: 8),
-                            Text(isArabic ? 'إيقاف' : 'Suspend'),
+                            Text(lang.t('admin_action_suspend')),
                           ],
                         ),
                       ),
@@ -502,7 +505,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
     );
   }
 
-  void _showCoachDetailsDialog(AdminCoach coach, bool isArabic) {
+  void _showCoachDetailsDialog(AdminCoach coach, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -512,25 +515,28 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow(isArabic ? 'البريد الإلكتروني' : 'Email', coach.email ?? 'N/A'),
-              _buildDetailRow(isArabic ? 'الهاتف' : 'Phone', coach.phoneNumber ?? 'N/A'),
-              _buildDetailRow(isArabic ? 'العملاء' : 'Clients', '${coach.clientCount}'),
-              _buildDetailRow(isArabic ? 'الأرباح' : 'Earnings', '\$${coach.totalEarnings.toStringAsFixed(2)}'),
+              _buildDetailRow(lang.t('email'), coach.email ?? lang.t('not_available')),
+              _buildDetailRow(lang.t('admin_phone_label'), coach.phoneNumber ?? lang.t('not_available')),
+              _buildDetailRow(lang.t('admin_clients_label'), '${coach.clientCount}'),
+              _buildDetailRow(lang.t('admin_earnings_label'), '\$${coach.totalEarnings.toStringAsFixed(2)}'),
               if (coach.averageRating != null)
-                _buildDetailRow(isArabic ? 'التقييم' : 'Rating', '${coach.averageRating!.toStringAsFixed(1)} ⭐'),
+                _buildDetailRow(
+                  lang.t('admin_rating_label'),
+                  '${coach.averageRating!.toStringAsFixed(1)} / 5',
+                ),
               _buildDetailRow(
-                isArabic ? 'الحالة' : 'Status',
+                lang.t('admin_users_filter_status'),
                 coach.isApproved
-                    ? (isArabic ? 'موافق عليه' : 'Approved')
-                    : (isArabic ? 'بانتظار الموافقة' : 'Pending'),
+                    ? (lang.t('admin_status_approved'))
+                    : (lang.t('admin_status_pending')),
               ),
-              _buildDetailRow(isArabic ? 'تاريخ التسجيل' : 'Created', _formatDate(coach.createdAt)),
+              _buildDetailRow(lang.t('admin_created_label'), _formatDate(coach.createdAt)),
               if (coach.approvedAt != null)
-                _buildDetailRow(isArabic ? 'تاريخ الموافقة' : 'Approved', _formatDate(coach.approvedAt!)),
+                _buildDetailRow(lang.t('admin_status_approved'), _formatDate(coach.approvedAt!)),
               if (coach.specializations.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  isArabic ? 'التخصصات:' : 'Specializations:',
+                  lang.t('admin_specializations_label'),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: AppColors.textSecondary,
@@ -554,7 +560,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إغلاق' : 'Close'),
+            child: Text(lang.t('close')),
           ),
         ],
       ),
@@ -585,20 +591,18 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
     );
   }
 
-  void _showApproveCoachDialog(AdminCoach coach, bool isArabic) {
+  void _showApproveCoachDialog(AdminCoach coach, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'الموافقة على المدرب' : 'Approve Coach'),
+        title: Text(lang.t('admin_approve_coach_title')),
         content: Text(
-          isArabic
-              ? 'هل أنت متأكد من الموافقة على ${coach.fullName}؟'
-              : 'Are you sure you want to approve ${coach.fullName}?',
+          lang.t('admin_approve_coach_prompt', args: {'name': coach.fullName}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(lang.t('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -610,7 +614,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(isArabic ? 'تمت الموافقة بنجاح' : 'Approved successfully'),
+                    content: Text(lang.t('admin_coach_approved_success')),
                     backgroundColor: AppColors.success,
                   ),
                 );
@@ -618,33 +622,31 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
-            child: Text(isArabic ? 'موافقة' : 'Approve'),
+            child: Text(lang.t('admin_approve')),
           ),
         ],
       ),
     );
   }
 
-  void _showSuspendCoachDialog(AdminCoach coach, bool isArabic) {
+  void _showSuspendCoachDialog(AdminCoach coach, LanguageProvider lang) {
     final reasonController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'إيقاف المدرب' : 'Suspend Coach'),
+        title: Text(lang.t('admin_suspend_coach_title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              isArabic
-                  ? 'هل أنت متأكد من إيقاف ${coach.fullName}؟'
-                  : 'Are you sure you want to suspend ${coach.fullName}?',
+              lang.t('admin_suspend_coach_prompt', args: {'name': coach.fullName}),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: reasonController,
               decoration: InputDecoration(
-                labelText: isArabic ? 'السبب' : 'Reason',
+                labelText: lang.t('admin_reason_label'),
                 border: const OutlineInputBorder(),
               ),
               maxLines: 3,
@@ -654,14 +656,14 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(lang.t('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
               if (reasonController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(isArabic ? 'الرجاء إدخال السبب' : 'Please enter a reason'),
+                    content: Text(lang.t('admin_suspend_reason_required')),
                     backgroundColor: AppColors.error,
                   ),
                 );
@@ -676,7 +678,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(isArabic ? 'تم الإيقاف بنجاح' : 'Suspended successfully'),
+                    content: Text(lang.t('admin_coach_suspended_success')),
                     backgroundColor: AppColors.success,
                   ),
                 );
@@ -684,7 +686,7 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: Text(isArabic ? 'إيقاف' : 'Suspend'),
+            child: Text(lang.t('admin_action_suspend')),
           ),
         ],
       ),
@@ -697,11 +699,11 @@ class _AdminCoachesScreenState extends State<AdminCoachesScreen> {
 }
 
 class _CreateCoachSheet extends StatefulWidget {
-  final bool isArabic;
+  final LanguageProvider lang;
   final Future<bool> Function(_CoachInvitePayload payload) onSubmit;
 
   const _CreateCoachSheet({
-    required this.isArabic,
+    required this.lang,
     required this.onSubmit,
   });
 
@@ -730,7 +732,7 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isArabic = widget.isArabic;
+    final lang = widget.lang;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -758,7 +760,7 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
                 ),
               ),
               Text(
-                isArabic ? 'إنشاء حساب مدرب' : 'Create Coach Account',
+                lang.t('admin_create_coach_title'),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -766,9 +768,7 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
               ),
               const SizedBox(height: 8),
               Text(
-                isArabic
-                    ? 'سنرسل دعوة للمدرب بنفس البريد الإلكتروني ليكمل ملفه الشخصي ويحدد كلمة المرور.'
-                    : 'We will email an invite so the coach can finish onboarding and set a password.',
+                lang.t('admin_create_coach_subtitle'),
                 style: const TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -778,12 +778,12 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
               TextFormField(
                 controller: _fullNameController,
                 decoration: InputDecoration(
-                  labelText: isArabic ? 'الاسم الكامل' : 'Full name',
+                  labelText: lang.t('admin_full_name_label'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return isArabic ? 'الاسم مطلوب' : 'Name is required';
+                    return lang.t('admin_full_name_required');
                   }
                   return null;
                 },
@@ -793,15 +793,15 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: isArabic ? 'البريد الإلكتروني' : 'Email',
+                  labelText: lang.t('email'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return isArabic ? 'البريد الإلكتروني مطلوب' : 'Email is required';
+                    return lang.t('admin_email_required');
                   }
                   if (!value.contains('@')) {
-                    return isArabic ? 'صيغة البريد غير صحيحة' : 'Invalid email address';
+                    return lang.t('admin_invalid_email');
                   }
                   return null;
                 },
@@ -811,13 +811,13 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: isArabic ? 'رقم الهاتف (اختياري)' : 'Phone (optional)',
+                  labelText: lang.t('admin_phone_optional'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                isArabic ? 'التخصصات' : 'Specializations',
+                lang.t('admin_specializations_label'),
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -830,7 +830,7 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
                     child: TextField(
                       controller: _specializationController,
                       decoration: InputDecoration(
-                        hintText: isArabic ? 'أدخل تخصص المدرب' : 'Add a specialty',
+                        hintText: lang.t('admin_add_specialty_hint'),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onSubmitted: (_) => _addSpecialization(),
@@ -841,10 +841,10 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
                     onPressed: _addSpecialization,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.textWhite,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
-                    child: Text(isArabic ? 'إضافة' : 'Add'),
+                    child: Text(lang.t('admin_add')),
                   ),
                 ],
               ),
@@ -863,7 +863,7 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
                 )
               else
                 Text(
-                  isArabic ? 'لا توجد تخصصات مضافة بعد' : 'No specializations yet',
+                  lang.t('admin_no_specializations'),
                   style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                 ),
               const SizedBox(height: 16),
@@ -873,19 +873,17 @@ class _CreateCoachSheetState extends State<_CreateCoachSheet> {
                 onChanged: (value) {
                   setState(() => _sendInvite = value);
                 },
-                title: Text(isArabic ? 'إرسال دعوة عبر البريد' : 'Send onboarding email invite'),
+                title: Text(lang.t('admin_send_invite_title')),
                 subtitle: Text(
-                  isArabic
-                      ? 'سيتلقى المدرب رابطاً لإكمال حسابه بنفس البريد.'
-                      : 'Coach receives a link to finish the profile with this email.',
+                  lang.t('admin_send_invite_subtitle'),
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
               ),
               const SizedBox(height: 24),
               CustomButton(
                 text: _isSubmitting
-                    ? (isArabic ? 'جاري الإرسال...' : 'Sending...')
-                    : (isArabic ? 'إرسال الدعوة' : 'Send Invite'),
+                    ? (lang.t('admin_sending'))
+                    : (lang.t('admin_send_invite')),
                 onPressed: _isSubmitting ? null : _handleSubmit,
                 fullWidth: true,
                 size: ButtonSize.large,

@@ -89,10 +89,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
+                          border: Border.all(color: AppColors.textWhite, width: 2),
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                          icon: const Icon(Icons.camera_alt, color: AppColors.textWhite, size: 20),
                           onPressed: () {
                             // TODO: Implement photo upload
                             _showPhotoOptions(isArabic);
@@ -227,7 +227,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       controller: _weightController,
                       decoration: InputDecoration(
                         labelText: languageProvider.t('weight'),
-                        suffixText: 'kg',
+                        suffixText: languageProvider.t('kg'),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -247,7 +247,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       controller: _heightController,
                       decoration: InputDecoration(
                         labelText: languageProvider.t('height'),
-                        suffixText: 'cm',
+                        suffixText: languageProvider.t('cm'),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -412,16 +412,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isArabic 
-                  ? 'فشل في حفظ التغييرات: ${e.toString()}' 
-                  : 'Failed to save: ${e.toString()}',
-            ),
-            backgroundColor: AppColors.error,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            languageProvider.t('edit_profile_save_error'),
           ),
-        );
+          backgroundColor: AppColors.error,
+        ),
+      );
       }
     } finally {
       if (mounted) {

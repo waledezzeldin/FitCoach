@@ -33,12 +33,12 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final adminProvider = context.watch<AdminProvider>();
-    final isArabic = languageProvider.isArabic;
+    final lang = languageProvider;
     final revenue = adminProvider.revenueAnalytics;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'تحليلات الإيرادات' : 'Revenue Analytics'),
+        title: Text(lang.t('admin_revenue_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -56,14 +56,14 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                       const Icon(Icons.error_outline, size: 64, color: AppColors.error),
                       const SizedBox(height: 16),
                       Text(
-                        adminProvider.error ?? (isArabic ? 'فشل تحميل البيانات' : 'Failed to load data'),
+                        adminProvider.error ?? lang.t('admin_load_failed'),
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: AppColors.error),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadRevenue,
-                        child: Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                        child: Text(lang.t('retry')),
                       ),
                     ],
                   ),
@@ -101,7 +101,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            isArabic ? 'إجمالي الإيرادات' : 'Total Revenue',
+                                            lang.t('admin_total_revenue'),
                                             style: const TextStyle(
                                               fontSize: 14,
                                               color: AppColors.textSecondary,
@@ -126,7 +126,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   children: [
                                     _buildStatItem(
-                                      isArabic ? 'المعاملات' : 'Transactions',
+                                      lang.t('admin_transactions'),
                                       '${revenue.transactionCount}',
                                       Icons.receipt_long,
                                       AppColors.primary,
@@ -137,7 +137,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                                       color: AppColors.textDisabled,
                                     ),
                                     _buildStatItem(
-                                      isArabic ? 'متوسط المعاملة' : 'Avg Transaction',
+                                      lang.t('admin_avg_transaction'),
                                       revenue.transactionCount > 0
                                           ? '\$${(revenue.total / revenue.transactionCount).toStringAsFixed(0)}'
                                           : '\$0',
@@ -155,7 +155,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
 
                         // Period Selector
                         Text(
-                          isArabic ? 'الفترة الزمنية' : 'Time Period',
+                          lang.t('admin_time_period'),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -169,17 +169,17 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                               segments: [
                                 ButtonSegment(
                                   value: 'day',
-                                  label: Text(isArabic ? 'يوم' : 'Day'),
+                                  label: Text(lang.t('admin_period_day')),
                                   icon: const Icon(Icons.today, size: 18),
                                 ),
                                 ButtonSegment(
                                   value: 'week',
-                                  label: Text(isArabic ? 'أسبوع' : 'Week'),
+                                  label: Text(lang.t('admin_period_week')),
                                   icon: const Icon(Icons.calendar_view_week, size: 18),
                                 ),
                                 ButtonSegment(
                                   value: 'month',
-                                  label: Text(isArabic ? 'شهر' : 'Month'),
+                                  label: Text(lang.t('admin_period_month')),
                                   icon: const Icon(Icons.calendar_month, size: 18),
                                 ),
                               ],
@@ -199,7 +199,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                         // Revenue Chart
                         if (revenue.byPeriod.isNotEmpty) ...[
                           Text(
-                            isArabic ? 'الإيرادات حسب الفترة' : 'Revenue by Period',
+                            lang.t('admin_revenue_by_period'),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -300,7 +300,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
 
                         // Revenue by Tier
                         Text(
-                          isArabic ? 'الإيرادات حسب الباقة' : 'Revenue by Tier',
+                          lang.t('admin_revenue_by_tier'),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -345,7 +345,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
-                                                '${tier.count} ${isArabic ? 'اشتراك' : 'subscriptions'}',
+                                                '${tier.count} ${lang.t('admin_subscriptions_label')}',
                                                 style: const TextStyle(
                                                   fontSize: 12,
                                                   color: AppColors.textSecondary,
@@ -438,7 +438,7 @@ class _AdminRevenueScreenState extends State<AdminRevenueScreen> {
     switch (tier.toLowerCase()) {
       case 'smart premium':
       case 'smart_premium':
-        return const Color(0xFFFFD700);
+        return AppColors.accent;
       case 'premium':
         return AppColors.primary;
       case 'freemium':

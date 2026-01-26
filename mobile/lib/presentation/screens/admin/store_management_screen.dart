@@ -97,20 +97,18 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
+    final lang = languageProvider;
 
     if (!DemoConfig.isDemo) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(isArabic ? 'إدارة المتجر' : 'Store Management'),
+          title: Text(lang.t('store_management_title')),
         ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              isArabic
-                  ? 'إدارة المتجر متاحة حالياً في وضع العرض التجريبي فقط.'
-                  : 'Store management is currently available in demo mode only.',
+              lang.t('store_demo_only'),
               textAlign: TextAlign.center,
               style:
                   const TextStyle(color: AppColors.textSecondary, fontSize: 14),
@@ -122,20 +120,20 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'إدارة المتجر' : 'Store Management'),
+        title: Text(lang.t('store_management_title')),
       ),
       body: Column(
         children: [
           // Tabs
           Container(
-            color: Colors.white,
+            color: AppColors.background,
             child: Row(
               children: [
                 _buildTab(
-                    'products', isArabic ? 'المنتجات' : 'Products', isArabic),
+                    'products', lang.t('store_tab_products'), lang),
                 _buildTab(
-                    'categories', isArabic ? 'الفئات' : 'Categories', isArabic),
-                _buildTab('orders', isArabic ? 'الطلبات' : 'Orders', isArabic),
+                    'categories', lang.t('store_tab_categories'), lang),
+                _buildTab('orders', lang.t('store_tab_orders'), lang),
               ],
             ),
           ),
@@ -150,7 +148,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                 });
               },
               decoration: InputDecoration(
-                hintText: isArabic ? 'بحث...' : 'Search...',
+                hintText: lang.t('store_search_hint'),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -165,29 +163,29 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
           // Content
           Expanded(
             child: _selectedTab == 'products'
-                ? _buildProductsList(isArabic)
+                ? _buildProductsList(lang)
                 : _selectedTab == 'categories'
-                    ? _buildCategoriesList(isArabic)
-                    : _buildOrdersList(isArabic),
+                    ? _buildCategoriesList(lang)
+                    : _buildOrdersList(lang),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _addNew(isArabic),
+        onPressed: () => _addNew(lang),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add),
         label: Text(
           _selectedTab == 'products'
-              ? (isArabic ? 'إضافة منتج' : 'Add Product')
+              ? (lang.t('store_add_product'))
               : _selectedTab == 'categories'
-                  ? (isArabic ? 'إضافة فئة' : 'Add Category')
-                  : (isArabic ? 'طلب جديد' : 'New Order'),
+                  ? (lang.t('store_add_category'))
+                  : (lang.t('store_new_order')),
         ),
       ),
     );
   }
 
-  Widget _buildTab(String tab, String label, bool isArabic) {
+  Widget _buildTab(String tab, String label, LanguageProvider lang) {
     final isSelected = _selectedTab == tab;
     return Expanded(
       child: GestureDetector(
@@ -201,7 +199,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isSelected ? AppColors.primary : Colors.transparent,
+                color: isSelected ? AppColors.primary : AppColors.background,
                 width: 2,
               ),
             ),
@@ -219,7 +217,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     );
   }
 
-  Widget _buildProductsList(bool isArabic) {
+  Widget _buildProductsList(LanguageProvider lang) {
     final filteredProducts = _products.where((product) {
       final query = _searchQuery.toLowerCase();
       return product['name'].toString().toLowerCase().contains(query) ||
@@ -270,7 +268,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                       ],
                     ),
                   ),
-                  _buildStatusBadge(product['status'], isArabic),
+                  _buildStatusBadge(product['status'], lang),
                 ],
               ),
               const SizedBox(height: 12),
@@ -280,12 +278,12 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildStatItem(
-                    isArabic ? 'السعر' : 'Price',
-                    '${product['price']} ${isArabic ? 'ر.س' : 'SAR'}',
+                    lang.t('store_price_label'),
+                    '${product['price']} ${lang.t('store_currency')}',
                     AppColors.primary,
                   ),
                   _buildStatItem(
-                    isArabic ? 'المخزون' : 'Stock',
+                    lang.t('store_stock_label'),
                     '${product['stock']}',
                     product['stock'] == 0
                         ? AppColors.error
@@ -294,7 +292,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                             : AppColors.success,
                   ),
                   _buildStatItem(
-                    isArabic ? 'المبيعات' : 'Sales',
+                    lang.t('store_sales_label'),
                     '${product['sales']}',
                     AppColors.textSecondary,
                   ),
@@ -306,17 +304,17 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () =>
-                          _openProductForm(isArabic, product: product),
+                          _openProductForm(lang, product: product),
                       icon: const Icon(Icons.edit, size: 18),
-                      label: Text(isArabic ? 'تعديل' : 'Edit'),
+                      label: Text(lang.t('store_edit')),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => _confirmDeleteProduct(isArabic, product),
+                      onPressed: () => _confirmDeleteProduct(lang, product),
                       icon: const Icon(Icons.delete, size: 18),
-                      label: Text(isArabic ? 'حذف' : 'Delete'),
+                      label: Text(lang.t('store_delete')),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.error,
                       ),
@@ -331,7 +329,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     );
   }
 
-  Widget _buildCategoriesList(bool isArabic) {
+  Widget _buildCategoriesList(LanguageProvider lang) {
     final filteredCategories = _categories.where((category) {
       final query = _searchQuery.toLowerCase();
       return category['name'].toString().toLowerCase().contains(query);
@@ -345,7 +343,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
         return CustomCard(
           margin: const EdgeInsets.only(bottom: 12),
           onTap: () {
-            _openCategoryDetails(isArabic, category);
+            _openCategoryDetails(lang, category);
           },
           child: Row(
             children: [
@@ -374,7 +372,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                       ),
                     ),
                     Text(
-                      '${category['count']} ${isArabic ? 'منتج' : 'products'}',
+                      '${category['count']} ${lang.t('store_products_label')}',
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
@@ -384,7 +382,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                 ),
               ),
               Icon(
-                isArabic ? Icons.chevron_left : Icons.chevron_right,
+                Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left : Icons.chevron_right,
                 color: AppColors.textDisabled,
               ),
             ],
@@ -394,7 +392,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     );
   }
 
-  Widget _buildOrdersList(bool isArabic) {
+  Widget _buildOrdersList(LanguageProvider lang) {
     final filteredOrders = _orders.where((order) {
       final query = _searchQuery.toLowerCase();
       return order['id'].toString().toLowerCase().contains(query) ||
@@ -410,7 +408,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
         return CustomCard(
           margin: const EdgeInsets.only(bottom: 12),
           onTap: () {
-            _openOrderDetails(isArabic, order);
+            _openOrderDetails(lang, order);
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,7 +423,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  _buildStatusBadge(order['status'] as String, isArabic),
+                  _buildStatusBadge(order['status'] as String, lang),
                 ],
               ),
               const SizedBox(height: 8),
@@ -448,7 +446,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                     ),
                   ),
                   Text(
-                    '${order['total']} ${isArabic ? 'ر.س' : 'SAR'}',
+                    '${order['total']} ${lang.t('store_currency')}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -464,34 +462,34 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     );
   }
 
-  Widget _buildStatusBadge(String status, bool isArabic) {
+  Widget _buildStatusBadge(String status, LanguageProvider lang) {
     Color color;
     String label;
 
     switch (status) {
       case 'active':
         color = AppColors.success;
-        label = isArabic ? 'نشط' : 'Active';
+        label = lang.t('store_status_active');
         break;
       case 'low_stock':
         color = AppColors.warning;
-        label = isArabic ? 'مخزون منخفض' : 'Low Stock';
+        label = lang.t('store_status_low_stock');
         break;
       case 'out_of_stock':
         color = AppColors.error;
-        label = isArabic ? 'نفذ' : 'Out of Stock';
+        label = lang.t('store_status_out_of_stock');
         break;
       case 'pending':
         color = AppColors.warning;
-        label = isArabic ? 'قيد الانتظار' : 'Pending';
+        label = lang.t('store_status_pending');
         break;
       case 'shipped':
         color = AppColors.primary;
-        label = isArabic ? 'تم الشحن' : 'Shipped';
+        label = lang.t('store_status_shipped');
         break;
       case 'delivered':
         color = AppColors.success;
-        label = isArabic ? 'تم التوصيل' : 'Delivered';
+        label = lang.t('store_status_delivered');
         break;
       default:
         color = AppColors.textSecondary;
@@ -539,19 +537,19 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     );
   }
 
-  void _addNew(bool isArabic) {
+  void _addNew(LanguageProvider lang) {
     if (_selectedTab == 'products') {
-      _openProductForm(isArabic);
+      _openProductForm(lang);
       return;
     }
     if (_selectedTab == 'categories') {
-      _openCategoryForm(isArabic);
+      _openCategoryForm(lang);
       return;
     }
-    _openOrderForm(isArabic);
+    _openOrderForm(lang);
   }
 
-  Future<void> _openProductForm(bool isArabic,
+  Future<void> _openProductForm(LanguageProvider lang,
       {Map<String, dynamic>? product}) async {
     final isEdit = product != null;
     final nameController =
@@ -568,8 +566,8 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(isEdit
-            ? (isArabic ? 'تعديل منتج' : 'Edit Product')
-            : (isArabic ? 'إضافة منتج' : 'Add Product')),
+            ? (lang.t('store_edit_product'))
+            : (lang.t('store_add_product'))),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -577,41 +575,48 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
               TextField(
                 controller: nameController,
                 decoration:
-                    InputDecoration(labelText: isArabic ? 'الاسم' : 'Name'),
+                    InputDecoration(labelText: lang.t('store_name_label')),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: categoryController,
                 decoration:
-                    InputDecoration(labelText: isArabic ? 'الفئة' : 'Category'),
+                    InputDecoration(labelText: lang.t('store_category_label')),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: priceController,
                 keyboardType: TextInputType.number,
                 decoration:
-                    InputDecoration(labelText: isArabic ? 'السعر' : 'Price'),
+                    InputDecoration(labelText: lang.t('store_price_label')),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: stockController,
                 keyboardType: TextInputType.number,
                 decoration:
-                    InputDecoration(labelText: isArabic ? 'المخزون' : 'Stock'),
+                    InputDecoration(labelText: lang.t('store_stock_label')),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: status,
-                items: const [
-                  DropdownMenuItem(value: 'active', child: Text('active')),
+                items: [
                   DropdownMenuItem(
-                      value: 'low_stock', child: Text('low_stock')),
+                    value: 'active',
+                    child: Text(lang.t('store_status_active')),
+                  ),
                   DropdownMenuItem(
-                      value: 'out_of_stock', child: Text('out_of_stock')),
+                    value: 'low_stock',
+                    child: Text(lang.t('store_status_low_stock')),
+                  ),
+                  DropdownMenuItem(
+                    value: 'out_of_stock',
+                    child: Text(lang.t('store_status_out_of_stock')),
+                  ),
                 ],
                 onChanged: (v) => status = v ?? status,
                 decoration:
-                    InputDecoration(labelText: isArabic ? 'الحالة' : 'Status'),
+                    InputDecoration(labelText: lang.t('store_status_label')),
               ),
             ],
           ),
@@ -619,7 +624,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(lang.t('cancel')),
           ),
           TextButton(
             onPressed: () {
@@ -660,7 +665,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
 
               Navigator.pop(context);
             },
-            child: Text(isArabic ? 'حفظ' : 'Save'),
+            child: Text(lang.t('save')),
           ),
         ],
       ),
@@ -668,23 +673,21 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
   }
 
   Future<void> _confirmDeleteProduct(
-      bool isArabic, Map<String, dynamic> product) async {
+      LanguageProvider lang, Map<String, dynamic> product) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'حذف المنتج' : 'Delete Product'),
+        title: Text(lang.t('store_delete_product')),
         content: Text(
-          isArabic
-              ? 'هل أنت متأكد من حذف "${product['name']}"؟'
-              : 'Are you sure you want to delete "${product['name']}"?',
+          lang.t('store_delete_product_confirm', args: {'name': product['name'].toString()}),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(isArabic ? 'إلغاء' : 'Cancel')),
+              child: Text(lang.t('cancel'))),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(isArabic ? 'حذف' : 'Delete'),
+            child: Text(lang.t('store_delete')),
           ),
         ],
       ),
@@ -697,7 +700,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     }
   }
 
-  Future<void> _openCategoryForm(bool isArabic,
+  Future<void> _openCategoryForm(LanguageProvider lang,
       {Map<String, dynamic>? category}) async {
     final isEdit = category != null;
     final nameController =
@@ -706,17 +709,17 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(isEdit
-            ? (isArabic ? 'تعديل فئة' : 'Edit Category')
-            : (isArabic ? 'إضافة فئة' : 'Add Category')),
+            ? (lang.t('store_edit_category'))
+            : (lang.t('store_add_category'))),
         content: TextField(
           controller: nameController,
           decoration: InputDecoration(
-              labelText: isArabic ? 'اسم الفئة' : 'Category name'),
+              labelText: lang.t('store_category_name')),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(isArabic ? 'إلغاء' : 'Cancel')),
+              child: Text(lang.t('cancel'))),
           TextButton(
             onPressed: () {
               final name = nameController.text.trim();
@@ -739,14 +742,14 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
               });
               Navigator.pop(context);
             },
-            child: Text(isArabic ? 'حفظ' : 'Save'),
+            child: Text(lang.t('save')),
           ),
         ],
       ),
     );
   }
 
-  void _openCategoryDetails(bool isArabic, Map<String, dynamic> category) {
+  void _openCategoryDetails(LanguageProvider lang, Map<String, dynamic> category) {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -764,7 +767,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${category['count']} ${isArabic ? 'منتج' : 'products'}',
+                '${category['count']} ${lang.t('store_products_label')}',
                 style: const TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
@@ -774,10 +777,10 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        _openCategoryForm(isArabic, category: category);
+                        _openCategoryForm(lang, category: category);
                       },
                       icon: const Icon(Icons.edit),
-                      label: Text(isArabic ? 'تعديل' : 'Edit'),
+                      label: Text(lang.t('store_edit')),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -793,7 +796,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.delete_outline),
-                      label: Text(isArabic ? 'حذف' : 'Delete'),
+                      label: Text(lang.t('store_delete')),
                       style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.error),
                     ),
@@ -807,7 +810,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     );
   }
 
-  Future<void> _openOrderForm(bool isArabic,
+  Future<void> _openOrderForm(LanguageProvider lang,
       {Map<String, dynamic>? order}) async {
     final isEdit = order != null;
     final idController = TextEditingController(
@@ -822,8 +825,8 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(isEdit
-            ? (isArabic ? 'تعديل طلب' : 'Edit Order')
-            : (isArabic ? 'طلب جديد' : 'New Order')),
+            ? (lang.t('store_edit_order'))
+            : (lang.t('store_new_order'))),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -831,33 +834,41 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
               TextField(
                 controller: idController,
                 decoration: InputDecoration(
-                    labelText: isArabic ? 'رقم الطلب' : 'Order ID'),
+                    labelText: lang.t('store_order_id')),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: customerController,
                 decoration: InputDecoration(
-                    labelText: isArabic ? 'العميل' : 'Customer'),
+                    labelText: lang.t('store_customer')),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: totalController,
                 keyboardType: TextInputType.number,
                 decoration:
-                    InputDecoration(labelText: isArabic ? 'الإجمالي' : 'Total'),
+                    InputDecoration(labelText: lang.t('store_total')),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: status,
-                items: const [
-                  DropdownMenuItem(value: 'pending', child: Text('pending')),
-                  DropdownMenuItem(value: 'shipped', child: Text('shipped')),
+                items: [
                   DropdownMenuItem(
-                      value: 'delivered', child: Text('delivered')),
+                    value: 'pending',
+                    child: Text(lang.t('store_status_pending')),
+                  ),
+                  DropdownMenuItem(
+                    value: 'shipped',
+                    child: Text(lang.t('store_status_shipped')),
+                  ),
+                  DropdownMenuItem(
+                    value: 'delivered',
+                    child: Text(lang.t('store_status_delivered')),
+                  ),
                 ],
                 onChanged: (v) => status = v ?? status,
                 decoration:
-                    InputDecoration(labelText: isArabic ? 'الحالة' : 'Status'),
+                    InputDecoration(labelText: lang.t('store_status_label')),
               ),
             ],
           ),
@@ -865,7 +876,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(isArabic ? 'إلغاء' : 'Cancel')),
+              child: Text(lang.t('cancel'))),
           TextButton(
             onPressed: () {
               final id = idController.text.trim();
@@ -899,14 +910,14 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
               });
               Navigator.pop(context);
             },
-            child: Text(isArabic ? 'حفظ' : 'Save'),
+            child: Text(lang.t('save')),
           ),
         ],
       ),
     );
   }
 
-  void _openOrderDetails(bool isArabic, Map<String, dynamic> order) {
+  void _openOrderDetails(LanguageProvider lang, Map<String, dynamic> order) {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -926,21 +937,21 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  _buildStatusBadge(order['status'] as String, isArabic),
+                  _buildStatusBadge(order['status'] as String, lang),
                 ],
               ),
               const SizedBox(height: 12),
-              Text('${isArabic ? 'العميل' : 'Customer'}: ${order['customer']}'),
+              Text('${lang.t('store_customer')}: ${order['customer']}'),
               const SizedBox(height: 6),
-              Text('${isArabic ? 'التاريخ' : 'Date'}: ${order['date']}'),
+              Text('${lang.t('store_date')}: ${order['date']}'),
               const SizedBox(height: 6),
-              Text('${isArabic ? 'العناصر' : 'Items'}: ${order['items'] ?? 0}'),
+              Text('${lang.t('store_items')}: ${order['items'] ?? 0}'),
               const SizedBox(height: 6),
               Text(
-                  '${isArabic ? 'العنوان' : 'Address'}: ${order['address'] ?? '—'}'),
+                  '${lang.t('store_address')}: ${order['address'] ?? '—'}'),
               const SizedBox(height: 12),
               Text(
-                '${isArabic ? 'الإجمالي' : 'Total'}: ${order['total']} ${isArabic ? 'ر.س' : 'SAR'}',
+                '${lang.t('store_total')}: ${order['total']} ${lang.t('store_currency')}',
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
@@ -951,10 +962,10 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        _openOrderForm(isArabic, order: order);
+                        _openOrderForm(lang, order: order);
                       },
                       icon: const Icon(Icons.edit),
-                      label: Text(isArabic ? 'تعديل' : 'Edit'),
+                      label: Text(lang.t('store_edit')),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -967,7 +978,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.delete_outline),
-                      label: Text(isArabic ? 'حذف' : 'Delete'),
+                      label: Text(lang.t('store_delete')),
                       style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.error),
                     ),

@@ -38,15 +38,15 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final adminProvider = context.watch<AdminProvider>();
-    final isArabic = languageProvider.isArabic;
+    final lang = languageProvider;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'سجلات التدقيق' : 'Audit Logs'),
+        title: Text(lang.t('admin_audit_logs_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFiltersBottomSheet(isArabic),
+            onPressed: () => _showFiltersBottomSheet(lang),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -103,7 +103,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                       });
                       _loadLogs();
                     },
-                    child: Text(isArabic ? 'مسح الكل' : 'Clear All'),
+                    child: Text(lang.t('admin_clear_all')),
                   ),
                 ],
               ),
@@ -128,7 +128,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadLogs,
-                              child: Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                              child: Text(lang.t('retry')),
                             ),
                           ],
                         ),
@@ -145,7 +145,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  isArabic ? 'لا توجد سجلات' : 'No logs found',
+                                  lang.t('admin_no_logs'),
                                   style: const TextStyle(
                                     fontSize: 18,
                                     color: AppColors.textSecondary,
@@ -161,7 +161,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                               itemCount: adminProvider.auditLogs.length,
                               itemBuilder: (context, index) {
                                 final log = adminProvider.auditLogs[index];
-                                return _buildLogCard(log, isArabic);
+                                return _buildLogCard(log, lang);
                               },
                             ),
                           ),
@@ -171,11 +171,11 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
     );
   }
 
-  Widget _buildLogCard(AuditLog log, bool isArabic) {
+  Widget _buildLogCard(AuditLog log, LanguageProvider lang) {
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => _showLogDetails(log, isArabic),
+        onTap: () => _showLogDetails(log, lang),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -203,7 +203,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _getActionDisplayName(log.action, isArabic),
+                      _getActionDisplayName(log.action, lang),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -212,7 +212,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                     const SizedBox(height: 4),
                     if (log.userName != null)
                       Text(
-                        '${isArabic ? 'المستخدم:' : 'User:'} ${log.userName}',
+                        '${lang.t('admin_user_label')}: ${log.userName}',
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -272,37 +272,37 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
     );
   }
 
-  void _showLogDetails(AuditLog log, bool isArabic) {
+  void _showLogDetails(AuditLog log, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(_getActionDisplayName(log.action, isArabic)),
+        title: Text(_getActionDisplayName(log.action, lang)),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildDetailRow(
-                isArabic ? 'المستخدم' : 'User',
-                log.userName ?? (isArabic ? 'النظام' : 'System'),
+                lang.t('admin_user_label'),
+                log.userName ?? (lang.t('admin_system_label')),
               ),
               _buildDetailRow(
-                isArabic ? 'الإجراء' : 'Action',
+                lang.t('admin_action_label'),
                 log.action,
               ),
               _buildDetailRow(
-                isArabic ? 'التوقيت' : 'Time',
+                lang.t('admin_time_label'),
                 _formatDateTime(log.createdAt),
               ),
               if (log.ipAddress != null)
                 _buildDetailRow(
-                  isArabic ? 'عنوان IP' : 'IP Address',
+                  lang.t('admin_ip_address'),
                   log.ipAddress!,
                 ),
               if (log.userAgent != null) ...[
                 const SizedBox(height: 8),
                 Text(
-                  isArabic ? 'معلومات المتصفح:' : 'User Agent:',
+                  lang.t('admin_user_agent'),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: AppColors.textSecondary,
@@ -317,7 +317,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
               if (log.metadata != null && log.metadata!.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Text(
-                  isArabic ? 'تفاصيل إضافية:' : 'Additional Details:',
+                  lang.t('admin_additional_details'),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: AppColors.textSecondary,
@@ -342,7 +342,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إغلاق' : 'Close'),
+            child: Text(lang.t('close')),
           ),
         ],
       ),
@@ -373,7 +373,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
     );
   }
 
-  void _showFiltersBottomSheet(bool isArabic) {
+  void _showFiltersBottomSheet(LanguageProvider lang) {
     showModalBottomSheet(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -384,7 +384,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isArabic ? 'الفلاتر' : 'Filters',
+                lang.t('admin_filters_title'),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -394,7 +394,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
 
               // Action filter
               Text(
-                isArabic ? 'الإجراء' : 'Action',
+                lang.t('admin_action_label'),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -411,27 +411,27 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                 items: [
                   DropdownMenuItem(
                     value: null,
-                    child: Text(isArabic ? 'الكل' : 'All'),
+                    child: Text(lang.t('admin_filter_all')),
                   ),
                   DropdownMenuItem(
                     value: 'user_created',
-                    child: Text(isArabic ? 'مستخدم جديد' : 'User Created'),
+                    child: Text(lang.t('admin_audit_user_created')),
                   ),
                   DropdownMenuItem(
                     value: 'user_updated',
-                    child: Text(isArabic ? 'تحديث مستخدم' : 'User Updated'),
+                    child: Text(lang.t('admin_audit_user_updated')),
                   ),
                   DropdownMenuItem(
                     value: 'user_deleted',
-                    child: Text(isArabic ? 'حذف مستخدم' : 'User Deleted'),
+                    child: Text(lang.t('admin_audit_user_deleted')),
                   ),
                   DropdownMenuItem(
                     value: 'coach_approved',
-                    child: Text(isArabic ? 'الموافقة على مدرب' : 'Coach Approved'),
+                    child: Text(lang.t('admin_audit_coach_approved')),
                   ),
                   DropdownMenuItem(
                     value: 'coach_suspended',
-                    child: Text(isArabic ? 'إيقاف مدرب' : 'Coach Suspended'),
+                    child: Text(lang.t('admin_audit_coach_suspended')),
                   ),
                 ],
                 onChanged: (value) {
@@ -445,7 +445,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
 
               // Date range
               Text(
-                isArabic ? 'النطاق الزمني' : 'Date Range',
+                lang.t('admin_date_range'),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -470,7 +470,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                 label: Text(
                   _dateRange != null
                       ? '${_dateRange!.start.day}/${_dateRange!.start.month} - ${_dateRange!.end.day}/${_dateRange!.end.month}'
-                      : (isArabic ? 'اختر النطاق' : 'Select Range'),
+                      : (lang.t('admin_select_range')),
                 ),
               ),
 
@@ -487,7 +487,7 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
                     });
                     _loadLogs();
                   },
-                  child: Text(isArabic ? 'تطبيق' : 'Apply'),
+                  child: Text(lang.t('admin_apply')),
                 ),
               ),
             ],
@@ -519,17 +519,17 @@ class _AdminAuditLogsScreenState extends State<AdminAuditLogsScreen> {
     return AppColors.primary;
   }
 
-  String _getActionDisplayName(String action, bool isArabic) {
-    final Map<String, Map<String, String>> names = {
-      'user_created': {'en': 'User Created', 'ar': 'مستخدم جديد'},
-      'user_updated': {'en': 'User Updated', 'ar': 'تحديث مستخدم'},
-      'user_deleted': {'en': 'User Deleted', 'ar': 'حذف مستخدم'},
-      'coach_approved': {'en': 'Coach Approved', 'ar': 'الموافقة على مدرب'},
-      'coach_suspended': {'en': 'Coach Suspended', 'ar': 'إيقاف مدرب'},
-      'user_login': {'en': 'User Login', 'ar': 'تسجيل دخول'},
-      'user_logout': {'en': 'User Logout', 'ar': 'تسجيل خروج'},
+  String _getActionDisplayName(String action, LanguageProvider lang) {
+    final map = <String, String>{
+      'user_created': 'admin_audit_user_created',
+      'user_updated': 'admin_audit_user_updated',
+      'user_deleted': 'admin_audit_user_deleted',
+      'coach_approved': 'admin_audit_coach_approved',
+      'coach_suspended': 'admin_audit_coach_suspended',
+      'user_login': 'admin_audit_user_login',
+      'user_logout': 'admin_audit_user_logout',
     };
-
-    return names[action]?[isArabic ? 'ar' : 'en'] ?? action;
+    final key = map[action];
+    return key != null ? lang.t(key) : action;
   }
 }

@@ -121,10 +121,9 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
                       itemBuilder: (context, index) {
                         final message = messagingProvider.messages[index];
                         final isCoach = message.senderId != widget.clientId;
-                        final timestamp = DateFormat(
-                          'MMM d, HH:mm',
-                          isArabic ? 'ar' : 'en',
-                        ).format(message.createdAt);
+                        final timestamp =
+                            DateFormat('MMM d • HH:mm', isArabic ? 'ar' : 'en')
+                                .format(message.createdAt);
                         return Align(
                           alignment: isCoach
                               ? Alignment.centerRight
@@ -136,7 +135,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
                             child: Card(
                               color: isCoach
                                   ? AppColors.primary.withValues(alpha: 0.9)
-                                  : Colors.white,
+                                  : AppColors.background,
                               elevation: 2,
                               margin: const EdgeInsets.only(bottom: 12),
                               child: Padding(
@@ -148,7 +147,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
                                       message.content,
                                       style: TextStyle(
                                         color: isCoach
-                                            ? Colors.white
+                                            ? AppColors.textWhite
                                             : AppColors.textPrimary,
                                       ),
                                     ),
@@ -160,7 +159,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
                                         style: TextStyle(
                                           fontSize: 10,
                                           color: isCoach
-                                              ? Colors.white
+                                              ? AppColors.textWhite
                                                   .withValues(alpha: 0.7)
                                               : AppColors.textSecondary,
                                         ),
@@ -186,7 +185,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.chat_bubble_outline,
             size: 64,
             color: AppColors.textDisabled,
@@ -238,7 +237,7 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
                       )
                     : Icon(
                         isArabic ? Icons.send : Icons.send_rounded,
-                        color: Colors.white,
+                        color: AppColors.textWhite,
                       ),
                 onPressed: canSend ? _sendMessage : null,
               ),

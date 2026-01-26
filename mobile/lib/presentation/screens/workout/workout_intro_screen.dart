@@ -86,7 +86,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(40),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
+                            color: AppColors.textPrimary.withValues(alpha: 0.35),
                             blurRadius: 12,
                             offset: const Offset(0, 6),
                           ),
@@ -94,7 +94,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                       ),
                       child: const Icon(
                         Icons.fitness_center,
-                        color: Colors.white,
+                        color: AppColors.textWhite,
                         size: 40,
                       ),
                     ),
@@ -106,7 +106,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                     initialScale: 0.9,
                     child: Text(
                       languageProvider.t('workouts_intro_title'),
-                      style: AppTextStyles.h2.copyWith(color: Colors.white),
+                      style: AppTextStyles.h2.copyWith(color: AppColors.textWhite),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -117,7 +117,9 @@ class WorkoutIntroScreen extends StatelessWidget {
                     initialScale: 0.92,
                     child: Text(
                       languageProvider.t('workouts_intro_subtitle'),
-                      style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.7),
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -155,7 +157,7 @@ class WorkoutIntroScreen extends StatelessWidget {
                         onPressed: onGetStarted,
                         icon: Icon(
                           isArabic ? Icons.arrow_back : Icons.arrow_forward,
-                          color: Colors.white,
+                          color: AppColors.textWhite,
                         ),
                         label: Text(languageProvider.t('workouts_get_started')),
                         style: ElevatedButton.styleFrom(
@@ -173,7 +175,9 @@ class WorkoutIntroScreen extends StatelessWidget {
                     initialScale: 0.95,
                     child: Text(
                       languageProvider.t('workouts_intro_note'),
-                      style: AppTextStyles.small.copyWith(color: Colors.white60),
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.6),
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -207,9 +211,9 @@ class _FeatureCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: AppColors.textWhite.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.textWhite.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,16 +228,16 @@ class _FeatureCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.textWhite,
                         ),
                         textAlign: TextAlign.right,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         description,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white70,
+                          color: AppColors.textWhite.withValues(alpha: 0.7),
                           height: 1.4,
                         ),
                         textAlign: TextAlign.right,
@@ -269,18 +273,18 @@ class _FeatureCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.textWhite,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         description,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white70,
+                          color: AppColors.textWhite.withValues(alpha: 0.7),
                           height: 1.4,
                         ),
                       ),

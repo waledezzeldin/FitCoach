@@ -314,7 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: _buildSocialButton(
                           icon: Icons.apple,
                           label: 'Apple',
-                          color: Colors.black,
+                          color: AppColors.textPrimary,
                           onPressed: () => _socialLogin('apple', isArabic),
                         ),
                       ),

@@ -51,13 +51,11 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
-    final authProvider = context.watch<AuthProvider>();
     final coachProvider = context.watch<CoachProvider>();
     final isArabic = languageProvider.isArabic;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'العملاء' : 'Clients'),
+        title: Text(languageProvider.t('coach_clients_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -76,7 +74,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: isArabic ? 'بحث عن عميل...' : 'Search clients...',
+                    hintText: languageProvider.t('coach_clients_search_hint'),
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -110,7 +108,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                       child: DropdownButtonFormField<String?>(
                         value: _statusFilter,
                         decoration: InputDecoration(
-                          labelText: isArabic ? 'الحالة' : 'Status',
+                          labelText: languageProvider.t('coach_clients_status_label'),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -118,15 +116,15 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                         items: [
                           DropdownMenuItem(
                             value: null,
-                            child: Text(isArabic ? 'الكل' : 'All'),
+                            child: Text(languageProvider.t('coach_clients_status_all')),
                           ),
                           DropdownMenuItem(
                             value: 'active',
-                            child: Text(isArabic ? 'نشط' : 'Active'),
+                            child: Text(languageProvider.t('coach_clients_status_active')),
                           ),
                           DropdownMenuItem(
                             value: 'inactive',
-                            child: Text(isArabic ? 'غير نشط' : 'Inactive'),
+                            child: Text(languageProvider.t('coach_clients_status_inactive')),
                           ),
                         ],
                         onChanged: (value) {
@@ -167,7 +165,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                             ElevatedButton(
                               onPressed: _loadClients,
                               child:
-                                  Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                                  Text(languageProvider.t('retry')),
                             ),
                           ],
                         ),
@@ -184,9 +182,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  isArabic
-                                      ? 'لا يوجد عملاء'
-                                      : 'No clients found',
+                                  languageProvider.t('coach_clients_empty'),
                                   style: const TextStyle(
                                     fontSize: 18,
                                     color: AppColors.textSecondary,
@@ -204,7 +200,10 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                               itemBuilder: (context, index) {
                                 final client = coachProvider.clients[index];
                                 return _buildClientCard(
-                                    client, languageProvider);
+                                  client,
+                                  languageProvider,
+                                  isArabic,
+                                );
                               },
                             ),
                           ),
@@ -214,8 +213,11 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
     );
   }
 
-  Widget _buildClientCard(client, LanguageProvider languageProvider) {
-    final isArabic = languageProvider.isArabic;
+  Widget _buildClientCard(
+    client,
+    LanguageProvider languageProvider,
+    bool isArabic,
+  ) {
     return CustomCard(
       child: InkWell(
         onTap: () {
@@ -288,7 +290,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                                 client.subscriptionTier,
                                 style: const TextStyle(
                                   fontSize: 10,
-                                  color: Colors.white,
+                                  color: AppColors.textWhite,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -307,7 +309,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                                 client.statusText,
                                 style: const TextStyle(
                                   fontSize: 10,
-                                  color: Colors.white,
+                                  color: AppColors.textWhite,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -329,19 +331,19 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                             color: _getScoreColor(client.fitnessScore!),
                           ),
                           child: Center(
-                            child: Text(
-                              '${client.fitnessScore}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              child: Text(
+                                '${client.fitnessScore}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textWhite,
+                                ),
                               ),
                             ),
-                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          isArabic ? 'النتيجة' : 'Score',
+                          languageProvider.t('coach_clients_score_label'),
                           style: const TextStyle(
                             fontSize: 10,
                             color: AppColors.textSecondary,
@@ -363,7 +365,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.chat_bubble_outline),
-                      label: Text(isArabic ? 'مراسلة' : 'Message'),
+                      label: Text(languageProvider.t('coach_message')),
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -380,7 +382,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.video_call),
-                      label: Text(isArabic ? 'جدولة مكالمة' : 'Schedule call'),
+                      label: Text(languageProvider.t('coach_schedule_call')),
                       onPressed: () {
                         showCoachScheduleSessionSheet(
                           context,
@@ -402,7 +404,7 @@ class _CoachClientsScreenState extends State<CoachClientsScreen> {
   Color _getTierColor(String tier) {
     switch (tier.toLowerCase()) {
       case 'smart premium':
-        return const Color(0xFFFFD700);
+        return AppColors.accent;
       case 'premium':
         return AppColors.primary;
       case 'freemium':

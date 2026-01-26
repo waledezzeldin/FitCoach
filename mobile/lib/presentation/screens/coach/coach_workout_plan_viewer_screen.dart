@@ -41,7 +41,7 @@ class _CoachWorkoutPlanViewerScreenState
     final coachId = auth.user?.id;
     if (coachId == null) {
       setState(() {
-        _error = 'Missing coach information';
+        _error = context.read<LanguageProvider>().t('coach_missing_coach_info');
         _isLoading = false;
       });
       return;
@@ -61,7 +61,9 @@ class _CoachWorkoutPlanViewerScreenState
     setState(() {
       _plan = plan;
       _isLoading = false;
-      _error = plan == null ? 'No workout plan assigned' : null;
+      _error = plan == null
+          ? context.read<LanguageProvider>().t('coach_workout_plan_missing')
+          : null;
     });
   }
 
@@ -82,16 +84,15 @@ class _CoachWorkoutPlanViewerScreenState
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
-    final isArabic = lang.isArabic;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'خطة التمرين' : 'Workout Plan'),
+        title: Text(lang.t('coach_workout_plan_title')),
         actions: [
           if (_plan != null)
             IconButton(
               icon: const Icon(Icons.edit),
-              tooltip: isArabic ? 'تعديل الخطة' : 'Edit plan',
+              tooltip: lang.t('coach_edit_plan'),
               onPressed: () => _openEditor(),
             ),
         ],
@@ -99,7 +100,7 @@ class _CoachWorkoutPlanViewerScreenState
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _plan == null
-              ? _buildEmptyState(isArabic)
+              ? _buildEmptyState(lang)
               : RefreshIndicator(
                   onRefresh: _loadPlan,
                   child: ListView(
@@ -126,7 +127,7 @@ class _CoachWorkoutPlanViewerScreenState
     final dateFormat = DateFormat('MMM d', isArabic ? 'ar' : 'en');
     final durationLabel = (plan.startDate != null && plan.endDate != null)
         ? '${dateFormat.format(plan.startDate!)} - ${dateFormat.format(plan.endDate!)}'
-        : (isArabic ? 'غير محدد' : 'Not specified');
+        : lang.t('coach_plan_not_specified');
 
     return Card(
       child: Padding(
@@ -135,7 +136,7 @@ class _CoachWorkoutPlanViewerScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              plan.name ?? (isArabic ? 'خطة بدون اسم' : 'Untitled plan'),
+              plan.name ?? lang.t('coach_plan_untitled'),
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -152,23 +153,23 @@ class _CoachWorkoutPlanViewerScreenState
             Row(
               children: [
                 _buildStatChip(
-                  label: isArabic ? 'الأيام' : 'Days',
+                  label: lang.t('coach_plan_days'),
                   value: '$totalDays',
                 ),
                 const SizedBox(width: 8),
                 _buildStatChip(
-                  label: isArabic ? 'التمارين' : 'Exercises',
+                  label: lang.t('coach_plan_exercises'),
                   value: '$totalExercises',
                 ),
                 const SizedBox(width: 8),
                 _buildStatChip(
-                  label: isArabic ? 'الفترة' : 'Duration',
+                  label: lang.t('coach_plan_duration'),
                   value: durationLabel,
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Text(isArabic ? 'نسبة الإنجاز' : 'Progress'),
+            Text(lang.t('coach_progress_label')),
             const SizedBox(height: 6),
             LinearProgressIndicator(
               value: progress,
@@ -183,7 +184,6 @@ class _CoachWorkoutPlanViewerScreenState
   }
 
   Iterable<Widget> _buildDayCards(LanguageProvider lang, WorkoutPlan plan) {
-    final isArabic = lang.isArabic;
     final days = plan.days ?? [];
 
     if (days.isEmpty) {
@@ -193,7 +193,7 @@ class _CoachWorkoutPlanViewerScreenState
             padding: const EdgeInsets.all(24),
             child: Center(
               child: Text(
-                isArabic ? 'لا توجد أيام مضافة بعد.' : 'No workout days yet.',
+                lang.t('coach_no_workout_days'),
                 style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
@@ -209,7 +209,7 @@ class _CoachWorkoutPlanViewerScreenState
           initiallyExpanded: day.dayNumber == 1,
           title: Text(day.dayName),
           subtitle: Text(
-              '${day.exercises.length} ${isArabic ? 'تمارين' : 'exercises'}'),
+              '${day.exercises.length} ${lang.t('coach_exercises_label')}'),
           children: day.exercises.map((exercise) {
             final completed = exercise.isCompleted;
             return ListTile(
@@ -246,11 +246,8 @@ class _CoachWorkoutPlanViewerScreenState
     );
   }
 
-  Widget _buildEmptyState(bool isArabic) {
-    final message = _error ??
-        (isArabic
-            ? 'لا توجد خطة تمرين معينة لهذا العميل.'
-            : 'No workout plan assigned for this client.');
+  Widget _buildEmptyState(LanguageProvider lang) {
+    final message = _error ?? lang.t('coach_no_workout_plan_client');
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),

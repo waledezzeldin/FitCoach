@@ -358,7 +358,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     )
                   else
                     Center(
-                      child: Text(languageProvider.t('workout_select_day')),
+                      child: Text(
+                        languageProvider.t('workout_select_day'),
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
                     ),
                   const SizedBox(height: 16),
                   _buildWorkoutActionRow(
@@ -401,7 +404,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         children: [
           Text(
             lang.t('workouts_title'),
-            style: AppTextStyles.small.copyWith(color: Colors.white70),
+            style: AppTextStyles.small.copyWith(
+              color: AppColors.textWhite.withValues(alpha: 0.7),
+            ),
           ),
           const SizedBox(height: 6),
           Row(
@@ -412,14 +417,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   children: [
                     Text(
                       planTitle,
-                      style: AppTextStyles.h3.copyWith(color: Colors.white),
+                      style: AppTextStyles.h3.copyWith(color: AppColors.textWhite),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${lang.t('workout_week', args: {'number': '1'})}, '
                       '${lang.t('workout_day_label', args: {'number': '$dayNumber'})}'
                       '${durationLabel.isEmpty ? '' : ' \u2022 $durationLabel'}',
-                      style: AppTextStyles.small.copyWith(color: Colors.white70),
+                      style: AppTextStyles.small.copyWith(
+                        color: AppColors.textWhite.withValues(alpha: 0.7),
+                      ),
                     ),
                   ],
                 ),
@@ -427,16 +434,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: AppColors.textWhite.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today, size: 14, color: Colors.white),
+                    const Icon(Icons.calendar_today, size: 14, color: AppColors.textWhite),
                     const SizedBox(width: 6),
                     Text(
                       lang.t('today'),
-                      style: AppTextStyles.small.copyWith(color: Colors.white),
+                      style: AppTextStyles.small.copyWith(color: AppColors.textWhite),
                     ),
                   ],
                 ),
@@ -449,8 +456,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: Colors.white.withValues(alpha: 0.2),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              backgroundColor: AppColors.textWhite.withValues(alpha: 0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.textWhite),
             ),
           ),
           const SizedBox(height: 8),
@@ -459,7 +466,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               'completed': '$completedExercises',
               'total': '$totalExercises',
             }),
-            style: AppTextStyles.small.copyWith(color: Colors.white70),
+            style: AppTextStyles.small.copyWith(
+              color: AppColors.textWhite.withValues(alpha: 0.7),
+            ),
           ),
         ],
       ),
@@ -493,8 +502,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
     return CustomCard(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-      color: const Color(0xFFF5F7FF),
-      border: Border.all(color: const Color(0xFFBBD2FF)),
+      color: AppColors.primary.withValues(alpha: 0.08),
+      border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -508,7 +517,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                       lang.t('intake_banner_title'),
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1939B7),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -516,13 +525,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                       lang.t('intake_banner_desc'),
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF2D4EB8),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.info_outline, color: Color(0xFF2D4EB8)),
+              const Icon(Icons.info_outline, color: AppColors.textSecondary),
             ],
           ),
           const SizedBox(height: 12),
@@ -531,12 +540,18 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               Expanded(
                 child: Text(
                   lang.t('intake_banner_progress'),
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF2D4EB8)),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
               Text(
                 '$percent%',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF2D4EB8)),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -546,8 +561,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: const Color(0xFFBBD2FF),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2D4EB8)),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ),
           const SizedBox(height: 6),
@@ -556,7 +571,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             child: Text(
               lang.t('intake_banner_benefits'),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF2D4EB8)),
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -604,9 +622,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           Row(
             children: [
               Expanded(
-                  child: Text(
-                    planTitle,
-                  style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w700),
+                child: Text(
+                  planTitle,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               Container(
@@ -659,7 +680,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         const SizedBox(height: 6),
         Text(
           value,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
@@ -830,7 +855,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       padding: EdgeInsets.zero,
       color: isCompleted
           ? AppColors.success.withValues(alpha: 0.06)
-          : Colors.white,
+          : AppColors.background,
       border: isCompleted
           ? Border.all(color: AppColors.success.withValues(alpha: 0.4))
           : (hasConflict ? Border.all(color: AppColors.warning) : null),

@@ -45,11 +45,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final adminProvider = context.watch<AdminProvider>();
-    final isArabic = languageProvider.isArabic;
+    final lang = languageProvider;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'المستخدمون' : 'Users'),
+        title: Text(lang.t('admin_users_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -68,7 +68,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: isArabic ? 'بحث...' : 'Search...',
+                    hintText: lang.t('admin_users_search_hint'),
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -101,7 +101,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       child: DropdownButtonFormField<String?>(
                         value: _tierFilter,
                         decoration: InputDecoration(
-                          labelText: isArabic ? 'الباقة' : 'Tier',
+                          labelText: lang.t('admin_users_filter_tier'),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -109,19 +109,19 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         items: [
                           DropdownMenuItem(
                             value: null,
-                            child: Text(isArabic ? 'الكل' : 'All'),
+                            child: Text(lang.t('admin_filter_all')),
                           ),
                           DropdownMenuItem(
                             value: 'freemium',
-                            child: Text(isArabic ? 'مجاني' : 'Freemium'),
+                            child: Text(lang.t('admin_tier_freemium')),
                           ),
                           DropdownMenuItem(
                             value: 'premium',
-                            child: Text(isArabic ? 'بريميوم' : 'Premium'),
+                            child: Text(lang.t('admin_tier_premium')),
                           ),
                           DropdownMenuItem(
                             value: 'smart_premium',
-                            child: Text(isArabic ? 'سمارت بريميوم' : 'Smart Premium'),
+                            child: Text(lang.t('admin_tier_smart_premium')),
                           ),
                         ],
                         onChanged: (value) {
@@ -137,7 +137,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       child: DropdownButtonFormField<String?>(
                         value: _statusFilter,
                         decoration: InputDecoration(
-                          labelText: isArabic ? 'الحالة' : 'Status',
+                          labelText: lang.t('admin_users_filter_status'),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -145,15 +145,15 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         items: [
                           DropdownMenuItem(
                             value: null,
-                            child: Text(isArabic ? 'الكل' : 'All'),
+                            child: Text(lang.t('admin_filter_all')),
                           ),
                           DropdownMenuItem(
                             value: 'active',
-                            child: Text(isArabic ? 'نشط' : 'Active'),
+                            child: Text(lang.t('admin_status_active')),
                           ),
                           DropdownMenuItem(
                             value: 'inactive',
-                            child: Text(isArabic ? 'غير نشط' : 'Inactive'),
+                            child: Text(lang.t('admin_status_inactive')),
                           ),
                         ],
                         onChanged: (value) {
@@ -189,7 +189,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadUsers,
-                              child: Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                              child: Text(lang.t('retry')),
                             ),
                           ],
                         ),
@@ -206,7 +206,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  isArabic ? 'لا يوجد مستخدمون' : 'No users found',
+                                  lang.t('admin_users_empty'),
                                   style: const TextStyle(
                                     fontSize: 18,
                                     color: AppColors.textSecondary,
@@ -222,7 +222,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               itemCount: adminProvider.users.length,
                               itemBuilder: (context, index) {
                                 final user = adminProvider.users[index];
-                                return _buildUserCard(user, isArabic);
+                                return _buildUserCard(user, lang);
                               },
                             ),
                           ),
@@ -232,11 +232,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  Widget _buildUserCard(AdminUser user, bool isArabic) {
+  Widget _buildUserCard(AdminUser user, LanguageProvider lang) {
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => _showUserDetailsDialog(user, isArabic),
+        onTap: () => _showUserDetailsDialog(user, lang),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -300,7 +300,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             user.subscriptionTier,
                             style: const TextStyle(
                               fontSize: 10,
-                              color: Colors.white,
+                              color: AppColors.textWhite,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -320,11 +320,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           ),
                           child: Text(
                             user.isActive
-                                ? (isArabic ? 'نشط' : 'Active')
-                                : (isArabic ? 'غير نشط' : 'Inactive'),
+                                ? (lang.t('admin_status_active'))
+                                : (lang.t('admin_status_inactive')),
                             style: const TextStyle(
                               fontSize: 10,
-                              color: Colors.white,
+                              color: AppColors.textWhite,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -334,7 +334,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '${isArabic ? 'المدرب:' : 'Coach:'} ${user.coachName}',
+                              '${lang.t('admin_coach_prefix')} ${user.coachName}',
                               style: const TextStyle(
                                 fontSize: 10,
                                 color: AppColors.textSecondary,
@@ -355,13 +355,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 onSelected: (value) {
                   switch (value) {
                     case 'edit':
-                      _showEditUserDialog(user, isArabic);
+                      _showEditUserDialog(user, lang);
                       break;
                     case 'suspend':
-                      _showSuspendUserDialog(user, isArabic);
+                      _showSuspendUserDialog(user, lang);
                       break;
                     case 'delete':
-                      _showDeleteUserDialog(user, isArabic);
+                      _showDeleteUserDialog(user, lang);
                       break;
                   }
                 },
@@ -372,7 +372,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       children: [
                         const Icon(Icons.edit, size: 18),
                         const SizedBox(width: 8),
-                        Text(isArabic ? 'تعديل' : 'Edit'),
+                        Text(lang.t('admin_action_edit')),
                       ],
                     ),
                   ),
@@ -382,7 +382,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       children: [
                         const Icon(Icons.block, size: 18),
                         const SizedBox(width: 8),
-                        Text(isArabic ? 'إيقاف' : 'Suspend'),
+                        Text(lang.t('admin_action_suspend')),
                       ],
                     ),
                   ),
@@ -393,7 +393,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         const Icon(Icons.delete, size: 18, color: AppColors.error),
                         const SizedBox(width: 8),
                         Text(
-                          isArabic ? 'حذف' : 'Delete',
+                          lang.t('admin_action_delete'),
                           style: const TextStyle(color: AppColors.error),
                         ),
                       ],
@@ -408,7 +408,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  void _showUserDetailsDialog(AdminUser user, bool isArabic) {
+  void _showUserDetailsDialog(AdminUser user, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -418,24 +418,24 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow(isArabic ? 'البريد الإلكتروني' : 'Email', user.email ?? 'N/A'),
-              _buildDetailRow(isArabic ? 'الهاتف' : 'Phone', user.phoneNumber ?? 'N/A'),
-              _buildDetailRow(isArabic ? 'الباقة' : 'Tier', user.subscriptionTier),
+              _buildDetailRow(lang.t('email'), user.email ?? lang.t('not_available')),
+              _buildDetailRow(lang.t('admin_phone_label'), user.phoneNumber ?? lang.t('not_available')),
+              _buildDetailRow(lang.t('admin_users_filter_tier'), user.subscriptionTier),
               _buildDetailRow(
-                isArabic ? 'الحالة' : 'Status',
-                user.isActive ? (isArabic ? 'نشط' : 'Active') : (isArabic ? 'غير نشط' : 'Inactive'),
+                lang.t('admin_users_filter_status'),
+                user.isActive ? (lang.t('admin_status_active')) : (lang.t('admin_status_inactive')),
               ),
-              _buildDetailRow(isArabic ? 'المدرب' : 'Coach', user.coachName ?? (isArabic ? 'غير معين' : 'Not assigned')),
-              _buildDetailRow(isArabic ? 'تاريخ التسجيل' : 'Created', _formatDate(user.createdAt)),
+              _buildDetailRow(lang.t('admin_coach_label'), user.coachName ?? (lang.t('admin_not_assigned'))),
+              _buildDetailRow(lang.t('admin_created_label'), _formatDate(user.createdAt)),
               if (user.lastLogin != null)
-                _buildDetailRow(isArabic ? 'آخر تسجيل دخول' : 'Last Login', _formatDate(user.lastLogin!)),
+                _buildDetailRow(lang.t('admin_last_login_label'), _formatDate(user.lastLogin!)),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إغلاق' : 'Close'),
+            child: Text(lang.t('close')),
           ),
         ],
       ),
@@ -466,7 +466,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  void _showEditUserDialog(AdminUser user, bool isArabic) {
+  void _showEditUserDialog(AdminUser user, LanguageProvider lang) {
     final adminProvider = context.read<AdminProvider>();
     if (adminProvider.coaches.isEmpty) {
       adminProvider.loadCoaches();
@@ -481,7 +481,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(isArabic ? 'تعديل المستخدم' : 'Edit User'),
+          title: Text(lang.t('admin_edit_user_title')),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -489,7 +489,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'الاسم' : 'Name',
+                    labelText: lang.t('admin_name_label'),
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -497,7 +497,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'البريد الإلكتروني' : 'Email',
+                    labelText: lang.t('email'),
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -505,14 +505,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 DropdownButtonFormField<String>(
                   value: selectedTier,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'الباقة' : 'Tier',
+                    labelText: lang.t('admin_users_filter_tier'),
                     border: const OutlineInputBorder(),
                   ),
                   items: const ['Freemium', 'Premium', 'Smart Premium']
                       .map(
                         (tier) => DropdownMenuItem(
                           value: tier,
-                          child: Text(_formatTierLabel(tier, isArabic)),
+                          child: Text(_formatTierLabel(tier, lang)),
                         ),
                       )
                       .toList(),
@@ -526,13 +526,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 DropdownButtonFormField<String?>(
                   value: selectedCoachId,
                   decoration: InputDecoration(
-                    labelText: isArabic ? 'OU,U.O_OñO"' : 'Coach',
+                    labelText: lang.t('admin_coach_label'),
                     border: const OutlineInputBorder(),
                   ),
                   items: [
                     DropdownMenuItem(
                       value: null,
-                      child: Text(isArabic ? 'O§USOñ U.O1USU+' : 'Not assigned'),
+                      child: Text(lang.t('admin_not_assigned')),
                     ),
                     ...context
                         .watch<AdminProvider>()
@@ -552,7 +552,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: Text(isArabic ? 'نشط' : 'Active'),
+                  title: Text(lang.t('admin_status_active')),
                   value: isActive,
                   onChanged: (value) {
                     setState(() {
@@ -566,7 +566,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+              child: Text(lang.t('cancel')),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -585,14 +585,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(isArabic ? 'تم التحديث بنجاح' : 'Updated successfully'),
+                      content: Text(lang.t('admin_user_updated_success')),
                       backgroundColor: AppColors.success,
                     ),
                   );
                   _loadUsers();
                 }
               },
-              child: Text(isArabic ? 'حفظ' : 'Save'),
+              child: Text(lang.t('save')),
             ),
           ],
         ),
@@ -600,26 +600,24 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  void _showSuspendUserDialog(AdminUser user, bool isArabic) {
+  void _showSuspendUserDialog(AdminUser user, LanguageProvider lang) {
     final reasonController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'إيقاف المستخدم' : 'Suspend User'),
+        title: Text(lang.t('admin_suspend_user_title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              isArabic
-                  ? 'هل أنت متأكد من إيقاف ${user.fullName}؟'
-                  : 'Are you sure you want to suspend ${user.fullName}?',
+              lang.t('admin_suspend_prompt', args: {'name': user.fullName}),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: reasonController,
               decoration: InputDecoration(
-                labelText: isArabic ? 'السبب' : 'Reason',
+                labelText: lang.t('admin_reason_label'),
                 border: const OutlineInputBorder(),
               ),
               maxLines: 3,
@@ -629,14 +627,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(lang.t('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
               if (reasonController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(isArabic ? 'الرجاء إدخال السبب' : 'Please enter a reason'),
+                    content: Text(lang.t('admin_suspend_reason_required')),
                     backgroundColor: AppColors.error,
                   ),
                 );
@@ -651,7 +649,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(isArabic ? 'تم الإيقاف بنجاح' : 'Suspended successfully'),
+                    content: Text(lang.t('admin_user_suspended_success')),
                     backgroundColor: AppColors.success,
                   ),
                 );
@@ -659,27 +657,25 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: Text(isArabic ? 'إيقاف' : 'Suspend'),
+            child: Text(lang.t('admin_action_suspend')),
           ),
         ],
       ),
     );
   }
 
-  void _showDeleteUserDialog(AdminUser user, bool isArabic) {
+  void _showDeleteUserDialog(AdminUser user, LanguageProvider lang) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isArabic ? 'حذف المستخدم' : 'Delete User'),
+        title: Text(lang.t('admin_delete_user_title')),
         content: Text(
-          isArabic
-              ? 'هل أنت متأكد من حذف ${user.fullName}؟ هذا الإجراء لا يمكن التراجع عنه.'
-              : 'Are you sure you want to delete ${user.fullName}? This action cannot be undone.',
+          lang.t('admin_delete_prompt', args: {'name': user.fullName}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+            child: Text(lang.t('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -691,7 +687,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(isArabic ? 'تم الحذف بنجاح' : 'Deleted successfully'),
+                    content: Text(lang.t('admin_user_deleted_success')),
                     backgroundColor: AppColors.success,
                   ),
                 );
@@ -699,7 +695,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: Text(isArabic ? 'حذف' : 'Delete'),
+            child: Text(lang.t('admin_action_delete')),
           ),
         ],
       ),
@@ -714,7 +710,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     switch (tier.toLowerCase()) {
       case 'smart premium':
       case 'smart_premium':
-        return const Color(0xFFFFD700);
+        return AppColors.accent;
       case 'premium':
         return AppColors.primary;
       case 'freemium':
@@ -735,14 +731,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     }
   }
 
-  String _formatTierLabel(String tier, bool isArabic) {
+  String _formatTierLabel(String tier, LanguageProvider lang) {
     switch (tier.toLowerCase()) {
       case 'premium':
-        return isArabic ? 'بريميوم' : 'Premium';
+        return lang.t('admin_tier_premium');
       case 'smart premium':
-        return isArabic ? 'سمارت بريميوم' : 'Smart Premium';
+        return lang.t('admin_tier_smart_premium');
       default:
-        return isArabic ? 'مجاني' : 'Freemium';
+        return lang.t('admin_tier_freemium');
     }
   }
 }

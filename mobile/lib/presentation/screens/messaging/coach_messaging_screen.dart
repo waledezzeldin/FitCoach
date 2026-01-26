@@ -57,7 +57,9 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     _loadIntroFlag();
     final provider = context.read<MessagingProvider>();
     final isArabic = context.read<LanguageProvider>().isArabic;
-    provider.loadConversations(isArabic: isArabic);
+    final role = context.read<AuthProvider>().user?.role ?? 'user';
+    final isCoach = role == 'coach';
+    provider.loadConversations(isArabic: isArabic, isCoach: isCoach);
     provider.connectSocket();
     unawaited(_loadUserAppointments());
     unawaited(_ensureCoachClients());
@@ -101,6 +103,9 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
 
   Future<void> _ensureCoachClients() async {
     final authProvider = context.read<AuthProvider>();
+    if (authProvider.user?.role != 'coach') {
+      return;
+    }
     final coachProvider = context.read<CoachProvider>();
     final coachId = authProvider.user?.id;
     if (coachId == null || coachProvider.clients.isNotEmpty) {
@@ -134,6 +139,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
     final canAttach = tier == 'Smart Premium';
     final isArabic = languageProvider.isArabic;
+    final isCoach = (authProvider.user?.role ?? 'user') == 'coach';
 
     if (!_introLoaded) {
       return const Scaffold(
@@ -311,6 +317,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                             quotaProvider,
                             canAttach,
                             coachProvider,
+                            authProvider,
+                            isCoach,
                           ),
                           _buildSessionsTab(
                             languageProvider,
@@ -336,9 +344,16 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     QuotaProvider quotaProvider,
     bool canAttach,
     CoachProvider coachProvider,
+    AuthProvider authProvider,
+    bool isCoach,
   ) {
-    final filteredConversations =
-        _filteredConversations(messagingProvider, coachProvider);
+    final filteredConversations = _filteredConversations(
+      messagingProvider,
+      coachProvider,
+      authProvider,
+      lang,
+      isCoach,
+    );
     final isArabic = lang.isArabic;
     final isThreadLoading = messagingProvider.isLoading &&
         (messagingProvider.messages.isEmpty ||
@@ -348,13 +363,19 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 18, 24, 8),
-          child: _buildConversationHeader(lang, messagingProvider),
+          child: _buildConversationHeader(
+            lang,
+            messagingProvider,
+            isCoach,
+          ),
         ),
         _buildConversationRail(
           lang,
           messagingProvider,
           coachProvider,
           filteredConversations,
+          authProvider,
+          isCoach,
         ),
         const SizedBox(height: 8),
         Expanded(
@@ -382,6 +403,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   Widget _buildConversationHeader(
     LanguageProvider lang,
     MessagingProvider messagingProvider,
+    bool isCoach,
   ) {
     final isArabic = lang.isArabic;
     return Row(
@@ -411,7 +433,10 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
         IconButton(
           tooltip: lang.t('coach_refresh_inbox'),
           onPressed: () =>
-              messagingProvider.loadConversations(isArabic: isArabic),
+              messagingProvider.loadConversations(
+                isArabic: isArabic,
+                isCoach: isCoach,
+              ),
           icon: const Icon(Icons.refresh),
         ),
       ],
@@ -423,6 +448,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     MessagingProvider messagingProvider,
     CoachProvider coachProvider,
     List<Conversation> conversations,
+    AuthProvider authProvider,
+    bool isCoach,
   ) {
     if (messagingProvider.isLoading && conversations.isEmpty) {
       return const SizedBox(
@@ -474,6 +501,8 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
             lang,
             messagingProvider,
             coachProvider,
+            authProvider,
+            isCoach,
           );
         },
       ),
@@ -485,10 +514,17 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     LanguageProvider lang,
     MessagingProvider provider,
     CoachProvider coachProvider,
+    AuthProvider authProvider,
+    bool isCoach,
   ) {
     final isActive = provider.activeConversation?.id == conversation.id;
-    final displayName =
-        _resolveClientName(conversation.userId, coachProvider, lang);
+    final displayName = _resolveConversationName(
+      conversation,
+      coachProvider,
+      lang,
+      authProvider,
+      isCoach,
+    );
     final initials = _conversationInitials(displayName);
     final snippet = _conversationSnippet(conversation, lang);
     final subtitle = _conversationSubtitle(conversation, lang);
@@ -603,18 +639,59 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
   List<Conversation> _filteredConversations(
     MessagingProvider provider,
     CoachProvider coachProvider,
+    AuthProvider authProvider,
+    LanguageProvider lang,
+    bool isCoach,
   ) {
     if (_conversationQuery.isEmpty) {
       return provider.conversations;
     }
     final query = _conversationQuery.toLowerCase();
     return provider.conversations.where((conversation) {
-      final name =
-          _resolveClientNameForFilter(conversation.userId, coachProvider);
+      final name = _resolveConversationNameForFilter(
+        conversation,
+        coachProvider,
+        authProvider,
+        lang,
+        isCoach,
+      );
       final snippet = conversation.lastMessageContent?.toLowerCase() ?? '';
       return (name?.toLowerCase().contains(query) ?? false) ||
           snippet.contains(query);
     }).toList();
+  }
+
+  String _assignedCoachName(LanguageProvider lang, AuthProvider authProvider) {
+    if (DemoConfig.isDemo) {
+      return lang.t('coach_demo_name');
+    }
+    return lang.t('coach');
+  }
+
+  String _resolveConversationName(
+    Conversation conversation,
+    CoachProvider coachProvider,
+    LanguageProvider lang,
+    AuthProvider authProvider,
+    bool isCoach,
+  ) {
+    if (!isCoach) {
+      return _assignedCoachName(lang, authProvider);
+    }
+    return _resolveClientName(conversation.userId, coachProvider, lang);
+  }
+
+  String? _resolveConversationNameForFilter(
+    Conversation conversation,
+    CoachProvider coachProvider,
+    AuthProvider authProvider,
+    LanguageProvider lang,
+    bool isCoach,
+  ) {
+    if (!isCoach) {
+      return _assignedCoachName(lang, authProvider);
+    }
+    return _resolveClientNameForFilter(conversation.userId, coachProvider);
   }
 
   String _resolveClientName(
@@ -1244,8 +1321,9 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.10),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1272,7 +1350,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                     Text(
                       coachName,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -1286,20 +1364,26 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                           const SizedBox(width: 4),
                           const Text(
                             '4.9',
-                            style:
-                                TextStyle(color: Colors.white70, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           const Text(
                             '•',
-                            style:
-                                TextStyle(color: Colors.white70, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             '8 ${lang.t('coach_years')}',
                             style: const TextStyle(
-                                color: Colors.white70, fontSize: 12),
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ],
@@ -1320,15 +1404,17 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Text(
                         specialty,
                         style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600),
+                          color: AppColors.textPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   )

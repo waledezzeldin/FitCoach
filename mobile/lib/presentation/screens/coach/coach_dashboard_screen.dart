@@ -85,15 +85,12 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   }
 
   void _openWorkoutPlanBuilder(LanguageProvider lang) {
-    final isArabic = lang.isArabic;
     final client = _resolveDefaultClient(lang);
     if (client == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic
-                ? 'يرجى تحميل قائمة العملاء أولاً من تبويب العملاء'
-                : 'Please load your clients first from the Clients tab',
+            lang.t('coach_clients_load_first'),
           ),
           backgroundColor: AppColors.warning,
         ),
@@ -112,15 +109,12 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   }
 
   void _openNutritionPlanBuilder(LanguageProvider lang) {
-    final isArabic = lang.isArabic;
     final client = _resolveDefaultClient(lang);
     if (client == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic
-                ? 'يرجى تحميل قائمة العملاء أولاً من تبويب العملاء'
-                : 'Please load your clients first from the Clients tab',
+            lang.t('coach_clients_load_first'),
           ),
           backgroundColor: AppColors.warning,
         ),
@@ -139,15 +133,12 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
   }
 
   void _openQuickSchedule(LanguageProvider lang) {
-    final isArabic = lang.isArabic;
     final client = _resolveDefaultClient(lang);
     if (client == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isArabic
-                ? 'يرجى تحميل قائمة العملاء أولاً من تبويب العملاء'
-                : 'Please load your clients first from the Clients tab',
+            lang.t('coach_clients_load_first'),
           ),
           backgroundColor: AppColors.warning,
         ),
@@ -526,7 +517,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _buildUpcomingFilterChips(lang, isArabic),
+                    _buildUpcomingFilterChips(lang),
                   ],
                 ),
               ),
@@ -561,10 +552,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 delay: const Duration(milliseconds: 560),
                 offset: const Offset(0, 0.12),
                 child: CustomInfoCard(
-                  title: lang.isArabic ? 'مراسلة العملاء' : 'Message clients',
-                  subtitle: lang.isArabic
-                      ? 'رد على الرسائل وحدد الأولويات'
-                      : 'Reply to conversations and prioritize follow-ups',
+                  title: lang.t('coach_quick_action_message_clients_title'),
+                  subtitle: lang.t('coach_quick_action_message_clients_subtitle'),
                   icon: Icons.chat_bubble_outline,
                   iconColor: AppColors.accent,
                   onTap: () => setState(() => _selectedIndex = 3),
@@ -577,12 +566,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 delay: const Duration(milliseconds: 600),
                 offset: const Offset(-0.05, 0.12),
                 child: CustomInfoCard(
-                  title: lang.isArabic
-                      ? 'جدولة جلسة سريعة'
-                      : 'Schedule quick check-in',
-                  subtitle: lang.isArabic
-                      ? 'احجز مكالمة فيديو مع آخر عميل نشط'
-                      : 'Book a video call with your most recent client',
+                  title: lang.t('coach_quick_action_quick_schedule_title'),
+                  subtitle: lang.t('coach_quick_action_quick_schedule_subtitle'),
                   icon: Icons.video_call,
                   iconColor: AppColors.secondary,
                   onTap: () => _openQuickSchedule(lang),
@@ -627,10 +612,9 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     );
   }
 
-  Widget _buildUpcomingFilterChips(LanguageProvider lang, bool isArabic) {
-    final videoLabel =
-        isArabic ? 'جلسات الفيديو القادمة' : 'Upcoming video calls';
-    final allLabel = isArabic ? 'كل الجلسات القادمة' : 'All upcoming sessions';
+  Widget _buildUpcomingFilterChips(LanguageProvider lang) {
+    final videoLabel = lang.t('coach_upcoming_video_calls');
+    final allLabel = lang.t('coach_upcoming_all_sessions');
     return Row(
       children: [
         _buildFilterPill(
@@ -678,7 +662,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isArabic ? 'أبرز العملاء' : 'Client spotlight',
+                  lang.t('coach_client_spotlight'),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -686,7 +670,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                 ),
                 TextButton(
                   onPressed: () => setState(() => _selectedIndex = 1),
-                  child: Text(isArabic ? 'عرض الكل' : 'See all'),
+                  child: Text(lang.t('coach_view_all')),
                 ),
               ],
             ),
@@ -734,7 +718,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '${entry.goal ?? (isArabic ? 'بدون هدف محدد' : 'No goal yet')} • ${_formatActivityAgo(entry.activityDaysAgo, isArabic)}',
+                                    '${entry.goal ?? lang.t('coach_goal_fallback')} • ${_formatActivityAgo(entry.activityDaysAgo, lang)}',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: AppColors.textSecondary,
@@ -755,11 +739,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
-                                entry.needsAttention
-                                    ? (isArabic
-                                        ? 'يحتاج متابعة'
-                                        : 'Needs check-in')
-                                    : (isArabic ? 'على المسار' : 'On track'),
+                                entry.needsAttention ? lang.t('coach_needs_checkin') : lang.t('coach_on_track'),
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -782,9 +762,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          isArabic
-                              ? 'جاهزية الخطة ${(entry.momentum * 100).round()}%'
-                              : 'Plan health ${(entry.momentum * 100).round()}%',
+                          lang.t('coach_plan_health', args: {'percent': '${(entry.momentum * 100).round()}'}),
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -836,12 +814,10 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     return entries.take(3).toList();
   }
 
-  String _formatActivityAgo(int days, bool isArabic) {
-    if (days <= 0) return isArabic ? 'نشط اليوم' : 'Active today';
-    if (days == 1) return isArabic ? 'نشط أمس' : 'Active yesterday';
-    return isArabic
-        ? 'آخر نشاط قبل $days يوم'
-        : '$days days since last check-in';
+  String _formatActivityAgo(int days, LanguageProvider lang) {
+    if (days <= 0) return lang.t('coach_active_today');
+    if (days == 1) return lang.t('coach_active_yesterday');
+    return lang.t('coach_active_days_ago', args: {'days': '$days'});
   }
 
   Widget _buildFilterPill({
@@ -862,7 +838,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
           decoration: BoxDecoration(
             color: selected
                 ? AppColors.primary.withValues(alpha: 0.12)
-                : Colors.white,
+                : AppColors.background,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: selected
@@ -923,10 +899,8 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     final typeDisplay = _getTypeDisplayName(appointment.type, lang);
     final subtitleText = '$dateLabel$timeLabel • $typeDisplay';
     final showJoinButton = onJoin != null;
-    final readyHint = isArabic ? 'جاهز للانضمام الآن' : 'Ready to join now';
-    final joinHint = isArabic
-        ? 'سيتوفر زر الانضمام قبل 10 دقائق من الجلسة'
-        : 'Join opens 10 minutes before the session';
+    final readyHint = lang.t('coach_ready_to_join_now');
+    final joinHint = lang.t('coach_join_hint');
 
     return ListTile(
       leading: Container(
@@ -1075,9 +1049,7 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
 
     if (filteredAppointments.isEmpty) {
       final emptyMessage = filter == _UpcomingFilter.video
-          ? (isArabic
-              ? 'لا توجد جلسات فيديو قادمة حاليًا.'
-              : 'No upcoming video calls yet.')
+          ? (lang.t('coach_no_upcoming_video_calls'))
           : lang.t('coach_no_upcoming_sessions');
       return CustomCard(
         child: Padding(

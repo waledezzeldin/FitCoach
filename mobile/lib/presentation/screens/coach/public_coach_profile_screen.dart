@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/config/demo_config.dart';
@@ -82,9 +82,15 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
       completedSessions: profile.stats.completedSessions,
       successRate: 0, // Not available in backend, set to 0 or compute if possible
       profilePhotoUrl: profile.avatar,
-      certificates: (profile.certificates as List).map((e) => Certificate.fromJson(e)).toList(),
-      experiences: (profile.experiences as List).map((e) => WorkExperience.fromJson(e)).toList(),
-      achievements: (profile.achievements as List).map((e) => Achievement.fromJson(e)).toList(),
+      certificates: (profile.certificates as List)
+          .map((e) => Certificate.fromJson(e))
+          .toList(),
+      experiences: (profile.experiences as List)
+          .map((e) => WorkExperience.fromJson(e))
+          .toList(),
+      achievements: (profile.achievements as List)
+          .map((e) => Achievement.fromJson(e))
+          .toList(),
       createdAt: DateTime.now(), // Not available, fallback
     );
   }
@@ -146,7 +152,7 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
         WorkExperience(
           id: '2',
           title: 'Personal Trainer',
-          organization: 'Gold\'s Gym',
+          organization: "Gold's Gym",
           startDate: DateTime(2016, 6, 1),
           endDate: DateTime(2019, 12, 31),
           isCurrent: false,
@@ -179,11 +185,9 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
     _tabController.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
-    final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
+    final lang = context.watch<LanguageProvider>();
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     return Scaffold(
@@ -192,7 +196,8 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
           : _profile == null
               ? Center(
                   child: Text(
-                    isArabic ? 'فشل تحميل الملف الشخصي' : 'Failed to load profile',
+                    lang.t('public_coach_profile_failed'),
+                    style: const TextStyle(color: AppColors.textPrimary),
                   ),
                 )
               : NestedScrollView(
@@ -201,32 +206,32 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                       SliverAppBar(
                         pinned: true,
                         elevation: 0,
-                        backgroundColor: Colors.transparent,
+                        backgroundColor:
+                            AppColors.background.withValues(alpha: 0),
                         leading: IconButton(
                           onPressed: () => Navigator.of(context).maybePop(),
                           icon: Icon(
                             isRtl ? Icons.arrow_forward : Icons.arrow_back,
-                            color: Colors.white,
+                            color: AppColors.textWhite,
                           ),
                         ),
                         title: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isArabic ? 'مدربك' : 'Your Coach',
+                              lang.t('public_coach_profile_title'),
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: AppColors.textWhite,
                               ),
                             ),
                             Text(
-                              isArabic
-                                  ? 'الاعتمادات المهنية'
-                                  : 'Professional credentials',
-                              style: const TextStyle(
+                              lang.t('public_coach_profile_subtitle'),
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.white70,
+                                color:
+                                    AppColors.textWhite.withValues(alpha: 0.7),
                               ),
                             ),
                           ],
@@ -236,7 +241,10 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFF9333EA), Color(0xFF4F46E5)],
+                              colors: [
+                                AppColors.primary,
+                                AppColors.primaryDark
+                              ],
                             ),
                           ),
                         ),
@@ -246,9 +254,9 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             children: [
-                              _buildProfileHeaderCard(isArabic, isRtl),
+                              _buildProfileHeaderCard(lang),
                               const SizedBox(height: 12),
-                              _buildQuickStatsRow(isArabic),
+                              _buildQuickStatsRow(lang),
                               const SizedBox(height: 12),
                             ],
                           ),
@@ -264,10 +272,10 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                             indicatorColor: AppColors.primary,
                             indicatorWeight: 3,
                             tabs: [
-                              Tab(text: isArabic ? 'نظرة عامة' : 'Overview'),
-                              Tab(text: isArabic ? 'الشهادات' : 'Certificates'),
-                              Tab(text: isArabic ? 'الخبرة' : 'Experience'),
-                              Tab(text: isArabic ? 'الإنجازات' : 'Achievements'),
+                              Tab(text: lang.t('public_coach_profile_tab_overview')),
+                              Tab(text: lang.t('public_coach_profile_tab_certificates')),
+                              Tab(text: lang.t('public_coach_profile_tab_experience')),
+                              Tab(text: lang.t('public_coach_profile_tab_achievements')),
                             ],
                           ),
                         ),
@@ -277,17 +285,17 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                   body: TabBarView(
                     controller: _tabController,
                     children: [
-                      _buildOverviewTab(isArabic),
-                      _buildCertificatesTab(isArabic),
-                      _buildExperienceTab(isArabic),
-                      _buildAchievementsTab(isArabic),
+                      _buildOverviewTab(lang),
+                      _buildCertificatesTab(lang),
+                      _buildExperienceTab(lang),
+                      _buildAchievementsTab(lang),
                     ],
                   ),
                 ),
     );
   }
 
-  Widget _buildProfileHeaderCard(bool isArabic, bool isRtl) {
+  Widget _buildProfileHeaderCard(LanguageProvider lang) {
     final rating = (_profile!.averageRating ?? 0).toStringAsFixed(1);
     final reviewsCount = _profile!.totalClients;
 
@@ -304,11 +312,11 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundColor: const Color(0xFFEDE9FE),
+                  backgroundColor: AppColors.secondary.withValues(alpha: 0.4),
                   child: Text(
                     _profile!.initials,
                     style: const TextStyle(
-                      color: Color(0xFF7C3AED),
+                      color: AppColors.secondaryForeground,
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                     ),
@@ -327,14 +335,19 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ),
                           if (_profile!.isVerified)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEDE9FE),
+                                color:
+                                    AppColors.secondary.withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Row(
@@ -343,13 +356,13 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                                   const Icon(
                                     Icons.workspace_premium,
                                     size: 14,
-                                    color: Color(0xFF7C3AED),
+                                    color: AppColors.secondaryForeground,
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    isArabic ? 'موثق' : 'Verified',
+                                    lang.t('public_coach_profile_verified'),
                                     style: const TextStyle(
-                                      color: Color(0xFF7C3AED),
+                                      color: AppColors.secondaryForeground,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -368,40 +381,70 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.star, size: 16, color: Color(0xFFF59E0B)),
+                              const Icon(
+                                Icons.star,
+                                size: 16,
+                                color: AppColors.accent,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 rating,
-                                style: const TextStyle(fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                '($reviewsCount ${isArabic ? 'تقييم' : 'reviews'})',
-                                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          const Text('•', style: TextStyle(color: AppColors.textSecondary)),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.people, size: 16, color: AppColors.textSecondary),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${_profile!.activeClients} ${isArabic ? 'عملاء نشطون' : 'active clients'}',
-                                style: const TextStyle(fontSize: 12),
+                                '($reviewsCount ${lang.t('public_coach_profile_reviews')})',
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
-                          const Text('•', style: TextStyle(color: AppColors.textSecondary)),
+                          const Text(
+                            '-',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
+                              const Icon(
+                                Icons.people,
+                                size: 16,
+                                color: AppColors.textSecondary,
+                              ),
                               const SizedBox(width: 6),
                               Text(
-                                '${_profile!.yearsOfExperience} ${isArabic ? 'سنة خبرة' : 'years exp'}',
-                                style: const TextStyle(fontSize: 12),
+                                '${_profile!.activeClients} ${lang.t('public_coach_profile_active_clients')}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Text(
+                            '-',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.calendar_today,
+                                size: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${_profile!.yearsOfExperience} ${lang.t('public_coach_profile_years_exp')}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ],
                           ),
@@ -419,14 +462,22 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
               children: _profile!.specializations
                   .map(
                     (spec) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Text(
                         spec,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   )
@@ -438,40 +489,39 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
     );
   }
 
-  Widget _buildQuickStatsRow(bool isArabic) {
+  Widget _buildQuickStatsRow(LanguageProvider lang) {
     return Row(
       children: [
         Expanded(
           child: _QuickStatCard(
             icon: Icons.people,
-            iconColor: const Color(0xFF7C3AED),
+            iconColor: AppColors.secondaryForeground,
             value: '${_profile!.totalClients}',
-            label: isArabic ? 'إجمالي العملاء' : 'Total Clients',
+            label: lang.t('public_coach_profile_total_clients'),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _QuickStatCard(
             icon: Icons.videocam,
-            iconColor: const Color(0xFF2563EB),
+            iconColor: AppColors.primary,
             value: '${_profile!.completedSessions}',
-            label: isArabic ? 'الجلسات' : 'Sessions',
+            label: lang.t('public_coach_profile_sessions'),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _QuickStatCard(
             icon: Icons.trending_up,
-            iconColor: const Color(0xFF16A34A),
+            iconColor: AppColors.success,
             value: '${_profile!.successRate.toStringAsFixed(0)}%',
-            label: isArabic ? 'نسبة النجاح' : 'Success Rate',
+            label: lang.t('public_coach_profile_success_rate'),
           ),
         ),
       ],
     );
   }
-
-  Widget _buildOverviewTab(bool isArabic) {
+  Widget _buildOverviewTab(LanguageProvider lang) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -480,25 +530,30 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
           // Bio
           if (_profile!.bio != null) ...[
             Text(
-              isArabic ? 'نبذة' : 'About',
+              lang.t('public_coach_profile_about'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
             CustomCard(
-              child: Text(_profile!.bio!),
+              child: Text(
+                _profile!.bio!,
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
             ),
             const SizedBox(height: 24),
           ],
 
           // Specializations
           Text(
-            isArabic ? 'التخصصات' : 'Specializations',
+            lang.t('public_coach_profile_specializations'),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -528,10 +583,11 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
 
           // Contact Info
           Text(
-            isArabic ? 'معلومات التواصل' : 'Contact Information',
+            lang.t('public_coach_profile_contact'),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -540,12 +596,18 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
               children: [
                 ListTile(
                   leading: const Icon(Icons.email, color: AppColors.primary),
-                  title: Text(_profile!.email),
+                  title: Text(
+                    _profile!.email,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                  ),
                 ),
                 if (_profile!.phoneNumber != null)
                   ListTile(
                     leading: const Icon(Icons.phone, color: AppColors.primary),
-                    title: Text(_profile!.phoneNumber!),
+                    title: Text(
+                      _profile!.phoneNumber!,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                    ),
                   ),
               ],
             ),
@@ -555,11 +617,11 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
     );
   }
 
-  Widget _buildCertificatesTab(bool isArabic) {
+  Widget _buildCertificatesTab(LanguageProvider lang) {
     return _profile!.certificates.isEmpty
         ? Center(
             child: Text(
-              isArabic ? 'لا توجد شهادات' : 'No certificates',
+              lang.t('public_coach_profile_no_certificates'),
               style: const TextStyle(color: AppColors.textSecondary),
             ),
           )
@@ -577,21 +639,32 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.workspace_premium,
-                        color: AppColors.primary),
+                    child: const Icon(
+                      Icons.workspace_premium,
+                      color: AppColors.primary,
+                    ),
                   ),
                   title: Text(
                     cert.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(cert.issuingOrganization),
+                      Text(
+                        cert.issuingOrganization,
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         '${_formatDate(cert.dateObtained)}${cert.expiryDate != null ? ' - ${_formatDate(cert.expiryDate!)}' : ''}',
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -609,11 +682,11 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
           );
   }
 
-  Widget _buildExperienceTab(bool isArabic) {
+  Widget _buildExperienceTab(LanguageProvider lang) {
     return _profile!.experiences.isEmpty
         ? Center(
             child: Text(
-              isArabic ? 'لا توجد خبرة' : 'No experience',
+              lang.t('public_coach_profile_no_experience'),
               style: const TextStyle(color: AppColors.textSecondary),
             ),
           )
@@ -642,19 +715,31 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                   ),
                   title: Text(
                     exp.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(exp.organization),
+                      Text(
+                        exp.organization,
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
                       const SizedBox(height: 4),
                       Text(
-                        '${_formatDate(exp.startDate)} - ${exp.isCurrent ? (isArabic ? 'الحالي' : 'Present') : _formatDate(exp.endDate!)} (${exp.duration})',
-                        style: const TextStyle(fontSize: 12),
+                        '${_formatDate(exp.startDate)} - ${exp.isCurrent ? lang.t('public_coach_profile_present') : _formatDate(exp.endDate!)} (${exp.duration})',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 8),
-                      Text(exp.description),
+                      Text(
+                        exp.description,
+                        style: const TextStyle(color: AppColors.textPrimary),
+                      ),
                     ],
                   ),
                   isThreeLine: true,
@@ -663,12 +748,11 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
             },
           );
   }
-
-  Widget _buildAchievementsTab(bool isArabic) {
+  Widget _buildAchievementsTab(LanguageProvider lang) {
     return _profile!.achievements.isEmpty
         ? Center(
             child: Text(
-              isArabic ? 'لا توجد إنجازات' : 'No achievements',
+              lang.t('public_coach_profile_no_achievements'),
               style: const TextStyle(color: AppColors.textSecondary),
             ),
           )
@@ -694,16 +778,25 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
                   ),
                   title: Text(
                     achievement.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(achievement.description),
+                      Text(
+                        achievement.description,
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         _formatDate(achievement.date),
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -734,9 +827,9 @@ class _PublicCoachProfileScreenState extends State<PublicCoachProfileScreen>
   Color _getAchievementColor(String type) {
     switch (type) {
       case 'medal':
-        return const Color(0xFFFFD700);
+        return AppColors.warning;
       case 'award':
-        return const Color(0xFF9C27B0);
+        return AppColors.secondaryForeground;
       case 'recognition':
         return AppColors.primary;
       default:
@@ -799,13 +892,20 @@ class _QuickStatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 2),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/constants/colors.dart';
@@ -28,7 +28,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
   void _loadEarnings() {
     final authProvider = context.read<AuthProvider>();
     final coachProvider = context.read<CoachProvider>();
-    
+
     if (authProvider.user?.id != null) {
       coachProvider.loadEarnings(
         coachId: authProvider.user!.id,
@@ -39,15 +39,13 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = context.watch<LanguageProvider>();
-    final authProvider = context.watch<AuthProvider>();
+    final lang = context.watch<LanguageProvider>();
     final coachProvider = context.watch<CoachProvider>();
-    final isArabic = languageProvider.isArabic;
     final earnings = coachProvider.earnings;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isArabic ? 'الأرباح' : 'Earnings'),
+        title: Text(lang.t('coach_earnings_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -62,17 +60,22 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: AppColors.error,
+                      ),
                       const SizedBox(height: 16),
                       Text(
-                        coachProvider.error ?? (isArabic ? 'فشل تحميل البيانات' : 'Failed to load data'),
+                        coachProvider.error ??
+                            lang.t('coach_earnings_failed'),
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: AppColors.error),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadEarnings,
-                        child: Text(isArabic ? 'إعادة المحاولة' : 'Retry'),
+                        child: Text(lang.t('retry')),
                       ),
                     ],
                   ),
@@ -85,22 +88,22 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Summary cards
-                        _buildSummaryCards(earnings, isArabic),
-                        
+                        _buildSummaryCards(earnings, lang),
+
                         const SizedBox(height: 24),
-                        
+
                         // Period selector
-                        _buildPeriodSelector(isArabic),
-                        
+                        _buildPeriodSelector(lang),
+
                         const SizedBox(height: 16),
-                        
+
                         // Earnings chart
-                        _buildEarningsChart(earnings, isArabic),
-                        
+                        _buildEarningsChart(earnings, lang),
+
                         const SizedBox(height: 24),
-                        
+
                         // Recent transactions
-                        _buildRecentTransactions(earnings, isArabic),
+                        _buildRecentTransactions(earnings, lang),
                       ],
                     ),
                   ),
@@ -108,7 +111,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
     );
   }
 
-  Widget _buildSummaryCards(earnings, bool isArabic) {
+  Widget _buildSummaryCards(earnings, LanguageProvider lang) {
     return Row(
       children: [
         Expanded(
@@ -135,7 +138,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          isArabic ? 'إجمالي الأرباح' : 'Total Earnings',
+                          lang.t('coach_earnings_total'),
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -158,9 +161,9 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
             ),
           ),
         ),
-        
+
         const SizedBox(width: 12),
-        
+
         Expanded(
           child: CustomCard(
             child: Padding(
@@ -185,7 +188,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          isArabic ? 'المعاملات' : 'Transactions',
+                          lang.t('coach_earnings_transactions'),
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -212,14 +215,14 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
     );
   }
 
-  Widget _buildPeriodSelector(bool isArabic) {
+  Widget _buildPeriodSelector(LanguageProvider lang) {
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Text(
-              isArabic ? 'الفترة:' : 'Period:',
+              lang.t('coach_earnings_period'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -231,15 +234,15 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
                 segments: [
                   ButtonSegment(
                     value: 'week',
-                    label: Text(isArabic ? 'أسبوع' : 'Week'),
+                    label: Text(lang.t('coach_earnings_period_week')),
                   ),
                   ButtonSegment(
                     value: 'month',
-                    label: Text(isArabic ? 'شهر' : 'Month'),
+                    label: Text(lang.t('coach_earnings_period_month')),
                   ),
                   ButtonSegment(
                     value: 'year',
-                    label: Text(isArabic ? 'سنة' : 'Year'),
+                    label: Text(lang.t('coach_earnings_period_year')),
                   ),
                 ],
                 selected: {_selectedPeriod},
@@ -257,14 +260,14 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
     );
   }
 
-  Widget _buildEarningsChart(earnings, bool isArabic) {
+  Widget _buildEarningsChart(earnings, LanguageProvider lang) {
     if (earnings.periodBreakdown.isEmpty) {
       return CustomCard(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Center(
             child: Text(
-              isArabic ? 'لا توجد بيانات للعرض' : 'No data to display',
+              lang.t('coach_earnings_no_data'),
               style: const TextStyle(
                 fontSize: 16,
                 color: AppColors.textSecondary,
@@ -293,7 +296,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isArabic ? 'الأرباح حسب الفترة' : 'Earnings by Period',
+              lang.t('coach_earnings_by_period'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -326,7 +329,8 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
                           if (value.toInt() >= earnings.periodBreakdown.length) {
                             return const SizedBox();
                           }
-                          final period = earnings.periodBreakdown[value.toInt()].period;
+                          final period =
+                              earnings.periodBreakdown[value.toInt()].period;
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
@@ -389,7 +393,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
     );
   }
 
-  Widget _buildRecentTransactions(earnings, bool isArabic) {
+  Widget _buildRecentTransactions(earnings, LanguageProvider lang) {
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -400,7 +404,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isArabic ? 'المعاملات الأخيرة' : 'Recent Transactions',
+                  lang.t('coach_earnings_recent_transactions'),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -415,15 +419,15 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             if (earnings.recentTransactions.isEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
                   child: Text(
-                    isArabic ? 'لا توجد معاملات' : 'No transactions',
+                    lang.t('coach_earnings_no_transactions'),
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
@@ -439,7 +443,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
                 separatorBuilder: (context, index) => const Divider(),
                 itemBuilder: (context, index) {
                   final transaction = earnings.recentTransactions[index];
-                  return _buildTransactionItem(transaction, isArabic);
+                  return _buildTransactionItem(transaction);
                 },
               ),
           ],
@@ -448,7 +452,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
     );
   }
 
-  Widget _buildTransactionItem(transaction, bool isArabic) {
+  Widget _buildTransactionItem(transaction) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -466,9 +470,9 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
               size: 20,
             ),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,7 +495,7 @@ class _CoachEarningsScreenState extends State<CoachEarningsScreen> {
               ],
             ),
           ),
-          
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
