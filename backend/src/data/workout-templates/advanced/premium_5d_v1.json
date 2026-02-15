@@ -1,0 +1,613 @@
+{
+  "plan_id": "premium_5d_v1",
+  "type": "advanced",
+  "plan_version": "1.0",
+  "name_en": "Premium 5-Day Program",
+  "name_ar": "برنامج بريميوم 5 أيام",
+  "description_en": "Adaptive 5-day program with Upper/Lower/Push/Pull/Legs split",
+  "description_ar": "برنامج 5 أيام مع تقسيم علوي/سفلي/دفع/سحب/ساق",
+  "training_days": 5,
+  "weeks": 12,
+  "supports_locations": ["home", "gym"],
+  "supports_goals": ["fat_loss", "muscle_gain", "general_fitness"],
+  "supports_experience_levels": ["beginner", "intermediate", "advanced"],
+  "blocks": [
+    {"block":1,"weeks":[1,2],"focus":"movement patterns","focus_ar":"أنماط الحركة","progression":"RPE 6.5→7"},
+    {"block":2,"weeks":[3,4],"focus":"volume building","focus_ar":"بناء الحجم","progression":"sets +1"},
+    {"block":3,"weeks":[5,6],"focus":"progressive overload","focus_ar":"الحمل التدريجي","progression":"load +5%"},
+    {"block":4,"weeks":[7,8],"focus":"intensity peak","focus_ar":"ذروة الكثافة","progression":"RPE 7.5→8"},
+    {"block":5,"weeks":[9,10],"focus":"maximum volume","focus_ar":"الحجم الأقصى","progression":"peak sets"},
+    {"block":6,"weeks":[11,12],"focus":"taper + recovery","focus_ar":"التناقص والاسترداد","progression":"−40% volume"}
+  ],
+  "experience_adjustments": {
+    "beginner": {"set_multiplier": 1.00, "intensity_bias": -0.3},
+    "intermediate": {"set_multiplier": 1.15, "intensity_bias": 0.0},
+    "advanced": {"set_multiplier": 1.30, "intensity_bias": 0.2}
+  },
+  "injury_swaps": {
+    "knee_pain": {
+      "swap_map": {
+        "back_squat": ["goblet_squat", "leg_press"],
+        "front_squat": ["goblet_squat", "leg_press"],
+        "walking_lunge": ["reverse_lunge", "split_squat"]
+      }
+    },
+    "lower_back_pain": {
+      "swap_map": {
+        "deadlift": ["hip_thrust", "leg_curl"],
+        "back_squat": ["goblet_squat", "leg_press"],
+        "barbell_row": ["seated_row", "chest_supported_row"],
+        "romanian_deadlift": ["lying_leg_curl", "glute_bridge"]
+      }
+    },
+    "shoulder_pain": {
+      "swap_map": {
+        "bench_press": ["chest_press_machine", "incline_db_press"],
+        "overhead_press": ["machine_shoulder_press", "landmine_press"]
+      }
+    }
+  },
+  "programs": {
+    "gym": {
+      "fat_loss": {
+        "beginner": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"bench_press","sets":3,"reps":"6–8","rpe":6.5,"rest_s":150},
+            {"ex_id":"lat_pulldown","sets":3,"reps":"8–10","rpe":6.5,"rest_s":120},
+            {"ex_id":"overhead_press","sets":3,"reps":"8–10","rpe":6.5,"rest_s":120},
+            {"ex_id":"cable_row","sets":3,"reps":"10–12","rpe":6,"rest_s":90}
+          ],"conditioning":{"type":"intervals","protocol":"Rower 30/30 × 8","duration_min":8}},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"back_squat","sets":3,"reps":"6–8","rpe":6.5,"rest_s":180},
+            {"ex_id":"romanian_deadlift","sets":3,"reps":"8–10","rpe":6.5,"rest_s":150},
+            {"ex_id":"leg_press","sets":3,"reps":"12–15","rpe":6,"rest_s":120},
+            {"ex_id":"plank","sets":3,"reps":"40s","rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Walk 15 min","duration_min":15}},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_db_press","sets":3,"reps":"10–12","rpe":6.5,"rest_s":120},
+            {"ex_id":"cable_fly","sets":3,"reps":"12–15","rpe":6,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90},
+            {"ex_id":"lateral_raise","sets":3,"reps":"12–15","rpe":6,"rest_s":60},
+            {"ex_id":"tricep_pushdown","sets":3,"reps":"12–15","rpe":6,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"deadlift","sets":3,"reps":"5–8","rpe":7,"rest_s":180},
+            {"ex_id":"pull_up","sets":3,"reps":"6–10","rpe":7,"rest_s":150},
+            {"ex_id":"seated_row","sets":3,"reps":"10–12","rpe":6.5,"rest_s":120},
+            {"ex_id":"face_pull","sets":3,"reps":"15–20","rpe":6,"rest_s":60},
+            {"ex_id":"db_curl","sets":3,"reps":"10–12","rpe":6,"rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Bike 15 min Zone 2","duration_min":15}},
+          {"day":5,"name_en":"Legs + Core","name_ar":"ساق + جذع","work":[
+            {"ex_id":"front_squat","sets":3,"reps":"8–10","rpe":6.5,"rest_s":150},
+            {"ex_id":"leg_curl","sets":3,"reps":"12–15","rpe":6,"rest_s":90},
+            {"ex_id":"leg_extension","sets":3,"reps":"12–15","rpe":6,"rest_s":90},
+            {"ex_id":"calf_raise","sets":4,"reps":"15–20","rest_s":60},
+            {"ex_id":"cable_crunch","sets":3,"reps":"12–15","rpe":6,"rest_s":60}
+          ],"conditioning":{"type":"hiit","protocol":"Assault Bike 20/40 × 8","duration_min":8}}
+        ],
+        "intermediate": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"bench_press","sets":4,"reps":"6–8","rpe":7,"rest_s":150},
+            {"ex_id":"lat_pulldown","sets":4,"reps":"8–10","rpe":7,"rest_s":120},
+            {"ex_id":"overhead_press","sets":4,"reps":"8–10","rpe":7,"rest_s":120},
+            {"ex_id":"cable_row","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90}
+          ],"conditioning":{"type":"intervals","protocol":"Rower 30/30 × 10","duration_min":10}},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"back_squat","sets":4,"reps":"6–8","rpe":7,"rest_s":180},
+            {"ex_id":"romanian_deadlift","sets":4,"reps":"8–10","rpe":7,"rest_s":150},
+            {"ex_id":"leg_press","sets":3,"reps":"12–15","rpe":6.5,"rest_s":120},
+            {"ex_id":"plank","sets":3,"reps":"50s","rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Walk 18 min","duration_min":18}},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_db_press","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"cable_fly","sets":3,"reps":"12–15","rpe":6.5,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":4,"reps":"10–12","rpe":7,"rest_s":90},
+            {"ex_id":"lateral_raise","sets":3,"reps":"12–15","rpe":6.5,"rest_s":60},
+            {"ex_id":"tricep_pushdown","sets":3,"reps":"12–15","rpe":6.5,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"deadlift","sets":4,"reps":"5–8","rpe":7.5,"rest_s":180},
+            {"ex_id":"pull_up","sets":4,"reps":"6–10","rpe":7.5,"rest_s":150},
+            {"ex_id":"seated_row","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"face_pull","sets":3,"reps":"15–20","rpe":6.5,"rest_s":60},
+            {"ex_id":"db_curl","sets":3,"reps":"10–12","rpe":6.5,"rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Bike 18 min Zone 2","duration_min":18}},
+          {"day":5,"name_en":"Legs + Core","name_ar":"ساق + جذع","work":[
+            {"ex_id":"front_squat","sets":4,"reps":"8–10","rpe":7,"rest_s":150},
+            {"ex_id":"leg_curl","sets":4,"reps":"12–15","rpe":6.5,"rest_s":90},
+            {"ex_id":"leg_extension","sets":4,"reps":"12–15","rpe":6.5,"rest_s":90},
+            {"ex_id":"calf_raise","sets":4,"reps":"15–20","rest_s":60},
+            {"ex_id":"cable_crunch","sets":3,"reps":"15–20","rpe":6.5,"rest_s":60}
+          ],"conditioning":{"type":"hiit","protocol":"Assault Bike 20/40 × 10","duration_min":10}}
+        ],
+        "advanced": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"bench_press","sets":5,"reps":"6–8","rpe":7.5,"rest_s":150},
+            {"ex_id":"lat_pulldown","sets":5,"reps":"8–10","rpe":7.5,"rest_s":120},
+            {"ex_id":"overhead_press","sets":5,"reps":"8–10","rpe":7.5,"rest_s":120},
+            {"ex_id":"cable_row","sets":4,"reps":"10–12","rpe":7,"rest_s":90}
+          ],"conditioning":{"type":"intervals","protocol":"Rower 30/30 × 12","duration_min":12}},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"back_squat","sets":5,"reps":"6–8","rpe":7.5,"rest_s":180},
+            {"ex_id":"romanian_deadlift","sets":5,"reps":"8–10","rpe":7.5,"rest_s":150},
+            {"ex_id":"leg_press","sets":4,"reps":"12–15","rpe":7,"rest_s":120},
+            {"ex_id":"plank","sets":3,"reps":"60s","rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Walk/Jog 20 min","duration_min":20}},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_db_press","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"cable_fly","sets":4,"reps":"12–15","rpe":7,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":5,"reps":"10–12","rpe":7.5,"rest_s":90},
+            {"ex_id":"lateral_raise","sets":4,"reps":"12–15","rpe":7,"rest_s":60},
+            {"ex_id":"tricep_pushdown","sets":4,"reps":"12–15","rpe":7,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"deadlift","sets":5,"reps":"5–8","rpe":8,"rest_s":180},
+            {"ex_id":"pull_up","sets":5,"reps":"6–10","rpe":8,"rest_s":150},
+            {"ex_id":"seated_row","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"face_pull","sets":4,"reps":"15–20","rpe":7,"rest_s":60},
+            {"ex_id":"db_curl","sets":4,"reps":"10–12","rpe":7,"rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Bike 20 min Zone 2","duration_min":20}},
+          {"day":5,"name_en":"Legs + Core","name_ar":"ساق + جذع","work":[
+            {"ex_id":"front_squat","sets":5,"reps":"8–10","rpe":7.5,"rest_s":150},
+            {"ex_id":"leg_curl","sets":5,"reps":"12–15","rpe":7,"rest_s":90},
+            {"ex_id":"leg_extension","sets":5,"reps":"12–15","rpe":7,"rest_s":90},
+            {"ex_id":"calf_raise","sets":5,"reps":"15–20","rest_s":60},
+            {"ex_id":"cable_crunch","sets":4,"reps":"15–20","rpe":7,"rest_s":60}
+          ],"conditioning":{"type":"hiit","protocol":"Assault Bike 20/40 × 12","duration_min":12}}
+        ]
+      },
+      "muscle_gain": {
+        "beginner": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"bench_press","sets":4,"reps":"6–8","rpe":7,"rest_s":180},
+            {"ex_id":"barbell_row","sets":4,"reps":"6–8","rpe":7,"rest_s":150},
+            {"ex_id":"overhead_press","sets":3,"reps":"8–10","rpe":6.5,"rest_s":150}
+          ]},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"back_squat","sets":4,"reps":"6–8","rpe":7,"rest_s":210},
+            {"ex_id":"romanian_deadlift","sets":4,"reps":"8–10","rpe":7,"rest_s":180},
+            {"ex_id":"leg_press","sets":3,"reps":"10–12","rpe":6.5,"rest_s":150}
+          ]},
+          {"day":3,"name_en":"Push Hypertrophy","name_ar":"دفع التضخم","work":[
+            {"ex_id":"incline_db_press","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"cable_fly","sets":3,"reps":"12–15","rpe":6.5,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"lateral_raise","sets":3,"reps":"12–15","rpe":6.5,"rest_s":60},
+            {"ex_id":"tricep_pushdown","sets":3,"reps":"12–15","rpe":6.5,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull Hypertrophy","name_ar":"سحب التضخم","work":[
+            {"ex_id":"deadlift","sets":3,"reps":"5–8","rpe":7.5,"rest_s":210},
+            {"ex_id":"pull_up","sets":4,"reps":"8–10","rpe":7,"rest_s":150},
+            {"ex_id":"seated_row","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"face_pull","sets":3,"reps":"15–20","rpe":6.5,"rest_s":60},
+            {"ex_id":"db_curl","sets":3,"reps":"10–12","rpe":6.5,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs Hypertrophy","name_ar":"ساق التضخم","work":[
+            {"ex_id":"front_squat","sets":4,"reps":"8–10","rpe":7,"rest_s":180},
+            {"ex_id":"leg_curl","sets":4,"reps":"12–15","rpe":7,"rest_s":120},
+            {"ex_id":"leg_extension","sets":4,"reps":"12–15","rpe":7,"rest_s":120},
+            {"ex_id":"calf_raise","sets":4,"reps":"15–20","rest_s":60}
+          ]}
+        ],
+        "intermediate": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"bench_press","sets":5,"reps":"6–8","rpe":7.5,"rest_s":180},
+            {"ex_id":"barbell_row","sets":5,"reps":"6–8","rpe":7.5,"rest_s":150},
+            {"ex_id":"overhead_press","sets":4,"reps":"8–10","rpe":7,"rest_s":150}
+          ]},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"back_squat","sets":5,"reps":"6–8","rpe":7.5,"rest_s":210},
+            {"ex_id":"romanian_deadlift","sets":5,"reps":"8–10","rpe":7.5,"rest_s":180},
+            {"ex_id":"leg_press","sets":4,"reps":"10–12","rpe":7,"rest_s":150}
+          ]},
+          {"day":3,"name_en":"Push Hypertrophy","name_ar":"دفع التضخم","work":[
+            {"ex_id":"incline_db_press","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"cable_fly","sets":4,"reps":"12–15","rpe":7,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"lateral_raise","sets":4,"reps":"12–15","rpe":7,"rest_s":60},
+            {"ex_id":"tricep_pushdown","sets":4,"reps":"12–15","rpe":7,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull Hypertrophy","name_ar":"سحب التضخم","work":[
+            {"ex_id":"deadlift","sets":4,"reps":"5–8","rpe":8,"rest_s":210},
+            {"ex_id":"pull_up","sets":5,"reps":"8–10","rpe":7.5,"rest_s":150},
+            {"ex_id":"seated_row","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"face_pull","sets":4,"reps":"15–20","rpe":7,"rest_s":60},
+            {"ex_id":"db_curl","sets":4,"reps":"10–12","rpe":7,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs Hypertrophy","name_ar":"ساق التضخم","work":[
+            {"ex_id":"front_squat","sets":5,"reps":"8–10","rpe":7.5,"rest_s":180},
+            {"ex_id":"leg_curl","sets":5,"reps":"12–15","rpe":7.5,"rest_s":120},
+            {"ex_id":"leg_extension","sets":5,"reps":"12–15","rpe":7.5,"rest_s":120},
+            {"ex_id":"calf_raise","sets":5,"reps":"15–20","rest_s":60}
+          ]}
+        ],
+        "advanced": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"bench_press","sets":6,"reps":"6–8","rpe":8,"rest_s":180},
+            {"ex_id":"barbell_row","sets":6,"reps":"6–8","rpe":8,"rest_s":150},
+            {"ex_id":"overhead_press","sets":5,"reps":"8–10","rpe":7.5,"rest_s":150}
+          ]},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"back_squat","sets":6,"reps":"6–8","rpe":8,"rest_s":210},
+            {"ex_id":"romanian_deadlift","sets":6,"reps":"8–10","rpe":8,"rest_s":180},
+            {"ex_id":"leg_press","sets":5,"reps":"10–12","rpe":7.5,"rest_s":150}
+          ]},
+          {"day":3,"name_en":"Push Hypertrophy","name_ar":"دفع التضخم","work":[
+            {"ex_id":"incline_db_press","sets":6,"reps":"10–12","rpe":8,"rest_s":120},
+            {"ex_id":"cable_fly","sets":5,"reps":"12–15","rpe":7.5,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":6,"reps":"10–12","rpe":8,"rest_s":120},
+            {"ex_id":"lateral_raise","sets":5,"reps":"12–15","rpe":7.5,"rest_s":60},
+            {"ex_id":"tricep_pushdown","sets":5,"reps":"12–15","rpe":7.5,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull Hypertrophy","name_ar":"سحب التضخم","work":[
+            {"ex_id":"deadlift","sets":5,"reps":"5–8","rpe":8.5,"rest_s":210},
+            {"ex_id":"pull_up","sets":6,"reps":"8–10","rpe":8,"rest_s":150},
+            {"ex_id":"seated_row","sets":6,"reps":"10–12","rpe":8,"rest_s":120},
+            {"ex_id":"face_pull","sets":5,"reps":"15–20","rpe":7.5,"rest_s":60},
+            {"ex_id":"db_curl","sets":5,"reps":"10–12","rpe":7.5,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs Hypertrophy","name_ar":"ساق التضخم","work":[
+            {"ex_id":"front_squat","sets":6,"reps":"8–10","rpe":8,"rest_s":180},
+            {"ex_id":"leg_curl","sets":6,"reps":"12–15","rpe":8,"rest_s":120},
+            {"ex_id":"leg_extension","sets":6,"reps":"12–15","rpe":8,"rest_s":120},
+            {"ex_id":"calf_raise","sets":6,"reps":"15–20","rest_s":60}
+          ]}
+        ]
+      },
+      "general_fitness": {
+        "beginner": [
+          {"day":1,"name_en":"Upper","name_ar":"العلوي","work":[
+            {"ex_id":"bench_press","sets":3,"reps":"8–10","rpe":6.5,"rest_s":120},
+            {"ex_id":"lat_pulldown","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90},
+            {"ex_id":"overhead_press","sets":2,"reps":"8–10","rpe":6,"rest_s":120}
+          ],"conditioning":{"type":"steady","protocol":"Bike 12 min","duration_min":12}},
+          {"day":2,"name_en":"Lower","name_ar":"السفلي","work":[
+            {"ex_id":"back_squat","sets":3,"reps":"8–10","rpe":6.5,"rest_s":150},
+            {"ex_id":"romanian_deadlift","sets":3,"reps":"10–12","rpe":6.5,"rest_s":120},
+            {"ex_id":"plank","sets":3,"reps":"40s","rest_s":60}
+          ]},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_db_press","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":2,"reps":"10–12","rpe":6,"rest_s":90},
+            {"ex_id":"tricep_pushdown","sets":2,"reps":"12–15","rpe":6,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"seated_row","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90},
+            {"ex_id":"face_pull","sets":3,"reps":"15–20","rpe":6,"rest_s":60},
+            {"ex_id":"db_curl","sets":2,"reps":"10–12","rpe":6,"rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Walk 15 min","duration_min":15}},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":2,"reps":"15","rpe":6,"rest_s":60},
+            {"ex_id":"leg_curl","sets":2,"reps":"12–15","rpe":6,"rest_s":75}
+          ],"conditioning":{"type":"intervals","protocol":"Rower 1min/1min × 10","duration_min":20}}
+        ],
+        "intermediate": [
+          {"day":1,"name_en":"Upper","name_ar":"العلوي","work":[
+            {"ex_id":"bench_press","sets":4,"reps":"8–10","rpe":7,"rest_s":120},
+            {"ex_id":"lat_pulldown","sets":4,"reps":"10–12","rpe":7,"rest_s":90},
+            {"ex_id":"overhead_press","sets":3,"reps":"8–10","rpe":6.5,"rest_s":120}
+          ],"conditioning":{"type":"steady","protocol":"Bike 15 min","duration_min":15}},
+          {"day":2,"name_en":"Lower","name_ar":"السفلي","work":[
+            {"ex_id":"back_squat","sets":4,"reps":"8–10","rpe":7,"rest_s":150},
+            {"ex_id":"romanian_deadlift","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"plank","sets":3,"reps":"50s","rest_s":60}
+          ]},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_db_press","sets":4,"reps":"10–12","rpe":7,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90},
+            {"ex_id":"tricep_pushdown","sets":3,"reps":"12–15","rpe":6.5,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"seated_row","sets":4,"reps":"10–12","rpe":7,"rest_s":90},
+            {"ex_id":"face_pull","sets":3,"reps":"15–20","rpe":6.5,"rest_s":60},
+            {"ex_id":"db_curl","sets":3,"reps":"10–12","rpe":6.5,"rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Walk 18 min","duration_min":18}},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":3,"reps":"18","rpe":6.5,"rest_s":60},
+            {"ex_id":"leg_curl","sets":3,"reps":"12–15","rpe":6.5,"rest_s":75}
+          ],"conditioning":{"type":"intervals","protocol":"Rower 1min/1min × 12","duration_min":24}}
+        ],
+        "advanced": [
+          {"day":1,"name_en":"Upper","name_ar":"العلوي","work":[
+            {"ex_id":"bench_press","sets":5,"reps":"8–10","rpe":7.5,"rest_s":120},
+            {"ex_id":"lat_pulldown","sets":5,"reps":"10–12","rpe":7.5,"rest_s":90},
+            {"ex_id":"overhead_press","sets":4,"reps":"8–10","rpe":7,"rest_s":120}
+          ],"conditioning":{"type":"steady","protocol":"Bike 18 min","duration_min":18}},
+          {"day":2,"name_en":"Lower","name_ar":"السفلي","work":[
+            {"ex_id":"back_squat","sets":5,"reps":"8–10","rpe":7.5,"rest_s":150},
+            {"ex_id":"romanian_deadlift","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"plank","sets":3,"reps":"60s","rest_s":60}
+          ]},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_db_press","sets":5,"reps":"10–12","rpe":7.5,"rest_s":90},
+            {"ex_id":"db_shoulder_press","sets":4,"reps":"10–12","rpe":7,"rest_s":90},
+            {"ex_id":"tricep_pushdown","sets":4,"reps":"12–15","rpe":7,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"seated_row","sets":5,"reps":"10–12","rpe":7.5,"rest_s":90},
+            {"ex_id":"face_pull","sets":4,"reps":"15–20","rpe":7,"rest_s":60},
+            {"ex_id":"db_curl","sets":4,"reps":"10–12","rpe":7,"rest_s":60}
+          ],"conditioning":{"type":"steady","protocol":"Walk/Jog 20 min","duration_min":20}},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":4,"reps":"20","rpe":7,"rest_s":60},
+            {"ex_id":"leg_curl","sets":4,"reps":"15–18","rpe":7,"rest_s":75}
+          ],"conditioning":{"type":"intervals","protocol":"Rower 1min/1min × 15","duration_min":30}}
+        ]
+      }
+    },
+    "home": {
+      "fat_loss": {
+        "beginner": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"push_up","sets":3,"reps":"10–12","rpe":6.5,"rest_s":120},
+            {"ex_id":"db_row","sets":3,"reps":"10–12","rpe":6.5,"rest_s":120},
+            {"ex_id":"db_shoulder_press","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90}
+          ],"conditioning":{"type":"intervals","protocol":"Jumping Jacks 30/30 × 8","duration_min":8}},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"goblet_squat","sets":3,"reps":"12–15","rpe":6.5,"rest_s":120},
+            {"ex_id":"romanian_deadlift","sets":3,"reps":"10–12","rpe":6.5,"rest_s":120},
+            {"ex_id":"reverse_lunge","sets":3,"reps":"10/leg","rpe":6,"rest_s":90}
+          ]},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_push_up","sets":3,"reps":"12–15","rpe":6,"rest_s":90},
+            {"ex_id":"pike_push_up","sets":3,"reps":"8–10","rpe":6.5,"rest_s":90},
+            {"ex_id":"db_lateral_raise","sets":3,"reps":"12–15","rpe":6,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"pull_up","sets":3,"reps":"6–10","rpe":7,"rest_s":150},
+            {"ex_id":"db_row","sets":3,"reps":"12","rpe":6.5,"rest_s":90},
+            {"ex_id":"db_curl","sets":3,"reps":"10–12","rpe":6,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":3,"reps":"15","rpe":6,"rest_s":60},
+            {"ex_id":"glute_bridge","sets":3,"reps":"15","rpe":6,"rest_s":60},
+            {"ex_id":"plank","sets":3,"reps":"40s","rest_s":60}
+          ],"conditioning":{"type":"hiit","protocol":"Burpees 20/10 Tabata × 8","duration_min":4}}
+        ],
+        "intermediate": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"push_up","sets":4,"reps":"12–15","rpe":7,"rest_s":120},
+            {"ex_id":"db_row","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"db_shoulder_press","sets":4,"reps":"10–12","rpe":7,"rest_s":90}
+          ],"conditioning":{"type":"intervals","protocol":"Burpees 30/30 × 8","duration_min":8}},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"goblet_squat","sets":4,"reps":"12–15","rpe":7,"rest_s":120},
+            {"ex_id":"romanian_deadlift","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"reverse_lunge","sets":4,"reps":"10/leg","rpe":6.5,"rest_s":90}
+          ]},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_push_up","sets":4,"reps":"15","rpe":6.5,"rest_s":90},
+            {"ex_id":"pike_push_up","sets":4,"reps":"10–12","rpe":7,"rest_s":90},
+            {"ex_id":"db_lateral_raise","sets":4,"reps":"12–15","rpe":6.5,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"pull_up","sets":4,"reps":"8–10","rpe":7.5,"rest_s":150},
+            {"ex_id":"db_row","sets":4,"reps":"12","rpe":7,"rest_s":90},
+            {"ex_id":"db_curl","sets":4,"reps":"10–12","rpe":6.5,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":4,"reps":"18","rpe":6.5,"rest_s":60},
+            {"ex_id":"glute_bridge","sets":4,"reps":"18","rpe":6.5,"rest_s":60},
+            {"ex_id":"plank","sets":3,"reps":"50s","rest_s":60}
+          ],"conditioning":{"type":"hiit","protocol":"Mountain Climbers 20/10 Tabata × 8","duration_min":4}}
+        ],
+        "advanced": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"push_up","sets":5,"reps":"15–20","rpe":7.5,"rest_s":120},
+            {"ex_id":"db_row","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"db_shoulder_press","sets":5,"reps":"10–12","rpe":7.5,"rest_s":90}
+          ],"conditioning":{"type":"intervals","protocol":"Burpees + High Knees 30/30 × 10","duration_min":10}},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"goblet_squat","sets":5,"reps":"15–18","rpe":7.5,"rest_s":120},
+            {"ex_id":"romanian_deadlift","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"reverse_lunge","sets":5,"reps":"12/leg","rpe":7,"rest_s":90}
+          ]},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_push_up","sets":5,"reps":"18–20","rpe":7,"rest_s":90},
+            {"ex_id":"pike_push_up","sets":5,"reps":"12–15","rpe":7.5,"rest_s":90},
+            {"ex_id":"db_lateral_raise","sets":5,"reps":"15–18","rpe":7,"rest_s":60}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"pull_up","sets":5,"reps":"10–12","rpe":8,"rest_s":150},
+            {"ex_id":"db_row","sets":5,"reps":"15","rpe":7.5,"rest_s":90},
+            {"ex_id":"db_curl","sets":5,"reps":"12–15","rpe":7,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":5,"reps":"20","rpe":7,"rest_s":60},
+            {"ex_id":"glute_bridge","sets":5,"reps":"20","rpe":7,"rest_s":60},
+            {"ex_id":"plank","sets":3,"reps":"60s","rest_s":60}
+          ],"conditioning":{"type":"hiit","protocol":"Tabata Mix 20/10 × 12","duration_min":6}}
+        ]
+      },
+      "muscle_gain": {
+        "beginner": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"push_up","sets":4,"reps":"10–12","rpe":7,"rest_s":150},
+            {"ex_id":"db_row","sets":4,"reps":"10–12","rpe":7,"rest_s":150},
+            {"ex_id":"db_shoulder_press","sets":3,"reps":"10–12","rpe":6.5,"rest_s":120}
+          ]},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"goblet_squat","sets":4,"reps":"10–12","rpe":7,"rest_s":180},
+            {"ex_id":"romanian_deadlift","sets":4,"reps":"10–12","rpe":7,"rest_s":150},
+            {"ex_id":"bulgarian_split_squat","sets":3,"reps":"8/leg","rpe":6.5,"rest_s":120}
+          ]},
+          {"day":3,"name_en":"Push Hypertrophy","name_ar":"دفع التضخم","work":[
+            {"ex_id":"pike_push_up","sets":4,"reps":"10–12","rpe":7,"rest_s":120},
+            {"ex_id":"incline_push_up","sets":4,"reps":"12–15","rpe":6.5,"rest_s":90},
+            {"ex_id":"db_lateral_raise","sets":3,"reps":"12–15","rpe":6.5,"rest_s":60},
+            {"ex_id":"diamond_push_up","sets":3,"reps":"8–10","rpe":7,"rest_s":90}
+          ]},
+          {"day":4,"name_en":"Pull Hypertrophy","name_ar":"سحب التضخم","work":[
+            {"ex_id":"pull_up","sets":4,"reps":"8–10","rpe":7.5,"rest_s":180},
+            {"ex_id":"db_row","sets":4,"reps":"12","rpe":7,"rest_s":120},
+            {"ex_id":"reverse_fly","sets":3,"reps":"12–15","rpe":6.5,"rest_s":60},
+            {"ex_id":"db_curl","sets":3,"reps":"10–12","rpe":6.5,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs Hypertrophy","name_ar":"ساق التضخم","work":[
+            {"ex_id":"goblet_squat","sets":4,"reps":"12–15","rpe":7,"rest_s":120},
+            {"ex_id":"bulgarian_split_squat","sets":3,"reps":"10/leg","rpe":7,"rest_s":120},
+            {"ex_id":"glute_bridge","sets":4,"reps":"15","rpe":6.5,"rest_s":90},
+            {"ex_id":"calf_raise","sets":4,"reps":"15–20","rest_s":60}
+          ]}
+        ],
+        "intermediate": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"push_up","sets":5,"reps":"12–15","rpe":7.5,"rest_s":150},
+            {"ex_id":"db_row","sets":5,"reps":"10–12","rpe":7.5,"rest_s":150},
+            {"ex_id":"db_shoulder_press","sets":4,"reps":"10–12","rpe":7,"rest_s":120}
+          ]},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"goblet_squat","sets":5,"reps":"10–12","rpe":7.5,"rest_s":180},
+            {"ex_id":"romanian_deadlift","sets":5,"reps":"10–12","rpe":7.5,"rest_s":150},
+            {"ex_id":"bulgarian_split_squat","sets":4,"reps":"10/leg","rpe":7,"rest_s":120}
+          ]},
+          {"day":3,"name_en":"Push Hypertrophy","name_ar":"دفع التضخم","work":[
+            {"ex_id":"pike_push_up","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120},
+            {"ex_id":"incline_push_up","sets":5,"reps":"15","rpe":7,"rest_s":90},
+            {"ex_id":"db_lateral_raise","sets":4,"reps":"12–15","rpe":7,"rest_s":60},
+            {"ex_id":"diamond_push_up","sets":4,"reps":"10–12","rpe":7.5,"rest_s":90}
+          ]},
+          {"day":4,"name_en":"Pull Hypertrophy","name_ar":"سحب التضخم","work":[
+            {"ex_id":"pull_up","sets":5,"reps":"10–12","rpe":8,"rest_s":180},
+            {"ex_id":"db_row","sets":5,"reps":"12","rpe":7.5,"rest_s":120},
+            {"ex_id":"reverse_fly","sets":4,"reps":"12–15","rpe":7,"rest_s":60},
+            {"ex_id":"db_curl","sets":4,"reps":"10–12","rpe":7,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs Hypertrophy","name_ar":"ساق التضخم","work":[
+            {"ex_id":"goblet_squat","sets":5,"reps":"12–15","rpe":7.5,"rest_s":120},
+            {"ex_id":"bulgarian_split_squat","sets":4,"reps":"12/leg","rpe":7.5,"rest_s":120},
+            {"ex_id":"glute_bridge","sets":5,"reps":"18","rpe":7,"rest_s":90},
+            {"ex_id":"calf_raise","sets":5,"reps":"18–20","rest_s":60}
+          ]}
+        ],
+        "advanced": [
+          {"day":1,"name_en":"Upper Power","name_ar":"قوة العلوي","work":[
+            {"ex_id":"push_up","sets":6,"reps":"15–20","rpe":8,"rest_s":150},
+            {"ex_id":"db_row","sets":6,"reps":"10–12","rpe":8,"rest_s":150},
+            {"ex_id":"db_shoulder_press","sets":5,"reps":"10–12","rpe":7.5,"rest_s":120}
+          ]},
+          {"day":2,"name_en":"Lower Power","name_ar":"قوة السفلي","work":[
+            {"ex_id":"goblet_squat","sets":6,"reps":"10–12","rpe":8,"rest_s":180},
+            {"ex_id":"romanian_deadlift","sets":6,"reps":"10–12","rpe":8,"rest_s":150},
+            {"ex_id":"bulgarian_split_squat","sets":5,"reps":"12/leg","rpe":7.5,"rest_s":120}
+          ]},
+          {"day":3,"name_en":"Push Hypertrophy","name_ar":"دفع التضخم","work":[
+            {"ex_id":"pike_push_up","sets":6,"reps":"12–15","rpe":8,"rest_s":120},
+            {"ex_id":"incline_push_up","sets":6,"reps":"18–20","rpe":7.5,"rest_s":90},
+            {"ex_id":"db_lateral_raise","sets":5,"reps":"15–18","rpe":7.5,"rest_s":60},
+            {"ex_id":"diamond_push_up","sets":5,"reps":"12–15","rpe":8,"rest_s":90}
+          ]},
+          {"day":4,"name_en":"Pull Hypertrophy","name_ar":"سحب التضخم","work":[
+            {"ex_id":"pull_up","sets":6,"reps":"12–15","rpe":8.5,"rest_s":180},
+            {"ex_id":"db_row","sets":6,"reps":"15","rpe":8,"rest_s":120},
+            {"ex_id":"reverse_fly","sets":5,"reps":"15–18","rpe":7.5,"rest_s":60},
+            {"ex_id":"db_curl","sets":5,"reps":"12–15","rpe":7.5,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs Hypertrophy","name_ar":"ساق التضخم","work":[
+            {"ex_id":"goblet_squat","sets":6,"reps":"15–18","rpe":8,"rest_s":120},
+            {"ex_id":"bulgarian_split_squat","sets":5,"reps":"15/leg","rpe":8,"rest_s":120},
+            {"ex_id":"glute_bridge","sets":6,"reps":"20","rpe":7.5,"rest_s":90},
+            {"ex_id":"calf_raise","sets":6,"reps":"20","rest_s":60}
+          ]}
+        ]
+      },
+      "general_fitness": {
+        "beginner": [
+          {"day":1,"name_en":"Upper","name_ar":"العلوي","work":[
+            {"ex_id":"push_up","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90},
+            {"ex_id":"db_row","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90},
+            {"ex_id":"plank","sets":3,"reps":"40s","rest_s":60}
+          ]},
+          {"day":2,"name_en":"Lower","name_ar":"السفلي","work":[
+            {"ex_id":"goblet_squat","sets":3,"reps":"12–15","rpe":6.5,"rest_s":90},
+            {"ex_id":"romanian_deadlift","sets":3,"reps":"10–12","rpe":6.5,"rest_s":90}
+          ],"conditioning":{"type":"steady","protocol":"Walk 15 min","duration_min":15}},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_push_up","sets":3,"reps":"12","rpe":6,"rest_s":75},
+            {"ex_id":"db_shoulder_press","sets":2,"reps":"10–12","rpe":6,"rest_s":75}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"db_row","sets":3,"reps":"12","rpe":6.5,"rest_s":90},
+            {"ex_id":"db_curl","sets":2,"reps":"10–12","rpe":6,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":2,"reps":"15","rpe":6,"rest_s":60}
+          ],"conditioning":{"type":"intervals","protocol":"Jumping Jacks 30/30 × 10","duration_min":10}}
+        ],
+        "intermediate": [
+          {"day":1,"name_en":"Upper","name_ar":"العلوي","work":[
+            {"ex_id":"push_up","sets":4,"reps":"12–15","rpe":7,"rest_s":90},
+            {"ex_id":"db_row","sets":4,"reps":"10–12","rpe":7,"rest_s":90},
+            {"ex_id":"plank","sets":3,"reps":"50s","rest_s":60}
+          ]},
+          {"day":2,"name_en":"Lower","name_ar":"السفلي","work":[
+            {"ex_id":"goblet_squat","sets":4,"reps":"12–15","rpe":7,"rest_s":90},
+            {"ex_id":"romanian_deadlift","sets":4,"reps":"10–12","rpe":7,"rest_s":90}
+          ],"conditioning":{"type":"steady","protocol":"Walk 18 min","duration_min":18}},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_push_up","sets":4,"reps":"15","rpe":6.5,"rest_s":75},
+            {"ex_id":"db_shoulder_press","sets":3,"reps":"10–12","rpe":6.5,"rest_s":75}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"db_row","sets":4,"reps":"12","rpe":7,"rest_s":90},
+            {"ex_id":"db_curl","sets":3,"reps":"10–12","rpe":6.5,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":3,"reps":"18","rpe":6.5,"rest_s":60}
+          ],"conditioning":{"type":"intervals","protocol":"High Knees 30/30 × 12","duration_min":12}}
+        ],
+        "advanced": [
+          {"day":1,"name_en":"Upper","name_ar":"العلوي","work":[
+            {"ex_id":"push_up","sets":5,"reps":"15–18","rpe":7.5,"rest_s":90},
+            {"ex_id":"db_row","sets":5,"reps":"10–12","rpe":7.5,"rest_s":90},
+            {"ex_id":"plank","sets":3,"reps":"60s","rest_s":60}
+          ]},
+          {"day":2,"name_en":"Lower","name_ar":"السفلي","work":[
+            {"ex_id":"goblet_squat","sets":5,"reps":"15–18","rpe":7.5,"rest_s":90},
+            {"ex_id":"romanian_deadlift","sets":5,"reps":"10–12","rpe":7.5,"rest_s":90}
+          ],"conditioning":{"type":"steady","protocol":"Jog 20 min","duration_min":20}},
+          {"day":3,"name_en":"Push","name_ar":"دفع","work":[
+            {"ex_id":"incline_push_up","sets":5,"reps":"18","rpe":7,"rest_s":75},
+            {"ex_id":"db_shoulder_press","sets":4,"reps":"10–12","rpe":7,"rest_s":75}
+          ]},
+          {"day":4,"name_en":"Pull","name_ar":"سحب","work":[
+            {"ex_id":"db_row","sets":5,"reps":"15","rpe":7.5,"rest_s":90},
+            {"ex_id":"db_curl","sets":4,"reps":"12–15","rpe":7,"rest_s":60}
+          ]},
+          {"day":5,"name_en":"Legs + Cardio","name_ar":"ساق + كارديو","work":[
+            {"ex_id":"goblet_squat","sets":4,"reps":"20","rpe":7,"rest_s":60}
+          ],"conditioning":{"type":"intervals","protocol":"Burpees 30/30 × 12","duration_min":12}}
+        ]
+      }
+    }
+  },
+  "fitness_score": {
+    "method": "weekly_projection",
+    "weights": {"adherence":0.40,"strength":0.35,"cardio":0.25},
+    "by_experience": {
+      "beginner": [
+        {"week":1,"score":69},{"week":2,"score":71},{"week":3,"score":73},{"week":4,"score":75},
+        {"week":5,"score":77},{"week":6,"score":78},{"week":7,"score":80},{"week":8,"score":81},
+        {"week":9,"score":83},{"week":10,"score":84},{"week":11,"score":82},{"week":12,"score":85}
+      ],
+      "intermediate": [
+        {"week":1,"score":70},{"week":2,"score":72},{"week":3,"score":74},{"week":4,"score":76},
+        {"week":5,"score":78},{"week":6,"score":79},{"week":7,"score":81},{"week":8,"score":82},
+        {"week":9,"score":84},{"week":10,"score":85},{"week":11,"score":83},{"week":12,"score":86}
+      ],
+      "advanced": [
+        {"week":1,"score":71},{"week":2,"score":73},{"week":3,"score":75},{"week":4,"score":77},
+        {"week":5,"score":79},{"week":6,"score":80},{"week":7,"score":82},{"week":8,"score":83},
+        {"week":9,"score":85},{"week":10,"score":86},{"week":11,"score":84},{"week":12,"score":87}
+      ]
+    }
+  },
+  "routing": {"injury_swaps": true, "equipment_swaps": true},
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "intake_level": "advanced",
+    "intake_questions_required": "full",
+    "tags": ["5_days", "ULPPL", "premium", "high_volume"]
+  }
+}

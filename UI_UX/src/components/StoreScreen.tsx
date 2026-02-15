@@ -380,14 +380,14 @@ export function StoreScreen({ userProfile, onNavigate, isDemoMode }: StoreScreen
     <div className="min-h-screen bg-background relative">
       {/* Background Image */}
       <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
         style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1736236560164-bc741c70bca5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
       />
       
       {/* Content */}
       <div className="relative z-10">
       {/* Header */}
-      <div className="bg-orange-600 text-white p-4">
+      <div className="bg-gradient-to-r from-amber-600 to-orange-700 text-white p-4">
         <div className="flex items-center gap-3 mb-4">
           <Button 
             variant="ghost" 

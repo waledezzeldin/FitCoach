@@ -2,47 +2,64 @@ import React from 'react';
 
 export interface ExerciseDetail {
   id: string;
-  name: string;
+  nameKey: string; // Translation key for exercise name
   category: string;
   muscleGroup: string;
   equipment: string[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   videoUrl?: string;
-  instructions: string[];
-  cues: string[];
-  commonMistakes: string[];
+  instructionKeys: string[]; // Translation keys for instructions
+  cueKeys: string[]; // Translation keys for cues
+  mistakeKeys: string[]; // Translation keys for common mistakes
   alternatives: string[]; // IDs of alternative exercises
   defaultSets: number;
   defaultReps: string;
   defaultRestTime: number; // in seconds
 }
 
+// Helper to convert snake_case exercise ID to camelCase for translation keys
+const exerciseIdToKey = (id: string): string => {
+  // Map of special cases
+  const specialCases: Record<string, string> = {
+    'bench_press': 'benchPress',
+    'dumbbell_press': 'dumbbellPress',
+    'push_ups': 'pushUps',
+    'pull_ups': 'pullUps',
+    'barbell_rows': 'barbellRows',
+    'overhead_press': 'overheadPress',
+    'squats': 'squats',
+    'deadlifts': 'deadlift',
+  };
+  
+  return specialCases[id] || id.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+};
+
 export const exerciseDatabase: ExerciseDetail[] = [
   // Chest Exercises
   {
     id: 'bench_press',
-    name: 'Bench Press',
+    nameKey: 'exercises.benchPress',
     category: 'push',
     muscleGroup: 'chest',
     equipment: ['barbell', 'bench'],
     difficulty: 'intermediate',
-    instructions: [
-      'Lie flat on the bench with feet firmly on the ground',
-      'Grip the bar slightly wider than shoulder-width',
-      'Lower the bar to chest with control',
-      'Press the bar up explosively while keeping shoulders back'
+    instructionKeys: [
+      'exercises.benchPress.instruction1',
+      'exercises.benchPress.instruction2',
+      'exercises.benchPress.instruction3',
+      'exercises.benchPress.instruction4'
     ],
-    cues: [
-      'Keep your core tight throughout the movement',
-      'Maintain natural arch in lower back',
-      'Drive through your heels',
-      'Touch chest briefly, don\'t bounce'
+    cueKeys: [
+      'exercises.benchPress.cue1',
+      'exercises.benchPress.cue2',
+      'exercises.benchPress.cue3',
+      'exercises.benchPress.cue4'
     ],
-    commonMistakes: [
-      'Lifting feet off the ground',
-      'Bouncing bar off chest',
-      'Not maintaining shoulder position',
-      'Partial range of motion'
+    mistakeKeys: [
+      'exercises.benchPress.mistake1',
+      'exercises.benchPress.mistake2',
+      'exercises.benchPress.mistake3',
+      'exercises.benchPress.mistake4'
     ],
     alternatives: ['dumbbell_press', 'push_ups', 'incline_press'],
     defaultSets: 4,
@@ -51,28 +68,28 @@ export const exerciseDatabase: ExerciseDetail[] = [
   },
   {
     id: 'dumbbell_press',
-    name: 'Dumbbell Bench Press',
+    nameKey: 'exercises.dumbbellPress',
     category: 'push',
     muscleGroup: 'chest',
     equipment: ['dumbbells', 'bench'],
     difficulty: 'intermediate',
-    instructions: [
-      'Lie on bench holding dumbbells at chest level',
-      'Press dumbbells up and slightly inward',
-      'Lower with control until elbows are below chest',
-      'Press back up in smooth motion'
+    instructionKeys: [
+      'exercises.dumbbellPress.instruction1',
+      'exercises.dumbbellPress.instruction2',
+      'exercises.dumbbellPress.instruction3',
+      'exercises.dumbbellPress.instruction4'
     ],
-    cues: [
-      'Keep wrists neutral and strong',
-      'Squeeze chest at the top',
-      'Control the negative portion',
-      'Don\'t let dumbbells drift away from body'
+    cueKeys: [
+      'exercises.dumbbellPress.cue1',
+      'exercises.dumbbellPress.cue2',
+      'exercises.dumbbellPress.cue3',
+      'exercises.dumbbellPress.cue4'
     ],
-    commonMistakes: [
-      'Going too deep and straining shoulders',
-      'Using momentum instead of control',
-      'Not squeezing at the top',
-      'Allowing dumbbells to drift too wide'
+    mistakeKeys: [
+      'exercises.dumbbellPress.mistake1',
+      'exercises.dumbbellPress.mistake2',
+      'exercises.dumbbellPress.mistake3',
+      'exercises.dumbbellPress.mistake4'
     ],
     alternatives: ['bench_press', 'push_ups', 'flies'],
     defaultSets: 4,
@@ -81,28 +98,28 @@ export const exerciseDatabase: ExerciseDetail[] = [
   },
   {
     id: 'push_ups',
-    name: 'Push-ups',
+    nameKey: 'exercises.pushUps',
     category: 'push',
     muscleGroup: 'chest',
     equipment: ['bodyweight'],
     difficulty: 'beginner',
-    instructions: [
-      'Start in plank position with hands under shoulders',
-      'Lower body as one unit until chest nearly touches ground',
-      'Push back up to starting position',
-      'Maintain straight line from head to heels'
+    instructionKeys: [
+      'exercises.pushUps.instruction1',
+      'exercises.pushUps.instruction2',
+      'exercises.pushUps.instruction3',
+      'exercises.pushUps.instruction4'
     ],
-    cues: [
-      'Keep core engaged throughout',
-      'Don\'t let hips sag or pike up',
-      'Full range of motion',
-      'Control both up and down phases'
+    cueKeys: [
+      'exercises.pushUps.cue1',
+      'exercises.pushUps.cue2',
+      'exercises.pushUps.cue3',
+      'exercises.pushUps.cue4'
     ],
-    commonMistakes: [
-      'Partial range of motion',
-      'Letting hips sag',
-      'Head position too high or low',
-      'Hands too wide or too narrow'
+    mistakeKeys: [
+      'exercises.pushUps.mistake1',
+      'exercises.pushUps.mistake2',
+      'exercises.pushUps.mistake3',
+      'exercises.pushUps.mistake4'
     ],
     alternatives: ['incline_push_ups', 'knee_push_ups', 'bench_press'],
     defaultSets: 3,
@@ -113,28 +130,28 @@ export const exerciseDatabase: ExerciseDetail[] = [
   // Back Exercises
   {
     id: 'pull_ups',
-    name: 'Pull-ups',
+    nameKey: 'exercises.pullUps',
     category: 'pull',
     muscleGroup: 'back',
     equipment: ['pull_up_bar'],
     difficulty: 'intermediate',
-    instructions: [
-      'Hang from bar with palms facing away',
-      'Pull body up until chin clears the bar',
-      'Lower with control to full extension',
-      'Repeat for desired reps'
+    instructionKeys: [
+      'exercises.pullUps.instruction1',
+      'exercises.pullUps.instruction2',
+      'exercises.pullUps.instruction3',
+      'exercises.pullUps.instruction4'
     ],
-    cues: [
-      'Lead with chest, not chin',
-      'Squeeze shoulder blades together',
-      'Don\'t swing or use momentum',
-      'Full range of motion'
+    cueKeys: [
+      'exercises.pullUps.cue1',
+      'exercises.pullUps.cue2',
+      'exercises.pullUps.cue3',
+      'exercises.pullUps.cue4'
     ],
-    commonMistakes: [
-      'Partial range of motion',
-      'Swinging or kipping',
-      'Not engaging lats properly',
-      'Rushing the negative'
+    mistakeKeys: [
+      'exercises.pullUps.mistake1',
+      'exercises.pullUps.mistake2',
+      'exercises.pullUps.mistake3',
+      'exercises.pullUps.mistake4'
     ],
     alternatives: ['lat_pulldown', 'assisted_pull_ups', 'barbell_rows'],
     defaultSets: 3,
@@ -143,28 +160,28 @@ export const exerciseDatabase: ExerciseDetail[] = [
   },
   {
     id: 'barbell_rows',
-    name: 'Barbell Rows',
+    nameKey: 'exercises.barbellRows',
     category: 'pull',
     muscleGroup: 'back',
     equipment: ['barbell'],
     difficulty: 'intermediate',
-    instructions: [
-      'Stand with feet hip-width apart holding barbell',
-      'Hinge at hips, keeping back straight',
-      'Pull bar to lower chest/upper abdomen',
-      'Lower with control to starting position'
+    instructionKeys: [
+      'exercises.barbellRows.instruction1',
+      'exercises.barbellRows.instruction2',
+      'exercises.barbellRows.instruction3',
+      'exercises.barbellRows.instruction4'
     ],
-    cues: [
-      'Keep back straight throughout',
-      'Pull with elbows, not hands',
-      'Squeeze shoulder blades at top',
-      'Don\'t round the back'
+    cueKeys: [
+      'exercises.barbellRows.cue1',
+      'exercises.barbellRows.cue2',
+      'exercises.barbellRows.cue3',
+      'exercises.barbellRows.cue4'
     ],
-    commonMistakes: [
-      'Rounding the back',
-      'Using too much momentum',
-      'Not maintaining hip hinge position',
-      'Pulling too high or too low'
+    mistakeKeys: [
+      'exercises.barbellRows.mistake1',
+      'exercises.barbellRows.mistake2',
+      'exercises.barbellRows.mistake3',
+      'exercises.barbellRows.mistake4'
     ],
     alternatives: ['dumbbell_rows', 'seated_cable_rows', 'pull_ups'],
     defaultSets: 4,
@@ -175,28 +192,28 @@ export const exerciseDatabase: ExerciseDetail[] = [
   // Shoulder Exercises
   {
     id: 'overhead_press',
-    name: 'Overhead Press',
+    nameKey: 'exercises.overheadPress',
     category: 'push',
     muscleGroup: 'shoulders',
     equipment: ['barbell'],
     difficulty: 'intermediate',
-    instructions: [
-      'Stand with feet hip-width apart, bar at shoulder level',
-      'Press bar straight up overhead',
-      'Lower with control to starting position',
-      'Keep core tight throughout'
+    instructionKeys: [
+      'exercises.overheadPress.instruction1',
+      'exercises.overheadPress.instruction2',
+      'exercises.overheadPress.instruction3',
+      'exercises.overheadPress.instruction4'
     ],
-    cues: [
-      'Drive through heels',
-      'Keep bar path vertical',
-      'Squeeze glutes for stability',
-      'Don\'t arch back excessively'
+    cueKeys: [
+      'exercises.overheadPress.cue1',
+      'exercises.overheadPress.cue2',
+      'exercises.overheadPress.cue3',
+      'exercises.overheadPress.cue4'
     ],
-    commonMistakes: [
-      'Pressing bar forward instead of up',
-      'Excessive back arch',
-      'Not keeping core tight',
-      'Partial range of motion'
+    mistakeKeys: [
+      'exercises.overheadPress.mistake1',
+      'exercises.overheadPress.mistake2',
+      'exercises.overheadPress.mistake3',
+      'exercises.overheadPress.mistake4'
     ],
     alternatives: ['dumbbell_press', 'seated_press', 'pike_push_ups'],
     defaultSets: 4,
@@ -207,28 +224,28 @@ export const exerciseDatabase: ExerciseDetail[] = [
   // Leg Exercises
   {
     id: 'squats',
-    name: 'Back Squats',
+    nameKey: 'exercises.squats',
     category: 'legs',
     muscleGroup: 'quadriceps',
     equipment: ['barbell', 'squat_rack'],
     difficulty: 'intermediate',
-    instructions: [
-      'Position bar on upper back, stand with feet shoulder-width apart',
-      'Lower by pushing hips back and bending knees',
-      'Descend until thighs are parallel to floor',
-      'Drive through heels to return to starting position'
+    instructionKeys: [
+      'exercises.squats.instruction1',
+      'exercises.squats.instruction2',
+      'exercises.squats.instruction3',
+      'exercises.squats.instruction4'
     ],
-    cues: [
-      'Keep chest up and core tight',
-      'Knees track over toes',
-      'Weight balanced across whole foot',
-      'Hip hinge initiates the movement'
+    cueKeys: [
+      'exercises.squats.cue1',
+      'exercises.squats.cue2',
+      'exercises.squats.cue3',
+      'exercises.squats.cue4'
     ],
-    commonMistakes: [
-      'Knees caving inward',
-      'Not reaching proper depth',
-      'Forward lean of torso',
-      'Rising on toes'
+    mistakeKeys: [
+      'exercises.squats.mistake1',
+      'exercises.squats.mistake2',
+      'exercises.squats.mistake3',
+      'exercises.squats.mistake4'
     ],
     alternatives: ['goblet_squats', 'front_squats', 'leg_press'],
     defaultSets: 4,
@@ -237,28 +254,28 @@ export const exerciseDatabase: ExerciseDetail[] = [
   },
   {
     id: 'deadlifts',
-    name: 'Deadlifts',
+    nameKey: 'exercises.deadlift',
     category: 'pull',
     muscleGroup: 'posterior_chain',
     equipment: ['barbell'],
     difficulty: 'advanced',
-    instructions: [
-      'Stand with feet hip-width apart, bar over mid-foot',
-      'Hinge at hips and grip bar with hands outside legs',
-      'Drive through heels and hips to lift bar',
-      'Stand tall, then reverse the movement'
+    instructionKeys: [
+      'exercises.deadlift.instruction1',
+      'exercises.deadlift.instruction2',
+      'exercises.deadlift.instruction3',
+      'exercises.deadlift.instruction4'
     ],
-    cues: [
-      'Keep bar close to body throughout',
-      'Maintain neutral spine',
-      'Drive hips forward at top',
-      'Control the descent'
+    cueKeys: [
+      'exercises.deadlift.cue1',
+      'exercises.deadlift.cue2',
+      'exercises.deadlift.cue3',
+      'exercises.deadlift.cue4'
     ],
-    commonMistakes: [
-      'Rounding the back',
-      'Bar drifting away from body',
-      'Not engaging lats',
-      'Hyperextending at the top'
+    mistakeKeys: [
+      'exercises.deadlift.mistake1',
+      'exercises.deadlift.mistake2',
+      'exercises.deadlift.mistake3',
+      'exercises.deadlift.mistake4'
     ],
     alternatives: ['trap_bar_deadlifts', 'romanian_deadlifts', 'sumo_deadlifts'],
     defaultSets: 4,
@@ -292,4 +309,23 @@ export const getAlternativeExercises = (exerciseId: string): ExerciseDetail[] =>
   return exercise.alternatives
     .map(altId => getExerciseById(altId))
     .filter((alt): alt is ExerciseDetail => alt !== undefined);
+};
+
+// Helper function to get translated exercise data
+// This should be used by components that consume exercise data
+export interface TranslatedExercise extends Omit<ExerciseDetail, 'nameKey' | 'instructionKeys' | 'cueKeys' | 'mistakeKeys'> {
+  name: string;
+  instructions: string[];
+  cues: string[];
+  commonMistakes: string[];
+}
+
+export const translateExercise = (exercise: ExerciseDetail, t: (key: string) => string): TranslatedExercise => {
+  return {
+    ...exercise,
+    name: t(exercise.nameKey),
+    instructions: exercise.instructionKeys.map(key => t(key)),
+    cues: exercise.cueKeys.map(key => t(key)),
+    commonMistakes: exercise.mistakeKeys.map(key => t(key))
+  };
 };

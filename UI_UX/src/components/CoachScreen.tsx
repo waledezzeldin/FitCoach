@@ -39,6 +39,7 @@ interface CoachScreenProps {
   onNavigate: (screen: 'home' | 'workout' | 'nutrition' | 'store' | 'account') => void;
   onViewCoachProfile?: () => void;
   isDemoMode: boolean;
+  initialTab?: 'messages' | 'sessions'; // v2.0: Allow setting initial tab
 }
 
 interface Coach {
@@ -77,9 +78,9 @@ interface Session {
   type: 'chat' | 'video';
 }
 
-export function CoachScreen({ userProfile, onNavigate, onViewCoachProfile, isDemoMode }: CoachScreenProps) {
+export function CoachScreen({ userProfile, onNavigate, onViewCoachProfile, isDemoMode, initialTab = 'messages' }: CoachScreenProps) {
   const { t, isRTL } = useLanguage();
-  const [activeTab, setActiveTab] = useState('messages');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [messageInput, setMessageInput] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [showVideoBooking, setShowVideoBooking] = useState(false);
@@ -341,16 +342,16 @@ export function CoachScreen({ userProfile, onNavigate, onViewCoachProfile, isDem
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Background Image */}
+      {/* Background Image - Male Coach */}
       <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
-        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1540206063137-4a88ca974d1a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
+        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1533560904424-a0c61dc306fc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb25hbCUyMHRyYWluZXIlMjBtYW58ZW58MXx8fHwxNzY1Mjc3ODIyfDA&ixlib=rb-4.1.0&q=80&w=1080)' }}
       />
       
       {/* Content */}
       <div className="relative z-10">
       {/* Header */}
-      <div className="bg-purple-600 text-white p-4">
+      <div className="bg-gradient-to-r from-indigo-700 to-purple-800 text-white p-4">
         <div className="flex items-center gap-3 mb-4">
           <Button 
             variant="ghost" 
@@ -574,44 +575,11 @@ export function CoachScreen({ userProfile, onNavigate, onViewCoachProfile, isDem
                 <Button 
                   className="w-full bg-purple-600 hover:bg-purple-700"
                   onClick={() => setShowVideoBooking(true)}
-                >
-                  <Video className="w-4 h-4 mr-2" />
-                  {t('coach.bookVideoSession') || 'Book Video Session'}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Quick Book Session (Simple) */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t('coach.quickBook') || 'Quick Book with Current Coach'}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  disabled={(date) => date < new Date() || date.getDay() === 0 || date.getDay() === 6}
-                  className="rounded-md border"
-                />
-                
-                <div className="grid grid-cols-2 gap-2">
-                  {['14:00', '15:00', '16:00', '17:00'].map((time) => (
-                    <Button key={time} variant="outline" className="text-sm">
-                      {time}
-                    </Button>
-                  ))}
-                </div>
-
-                <Button 
-                  className="w-full"
                   disabled={quotaUsage.callsUsed >= quotaUsage.callsTotal}
-                  onClick={handleBookSession}
                 >
                   <Video className="w-4 h-4 mr-2" />
-                  {quotaUsage.callsUsed >= quotaUsage.callsTotal ? t('coach.limitReachedSessions') : t('coach.bookSession')}
+                  {quotaUsage.callsUsed >= quotaUsage.callsTotal ? t('coach.limitReachedSessions') : (t('coach.bookVideoSession') || 'Book Video Session')}
                 </Button>
-                
                 {usedSessions >= currentLimits.videoSessions && (
                   <p className="text-xs text-muted-foreground text-center">
                     {t('coach.upgradeForSessions')}

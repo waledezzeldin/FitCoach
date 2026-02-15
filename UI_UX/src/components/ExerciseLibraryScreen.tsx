@@ -6,7 +6,7 @@ import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ArrowLeft, Search, Heart, Play } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
-import { exerciseDatabase } from './EnhancedExerciseDatabase';
+import { exerciseDatabase, translateExercise } from './EnhancedExerciseDatabase';
 import { toast } from 'sonner@2.0.3';
 
 interface ExerciseLibraryScreenProps {
@@ -20,7 +20,10 @@ export function ExerciseLibraryScreen({ onBack, onExerciseSelect }: ExerciseLibr
   const [selectedMuscle, setSelectedMuscle] = useState('all');
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  const filteredExercises = exerciseDatabase.filter(ex => {
+  // Translate exercises for display
+  const translatedExercises = exerciseDatabase.map(ex => translateExercise(ex, t));
+
+  const filteredExercises = translatedExercises.filter(ex => {
     const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesMuscle = selectedMuscle === 'all' || ex.muscleGroup === selectedMuscle;
     return matchesSearch && matchesMuscle;
@@ -37,9 +40,17 @@ export function ExerciseLibraryScreen({ onBack, onExerciseSelect }: ExerciseLibr
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Background Image */}
+      <div 
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
+        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
+      />
+      
+      {/* Content */}
+      <div className="relative z-10">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-4">
+      <div className="bg-gradient-to-r from-slate-700 to-slate-900 text-white p-4">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onBack} className="text-white hover:bg-white/20">
             <ArrowLeft className="w-5 h-5" />
@@ -151,6 +162,7 @@ export function ExerciseLibraryScreen({ onBack, onExerciseSelect }: ExerciseLibr
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

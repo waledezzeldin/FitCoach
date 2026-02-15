@@ -1,0 +1,39 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+
+# Environment / secrets
+.env
+.env.*.local
+
+# Node
+**/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# Backend coverage output
+backend/coverage/
+
+# Flutter / Dart
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/build/
+**/.flutter-build/
+
+# Android
+**/.gradle/
+**/local.properties
+**/*.iml
+
+# iOS
+**/Pods/
+**/.symlinks/
+**/Flutter/ephemeral/
+
+# IDE
+.idea/
+.vscode/

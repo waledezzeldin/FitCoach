@@ -36,7 +36,7 @@ interface Coach {
   specialties: string[];
   rating: number;
   yearsExperience: number;
-  hourlyRate: number;
+  hourlyRate: number;  // Note: Session rates removed - no payment per session
   availableSlots: string[];
 }
 
@@ -65,7 +65,7 @@ export function VideoBookingScreen({ userProfile, onBack, isDemoMode }: VideoBoo
     specialties: ['Weight Loss', 'Strength Training', 'Nutrition'],
     rating: 4.9,
     yearsExperience: 8,
-    hourlyRate: 150,
+    hourlyRate: 150,  // Note: Session rates removed - no payment per session
     availableSlots: ['09:00', '10:00', '14:00', '16:00', '18:00'],
   };
 
@@ -122,7 +122,7 @@ export function VideoBookingScreen({ userProfile, onBack, isDemoMode }: VideoBoo
           backgroundImage: 'url(https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.4
+          opacity: 0.8
         }}
       />
       
@@ -330,10 +330,7 @@ export function VideoBookingScreen({ userProfile, onBack, isDemoMode }: VideoBoo
                 <span className="text-muted-foreground">{t('coach.duration') || 'Duration'}:</span>
                 <span className="font-medium">60 {t('coach.minutes') || 'minutes'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('coach.cost') || 'Cost'}:</span>
-                <span className="font-semibold text-purple-600">{assignedCoach.hourlyRate} SAR</span>
-              </div>
+              {/* Cost information removed - no payment per session */}
             </div>
           </div>
 

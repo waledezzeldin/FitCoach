@@ -16,7 +16,9 @@ import {
   Flame,
   Crown,
   Video,
-  Activity
+  Activity,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { UserProfile, SubscriptionTier } from '../App';
 import { useLanguage } from './LanguageContext';
@@ -29,6 +31,10 @@ import { ExerciseLibraryScreen } from './ExerciseLibraryScreen';
 import { VideoBookingScreen } from './VideoBookingScreen';
 import { InBodyInputScreen } from './InBodyInputScreen';
 import { InBodyData } from '../types/InBodyTypes';
+import { PageTransition } from './PageTransition';
+import { AnimatedCard } from './AnimatedCard';
+import { AnimatedButton } from './AnimatedButton';
+import { motion } from 'motion/react';
 
 interface HomeScreenProps {
   userProfile: UserProfile;
@@ -44,6 +50,31 @@ export function HomeScreen({ userProfile, onNavigate, onUpdateProfile, isDemoMod
   const [showExerciseLibrary, setShowExerciseLibrary] = useState(false);
   const [showVideoBooking, setShowVideoBooking] = useState(false);
   const [showInBodyInput, setShowInBodyInput] = useState(false);
+  const [logoClickCount, setLogoClickCount] = useState(0);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  
+  // Debug: Triple-click logo to show debug options
+  const handleLogoClick = () => {
+    const newCount = logoClickCount + 1;
+    setLogoClickCount(newCount);
+    
+    if (newCount === 3) {
+      setShowDebugPanel(true);
+      setLogoClickCount(0);
+    }
+    
+    // Reset counter after 2 seconds
+    setTimeout(() => setLogoClickCount(0), 2000);
+  };
+  
+  const resetAllIntroScreens = () => {
+    localStorage.removeItem('workout_intro_seen');
+    localStorage.removeItem('nutrition_intro_seen');
+    localStorage.removeItem('coach_intro_seen');
+    localStorage.removeItem('store_intro_seen');
+    toast.success(isRTL ? 'تم إعادة تعيين جميع الشاشات الترحيبية' : 'All intro screens reset!');
+    setShowDebugPanel(false);
+  };
   
   // v2.0 Quota tracking
   const quotaLimits = TIER_QUOTAS[userProfile.subscriptionTier];
@@ -112,7 +143,7 @@ export function HomeScreen({ userProfile, onNavigate, onUpdateProfile, isDemoMod
         
         // Show prompt to visit nutrition screen after a short delay
         setTimeout(() => {
-          toast.success(isRTL ? '🎉 مبروك الترقية!' : '🎉 Upgrade Successful!', {
+          toast.success(isRTL ? '🎉 مبروك الترقة!' : '🎉 Upgrade Successful!', {
             description: isRTL 
               ? 'لنبدأ بإعداد خطة التغذية الخاصة بك. اضغط هنا للمتابعة.' 
               : 'Let\'s set up your nutrition plan. Tap here to continue.',
@@ -246,41 +277,73 @@ export function HomeScreen({ userProfile, onNavigate, onUpdateProfile, isDemoMod
 
   return (
     <div className="min-h-screen bg-background relative">
+      {/* Debug Panel Dialog */}
+      {showDebugPanel && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="max-w-sm w-full">
+            <CardHeader>
+              <CardTitle className="text-lg">Debug Options</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Reset all intro/welcome screens to see them again on next visit
+              </p>
+              <Button 
+                onClick={resetAllIntroScreens}
+                className="w-full"
+              >
+                Reset All Intro Screens
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setShowDebugPanel(false)}
+                className="w-full"
+              >
+                Cancel
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    
       {/* Background Image */}
       <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
-        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1544965819-473a800795fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)' }}
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
+        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1671970922029-0430d2ae122c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxneW0lMjBpbnRlcmlvciUyMGVxdWlwbWVudHxlbnwxfHx8fDE3NjUxOTkxNTJ8MA&ixlib=rb-4.1.0&q=80&w=1080)' }}
       />
       
       {/* Content */}
       <div className="relative z-10">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-b-3xl">
-          <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={isRTL ? 'text-right' : 'text-left'}>
+        <div className="bg-gradient-to-r from-slate-700 to-slate-900 text-white p-4 rounded-b-3xl">
+          <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div 
+              className={`${isRTL ? 'text-right' : 'text-left'} cursor-pointer`}
+              onClick={handleLogoClick}
+            >
               <h1>{t('home.hello')}, {userProfile.name.split(' ')[0]}! 👋</h1>
-              <p className="opacity-90">{t('home.ready')}</p>
+              <p className="opacity-90 text-sm">{t('home.ready')}</p>
             </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="bg-white/20 text-white">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-white/20 text-white text-xs">
                 {userProfile.subscriptionTier}
               </Badge>
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => onNavigate('account')}
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20 h-8 w-8"
               >
-                <User className="w-5 h-5" />
+                <User className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
-          {/* Fitness Score - Prominent Display */}
-          <div className="bg-white/10 rounded-2xl p-4 mb-4">
-            <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Fitness Score - Compact Display */}
+          <div className="bg-white/10 rounded-xl p-3 mb-3">
+            <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={isRTL ? 'text-right' : 'text-left'}>
-                <div className="text-sm opacity-90">{t('home.fitnessScore')}</div>
+                <div className="text-xs opacity-90">{t('home.fitnessScore')}</div>
                 <div className="text-xs opacity-75">
                   {userProfile.fitnessScoreUpdatedBy === 'coach' 
                     ? t('home.updateByCoach') 
@@ -288,7 +351,7 @@ export function HomeScreen({ userProfile, onNavigate, onUpdateProfile, isDemoMod
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold">
+                <div className="text-3xl">
                   {userProfile.fitnessScore || (isDemoMode ? 72 : 0)}
                 </div>
                 <div className="text-xs opacity-75">/100</div>
@@ -296,65 +359,49 @@ export function HomeScreen({ userProfile, onNavigate, onUpdateProfile, isDemoMod
             </div>
             <Progress 
               value={userProfile.fitnessScore || (isDemoMode ? 72 : 0)} 
-              className="bg-white/20 h-2" 
+              className="bg-white/20 h-1.5" 
             />
-            <div className="text-xs opacity-75 mt-2 text-center">
-              {t('home.fitnessScoreDesc')}
-            </div>
           </div>
 
-          {/* Enhanced Smart Cards */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          {/* Compact Stats Grid */}
+          <div className="grid grid-cols-3 gap-2 mb-3">
             {/* Calories Burned */}
-            <div className="bg-white/10 rounded-2xl p-3 text-center">
-              <Flame className="w-5 h-5 mx-auto mb-1" />
-              <div className="text-lg">{currentStats.caloriesBurned}</div>
-              <div className="text-xs opacity-90">{t('home.caloriesBurned')}</div>
-              {isDemoMode && currentStats.lastWorkoutCalories > 0 && (
-                <div className="text-xs text-green-300 mt-1">
-                  +{currentStats.lastWorkoutCalories} {t('home.today')}
-                </div>
-              )}
+            <div className="bg-white/10 rounded-xl p-2 text-center">
+              <Flame className="w-4 h-4 mx-auto mb-1" />
+              <div className="text-sm">{currentStats.caloriesBurned}</div>
+              <div className="text-xs opacity-90">{t('home.caloriesBurned').split(' ')[0]}</div>
             </div>
 
             {/* Calories Consumed */}
-            <div className="bg-white/10 rounded-2xl p-3 text-center">
-              <Apple className="w-5 h-5 mx-auto mb-1" />
-              <div className="text-lg">{currentStats.caloriesConsumed}</div>
-              <div className="text-xs opacity-90">{t('home.caloriesConsumed')}</div>
-              <div className="text-xs opacity-75 mt-1">
-                /{currentStats.dailyCalorieGoal}
-              </div>
+            <div className="bg-white/10 rounded-xl p-2 text-center">
+              <Apple className="w-4 h-4 mx-auto mb-1" />
+              <div className="text-sm">{currentStats.caloriesConsumed}</div>
+              <div className="text-xs opacity-90">{t('home.caloriesConsumed').split(' ')[0]}</div>
             </div>
 
             {/* Plan Adherence */}
-            <div className="bg-white/10 rounded-2xl p-3 text-center">
-              <Target className="w-5 h-5 mx-auto mb-1" />
-              <div className="text-lg">{currentStats.planAdherence}%</div>
+            <div className="bg-white/10 rounded-xl p-2 text-center">
+              <Target className="w-4 h-4 mx-auto mb-1" />
+              <div className="text-sm">{currentStats.planAdherence}%</div>
               <div className="text-xs opacity-90">{t('home.adherence')}</div>
-              {currentStats.streakDays > 0 && (
-                <div className="text-xs text-yellow-300 mt-1">
-                  🔥 {currentStats.streakDays} days
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Weekly Progress */}
-          <div className="bg-white/10 rounded-2xl p-4">
-            <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <span className="text-sm">{t('home.weeklyProgress')}</span>
-              <span className="text-sm">{currentStats.weeklyProgress}%</span>
+          {/* Compact Weekly Progress */}
+          <div className="bg-white/10 rounded-xl p-2.5">
+            <div className={`flex items-center justify-between mb-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span className="text-xs">{t('home.weeklyProgress')}</span>
+              <span className="text-xs">{currentStats.weeklyProgress}%</span>
             </div>
-            <Progress value={currentStats.weeklyProgress} className="bg-white/20" />
-            <div className="flex justify-between text-xs opacity-75 mt-2">
-              <span>{currentStats.workoutsCompleted}/{currentStats.totalWorkouts} {t('home.workouts.completed')}</span>
+            <Progress value={currentStats.weeklyProgress} className="bg-white/20 h-1.5" />
+            <div className="flex justify-between text-xs opacity-75 mt-1">
+              <span>{currentStats.workoutsCompleted}/{currentStats.totalWorkouts}</span>
               <span>{t('home.thisWeek')}</span>
             </div>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 space-y-4">
           {/* v2.0 Quota Display */}
           {userProfile.subscriptionTier !== 'Smart Premium' && (
             <QuotaDisplay 
@@ -364,171 +411,167 @@ export function HomeScreen({ userProfile, onNavigate, onUpdateProfile, isDemoMod
             />
           )}
 
-          {/* Today's Workout */}
+          {/* Today's Workout - Compact */}
           {todayWorkout && (
-            <Card>
-              <CardHeader className="pb-3">
-                <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <CardTitle className="text-lg">{t('home.todaysWorkout')}</CardTitle>
-                  <Badge variant="outline">
-                    <Calendar className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-                    {t('home.today')}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3>{todayWorkout.name}</h3>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{todayWorkout.duration}</span>
-                    <span>•</span>
-                    <span>{todayWorkout.exercises} {t('home.exercises')}</span>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <Card className="border shadow-sm bg-purple-50">
+                <CardHeader className="pb-2 pt-3 px-4">
+                  <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <CardTitle className="text-base">{t('home.todaysWorkout')}</CardTitle>
+                    <Badge variant="outline" className="text-xs">
+                      <Calendar className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+                      {t('home.today')}
+                    </Badge>
                   </div>
-                </div>
-                <Button 
-                  onClick={() => onNavigate('workout')}
-                  className="w-full"
-                >
-                  {t('home.startWorkout')}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Navigation Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            {navigationItems.map((item) => (
-              <Card 
-                key={item.id}
-                className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
-                  item.locked ? 'border-orange-200 hover:border-orange-400' : ''
-                }`}
-                onClick={() => {
-                  if (item.available) {
-                    onNavigate(item.id as any);
-                  } else if (item.locked && item.id === 'nutrition') {
-                    // Show upgrade screen for Freemium users clicking on nutrition
-                    setShowSubscriptionManager(true);
-                  }
-                }}
-              >
-                <CardContent className="p-6 text-center space-y-3">
-                  <div className="relative inline-block">
-                    <div className={`w-12 h-12 ${item.color} rounded-2xl flex items-center justify-center`}>
-                      <item.icon className="w-6 h-6 text-white" />
-                    </div>
-                    {item.badge && (
-                      <Badge 
-                        variant="destructive" 
-                        className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-xs"
-                      >
-                        {item.badge}
-                      </Badge>
-                    )}
-                    {item.locked && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/80 to-purple-600/80 rounded-2xl flex items-center justify-center">
-                        <Crown className="w-5 h-5 text-white animate-pulse" />
-                      </div>
-                    )}
-                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 px-4 pb-3">
                   <div>
-                    <h3 className="text-sm">{item.title}</h3>
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
-                    {item.locked && (
-                      <Badge variant="secondary" className="mt-1 text-xs bg-gradient-to-r from-orange-100 to-purple-100 text-orange-700 border-orange-200">
-                        {isRTL ? '👆 اضغط للترقية' : '👆 Tap to Upgrade'}
-                      </Badge>
-                    )}
+                    <h3 className="text-sm">{todayWorkout.name}</h3>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{todayWorkout.duration}</span>
+                      <span>•</span>
+                      <span>{todayWorkout.exercises} {t('home.exercises')}</span>
+                    </div>
                   </div>
+                  <motion.div
+                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    <Button 
+                      onClick={() => onNavigate('workout')}
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 h-9 text-sm"
+                    >
+                      <Dumbbell className="w-4 h-4 mr-2" />
+                      {t('home.startWorkout')}
+                    </Button>
+                  </motion.div>
                 </CardContent>
               </Card>
+            </motion.div>
+          )}
+
+          {/* Navigation Grid - Compact */}
+          <div className="grid grid-cols-2 gap-3">
+            {navigationItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ 
+                  duration: 0.3,
+                  delay: index * 0.1,
+                  ease: "easeOut"
+                }}
+                whileHover={{ 
+                  scale: 1.05,
+                  transition: { type: "spring", stiffness: 400, damping: 17 }
+                }}
+                whileTap={{ 
+                  scale: 0.95,
+                  transition: { type: "spring", stiffness: 400, damping: 17 }
+                }}
+              >
+                <Card 
+                  className={`cursor-pointer transition-all hover:shadow-lg border ${ 
+                    item.locked ? 'border-2 border-orange-200 bg-orange-50' : 
+                    item.id === 'workout' ? 'bg-blue-50' :
+                    item.id === 'nutrition' ? 'bg-green-50' :
+                    item.id === 'coach' ? 'bg-amber-50' :
+                    'bg-cyan-50'
+                  }`}
+                  onClick={() => {
+                    if (item.available) {
+                      onNavigate(item.id as any);
+                    } else if (item.locked && item.id === 'nutrition') {
+                      setShowSubscriptionManager(true);
+                    }
+                  }}
+                >
+                  <CardContent className="p-4 text-center space-y-2">
+                    <div className="relative inline-block">
+                      <div className={`w-12 h-12 ${item.color} rounded-2xl flex items-center justify-center`}>
+                        <item.icon className="w-6 h-6 text-white" />
+                      </div>
+                      {item.badge && (
+                        <Badge 
+                          variant="destructive" 
+                          className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center text-xs"
+                        >
+                          {item.badge}
+                        </Badge>
+                      )}
+                      {item.locked && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl flex items-center justify-center">
+                          <Crown className="w-5 h-5 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-sm">{item.title}</h3>
+                      <p className="text-xs text-muted-foreground">{item.description}</p>
+                      {item.locked && (
+                        <Badge variant="secondary" className="mt-1.5 text-xs">
+                          {isRTL ? '👆 اضغط للترقية' : '👆 Tap to Upgrade'}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
 
-          {/* Quick Access Buttons */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t('home.quickAccess')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button 
-                variant="outline" 
-                className={`w-full ${isRTL ? 'justify-end' : 'justify-start'} bg-purple-50 hover:bg-purple-100 border-purple-200`}
-                onClick={() => setShowVideoBooking(true)}
-              >
-                <Video className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'} text-purple-600`} />
-                <span className="text-purple-900">{t('home.bookVideoSession')}</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className={`w-full ${isRTL ? 'justify-end' : 'justify-start'}`}
-                onClick={() => setShowProgressDetail(true)}
-              >
-                <TrendingUp className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                {t('home.viewProgress')}
-              </Button>
-              <Button 
-                variant="outline" 
-                className={`w-full ${isRTL ? 'justify-end' : 'justify-start'}`}
-                onClick={() => setShowExerciseLibrary(true)}
-              >
-                <Dumbbell className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                {t('home.exerciseLibrary')}
-              </Button>
-              <Button 
-                variant="outline" 
-                className={`w-full ${isRTL ? 'justify-end' : 'justify-start'} bg-blue-50 hover:bg-blue-100 border-blue-200`}
-                onClick={() => setShowInBodyInput(true)}
-              >
-                <Activity className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'} text-blue-600`} />
-                <span className="text-blue-900">{t('inbody.title')}</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className={`w-full ${isRTL ? 'justify-end' : 'justify-start'}`}
-                onClick={() => onNavigate('store')}
-              >
-                <ShoppingBag className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                {t('home.supplements')}
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Expandable Quick Access Menu */}
+          <ExpandableQuickAccess
+            isRTL={isRTL}
+            t={t}
+            onBookVideo={() => setShowVideoBooking(true)}
+            onViewProgress={() => setShowProgressDetail(true)}
+            onExerciseLibrary={() => setShowExerciseLibrary(true)}
+            onInBodyInput={() => setShowInBodyInput(true)}
+            onNavigateStore={() => onNavigate('store')}
+          />
 
-          {/* Recent Activity */}
+          {/* Compact Recent Activity */}
           {isDemoMode && (
-            <Card>
-              <CardHeader>
-                <CardTitle className={`text-lg flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <TrendingUp className="w-5 h-5" />
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-2 pt-3 px-4">
+                <CardTitle className={`text-sm flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <TrendingUp className="w-4 h-4" />
                   {t('home.recentActivity')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <CardContent className="space-y-2 px-4 pb-3">
+                <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                     <div>
-                      <div className="text-sm">{t('home.completedPushDay')}</div>
+                      <div className="text-xs">{t('home.completedPushDay')}</div>
                       <div className="text-xs text-muted-foreground">{t('home.hoursAgo')}</div>
                     </div>
                   </div>
-                  <Badge variant="secondary">+250 cal</Badge>
+                  <Badge variant="secondary" className="text-xs">+250 cal</Badge>
                 </div>
-                <div className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
                     <div>
-                      <div className="text-sm">{t('home.messageFromCoach')}</div>
+                      <div className="text-xs">{t('home.messageFromCoach')}</div>
                       <div className="text-xs text-muted-foreground">{t('home.dayAgo')}</div>
                     </div>
                   </div>
-                  <Badge variant="outline">{t('home.new')}</Badge>
+                  <Badge variant="outline" className="text-xs">{t('home.new')}</Badge>
                 </div>
-                <div className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
                     <div>
-                      <div className="text-sm">{t('home.weeklyProgressUpdated')}</div>
+                      <div className="text-xs">{t('home.weeklyProgressUpdated')}</div>
                       <div className="text-xs text-muted-foreground">{t('home.daysAgo')}</div>
                     </div>
                   </div>
@@ -537,30 +580,30 @@ export function HomeScreen({ userProfile, onNavigate, onUpdateProfile, isDemoMod
             </Card>
           )}
 
-          {/* Upgrade CTA for Freemium users */}
+          {/* Compact Upgrade CTA for Freemium users */}
           {userProfile.subscriptionTier === 'Freemium' && (
-            <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
-              <CardContent className="p-6 text-center space-y-4">
-                <div className="flex items-center justify-center mb-2">
-                  <Crown className="w-8 h-8 text-purple-600" />
+            <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 shadow-sm">
+              <CardContent className="p-4 text-center space-y-3">
+                <div className="flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="text-purple-900">{t('home.unlockPremium')}</h3>
-                  <p className="text-sm text-purple-700">
+                  <h3 className="text-sm text-purple-900">{t('home.unlockPremium')}</h3>
+                  <p className="text-xs text-purple-700">
                     {t('home.premiumDesc')}
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <div className="text-xs text-purple-600 space-y-1">
+                <div className="space-y-1.5">
+                  <div className="text-xs text-purple-600 space-y-0.5">
                     <div>✨ {t('nutritionPrefs.title')}</div>
                     <div>💬 {t('subscription.unlimited')} {t('coach.messages')}</div>
                     <div>📊 {t('subscription.advancedAnalytics')}</div>
                   </div>
                   <Button 
-                    className="bg-purple-600 hover:bg-purple-700 w-full"
+                    className="bg-purple-600 hover:bg-purple-700 w-full h-9 text-sm"
                     onClick={() => setShowSubscriptionManager(true)}
                   >
-                    <Crown className="w-4 h-4 mr-2" />
+                    <Crown className="w-3 h-3 mr-1.5" />
                     {t('home.upgradeNow')}
                   </Button>
                 </div>
@@ -570,5 +613,96 @@ export function HomeScreen({ userProfile, onNavigate, onUpdateProfile, isDemoMod
         </div>
       </div>
     </div>
+  );
+}
+
+// Expandable Quick Access Component
+function ExpandableQuickAccess({ 
+  isRTL, 
+  t, 
+  onBookVideo, 
+  onViewProgress, 
+  onExerciseLibrary, 
+  onInBodyInput,
+  onNavigateStore 
+}: {
+  isRTL: boolean;
+  t: (key: string) => string;
+  onBookVideo: () => void;
+  onViewProgress: () => void;
+  onExerciseLibrary: () => void;
+  onInBodyInput: () => void;
+  onNavigateStore: () => void;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <Card className="border shadow-sm">
+      <CardHeader 
+        className="pb-2 pt-3 px-4 cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Dumbbell className="w-4 h-4" />
+            {t('home.quickAccess')}
+          </CardTitle>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
+        </div>
+      </CardHeader>
+      {isExpanded && (
+        <CardContent className="space-y-1.5 px-4 pb-3">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className={`w-full ${isRTL ? 'justify-end' : 'justify-start'} bg-purple-50 hover:bg-purple-100 border-purple-200 h-8 text-xs`}
+            onClick={onBookVideo}
+          >
+            <Video className={`w-3.5 h-3.5 ${isRTL ? 'ml-2' : 'mr-2'} text-purple-600`} />
+            <span className="text-purple-900">{t('home.bookVideoSession')}</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className={`w-full ${isRTL ? 'justify-end' : 'justify-start'} h-8 text-xs`}
+            onClick={onViewProgress}
+          >
+            <TrendingUp className={`w-3.5 h-3.5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+            {t('home.viewProgress')}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className={`w-full ${isRTL ? 'justify-end' : 'justify-start'} h-8 text-xs`}
+            onClick={onExerciseLibrary}
+          >
+            <Dumbbell className={`w-3.5 h-3.5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+            {t('home.exerciseLibrary')}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className={`w-full ${isRTL ? 'justify-end' : 'justify-start'} bg-blue-50 hover:bg-blue-100 border-blue-200 h-8 text-xs`}
+            onClick={onInBodyInput}
+          >
+            <Activity className={`w-3.5 h-3.5 ${isRTL ? 'ml-2' : 'mr-2'} text-blue-600`} />
+            <span className="text-blue-900">{t('inbody.title')}</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className={`w-full ${isRTL ? 'justify-end' : 'justify-start'} h-8 text-xs`}
+            onClick={onNavigateStore}
+          >
+            <ShoppingBag className={`w-3.5 h-3.5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+            {t('home.supplements')}
+          </Button>
+        </CardContent>
+      )}
+    </Card>
   );
 }

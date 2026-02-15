@@ -1,0 +1,73 @@
+{
+  "plan_id": "starter_general_home_3d_v1",
+  "type": "starter",
+  "plan_version": "1.0",
+  "name_en": "Starter General Fitness - 3 Days (Home)",
+  "name_ar": "اللياقة العامة للمبتدئين - 3 أيام (المنزل)",
+  "description_en": "3-day home-based program for overall fitness using minimal equipment",
+  "description_ar": "برنامج منزلي لمدة 3 أيام للياقة العامة باستخدام معدات بسيطة",
+  "goal": "general_fitness",
+  "location": "home",
+  "training_days": 3,
+  "weeks": 12,
+  "blocks": [
+    {"block":1,"weeks":[1,2],"focus":"bodyweight mastery","focus_ar":"إتقان وزن الجسم","progression":"RPE 6"},
+    {"block":2,"weeks":[3,4],"focus":"add resistance","focus_ar":"إضافة المقاومة","progression":"introduce DBs"},
+    {"block":3,"weeks":[5,6],"focus":"volume increase","focus_ar":"زيادة الحجم","progression":"+1 set"},
+    {"block":4,"weeks":[7,8],"focus":"work density","focus_ar":"كثافة العمل","progression":"rest −10s"},
+    {"block":5,"weeks":[9,10],"focus":"peak fitness","focus_ar":"ذروة اللياقة","progression":"circuits"},
+    {"block":6,"weeks":[11,12],"focus":"active recovery","focus_ar":"الاسترداد النشط","progression":"−25% volume"}
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "name_en": "Full Body A",
+      "name_ar": "الجسم الكامل أ",
+      "work": [
+        {"ex_id":"goblet_squat","name_en":"Goblet Squat","name_ar":"سكوات غوبلت","video_id":"vid_goblet_squat","equip":["dumbbell"],"muscles":["quads","glutes"],"sets":3,"reps":"10–12","rest_s":90,"rpe":6.5},
+        {"ex_id":"push_up","name_en":"Push-up","name_ar":"تمرين الضغط","video_id":"vid_push_up","equip":["bodyweight"],"muscles":["chest","triceps"],"sets":3,"reps":"10–12","rest_s":75,"rpe":6.5},
+        {"ex_id":"db_row","name_en":"DB Row","name_ar":"تجديف دمبل","video_id":"vid_db_row","equip":["dumbbell"],"muscles":["back"],"sets":3,"reps":"10–12","rest_s":75,"rpe":6.5},
+        {"ex_id":"plank","name_en":"Plank","name_ar":"بلانك","video_id":"vid_plank","equip":["bodyweight"],"muscles":["core"],"sets":3,"reps":"40s","rest_s":60}
+      ],
+      "conditioning":{"type":"steady","type_ar":"ثابت","protocol":"Walk 15 min","duration_min":15}
+    },
+    {
+      "day": 3,
+      "name_en": "Full Body B",
+      "name_ar": "الجسم الكامل ب",
+      "work": [
+        {"ex_id":"romanian_deadlift","name_en":"DB Romanian Deadlift","name_ar":"رفعة رومانية بالدمبل","video_id":"vid_db_rdl","equip":["dumbbell"],"muscles":["hamstrings","glutes"],"sets":3,"reps":"10–12","rest_s":90,"rpe":6.5},
+        {"ex_id":"db_shoulder_press","name_en":"DB Shoulder Press","name_ar":"ضغط كتف بالدمبل","video_id":"vid_db_shoulder_press","equip":["dumbbell"],"muscles":["delts"],"sets":3,"reps":"10–12","rest_s":75,"rpe":6.5},
+        {"ex_id":"dead_bug","name_en":"Dead Bug","name_ar":"حشرة ميتة","video_id":"vid_dead_bug","equip":["bodyweight"],"muscles":["core"],"sets":3,"reps":"10/side","rest_s":45}
+      ]
+    },
+    {
+      "day": 5,
+      "name_en": "Full Body C + Cardio",
+      "name_ar": "الجسم الكامل ج + كارديو",
+      "work": [
+        {"ex_id":"goblet_squat","name_en":"Goblet Squat","name_ar":"سكوات غوبلت","video_id":"vid_goblet_squat","equip":["dumbbell"],"muscles":["quads"],"sets":2,"reps":"15","rest_s":60,"rpe":6},
+        {"ex_id":"push_up","name_en":"Push-up","name_ar":"تمرين الضغط","video_id":"vid_push_up","equip":["bodyweight"],"muscles":["chest"],"sets":2,"reps":"12","rest_s":60,"rpe":6},
+        {"ex_id":"bird_dog","name_en":"Bird Dog","name_ar":"كلب الطائر","video_id":"vid_bird_dog","equip":["bodyweight"],"muscles":["core"],"sets":2,"reps":"10/side","rest_s":45}
+      ],
+      "conditioning":{"type":"intervals","type_ar":"فواصل","protocol":"Jumping Jacks 30/30 × 10","duration_min":10}
+    }
+  ],
+  "fitness_score": {
+    "method": "weekly_projection",
+    "components": {"adherence": 0.45, "strength": 0.25, "cardio": 0.30},
+    "weekly_expected": [
+      {"week":1,"score":65},{"week":2,"score":67},{"week":3,"score":69},{"week":4,"score":71},
+      {"week":5,"score":73},{"week":6,"score":74},{"week":7,"score":76},{"week":8,"score":77},
+      {"week":9,"score":79},{"week":10,"score":80},{"week":11,"score":78},{"week":12,"score":81}
+    ]
+  },
+  "routing": {"injury_swaps": true, "equipment_swaps": true},
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "intake_level": "starter",
+    "intake_questions_required": 3,
+    "tags": ["general_fitness", "home", "3_days", "minimal_equipment", "starter"]
+  }
+}

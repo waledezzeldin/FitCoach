@@ -1,0 +1,77 @@
+{
+  "plan_id": "starter_hypertrophy_gym_3d_v1",
+  "type": "starter",
+  "plan_version": "1.0",
+  "name_en": "Starter Hypertrophy - 3 Days (Gym)",
+  "name_ar": "التضخم للمبتدئين - 3 أيام (صالة رياضية)",
+  "description_en": "3-day muscle building program focused on hypertrophy",
+  "description_ar": "برنامج بناء العضلات لمدة 3 أيام يركز على التضخم",
+  "goal": "muscle_gain",
+  "location": "gym",
+  "training_days": 3,
+  "weeks": 12,
+  "blocks": [
+    {"block":1,"weeks":[1,2],"focus":"neural adaptation","focus_ar":"التكيف العصبي","progression":"RPE 6.5→7"},
+    {"block":2,"weeks":[3,4],"focus":"hypertrophy base","focus_ar":"أساس التضخم","progression":"8–12 rep range"},
+    {"block":3,"weeks":[5,6],"focus":"progressive overload","focus_ar":"الحمل التدريجي","progression":"load +5%"},
+    {"block":4,"weeks":[7,8],"focus":"metabolic stress","focus_ar":"الإجهاد الأيضي","progression":"TUT increase"},
+    {"block":5,"weeks":[9,10],"focus":"peak volume","focus_ar":"ذروة الحجم","progression":"+1 set compounds"},
+    {"block":6,"weeks":[11,12],"focus":"deload","focus_ar":"تخفيف","progression":"−30% volume"}
+  ],
+  "sessions": [
+    {
+      "day": 1,
+      "name_en": "Upper Body",
+      "name_ar": "الجزء العلوي",
+      "work": [
+        {"ex_id":"bench_press","name_en":"Bench Press","name_ar":"ضغط البنش","video_id":"vid_bench_press","equip":["barbell"],"muscles":["chest","triceps"],"sets":4,"reps":"6–10","rest_s":150,"rpe":7},
+        {"ex_id":"lat_pulldown","name_en":"Lat Pulldown","name_ar":"سحب عريض","video_id":"vid_lat_pulldown","equip":["machine"],"muscles":["lats"],"sets":4,"reps":"8–12","rest_s":120,"rpe":7},
+        {"ex_id":"overhead_press","name_en":"Overhead Press","name_ar":"ضغط فوق الرأس","video_id":"vid_ohp","equip":["barbell"],"muscles":["delts"],"sets":3,"reps":"8–10","rest_s":120,"rpe":7},
+        {"ex_id":"cable_row","name_en":"Cable Row","name_ar":"تجديف كابل","video_id":"vid_cable_row","equip":["cable"],"muscles":["back"],"sets":3,"reps":"10–12","rest_s":90,"rpe":6.5},
+        {"ex_id":"db_curl","name_en":"DB Curl","name_ar":"تمرين البايسبس","video_id":"vid_db_curl","equip":["dumbbell"],"muscles":["biceps"],"sets":3,"reps":"10–12","rest_s":60,"rpe":6.5},
+        {"ex_id":"tricep_pushdown","name_en":"Tricep Pushdown","name_ar":"دفع التراي","video_id":"vid_tricep_pushdown","equip":["cable"],"muscles":["triceps"],"sets":3,"reps":"12–15","rest_s":60,"rpe":6.5}
+      ]
+    },
+    {
+      "day": 3,
+      "name_en": "Lower Body",
+      "name_ar": "الجزء السفلي",
+      "work": [
+        {"ex_id":"back_squat","name_en":"Back Squat","name_ar":"سكوات خلفي","video_id":"vid_back_squat","equip":["barbell"],"muscles":["quads","glutes"],"sets":4,"reps":"6–10","rest_s":180,"rpe":7.5},
+        {"ex_id":"romanian_deadlift","name_en":"Romanian Deadlift","name_ar":"رفعة رومانية","video_id":"vid_rdl","equip":["barbell"],"muscles":["hamstrings","glutes"],"sets":4,"reps":"8–12","rest_s":150,"rpe":7},
+        {"ex_id":"leg_press","name_en":"Leg Press","name_ar":"ضغط الساق","video_id":"vid_leg_press","equip":["machine"],"muscles":["quads"],"sets":3,"reps":"12–15","rest_s":120,"rpe":7},
+        {"ex_id":"leg_curl","name_en":"Leg Curl","name_ar":"تمرين الساق الخلفية","video_id":"vid_leg_curl","equip":["machine"],"muscles":["hamstrings"],"sets":3,"reps":"12–15","rest_s":90,"rpe":6.5},
+        {"ex_id":"calf_raise","name_en":"Calf Raise","name_ar":"رفع السمانة","video_id":"vid_calf_raise","equip":["machine"],"muscles":["calves"],"sets":4,"reps":"15–20","rest_s":60,"rpe":7}
+      ]
+    },
+    {
+      "day": 5,
+      "name_en": "Full Body",
+      "name_ar": "الجسم الكامل",
+      "work": [
+        {"ex_id":"deadlift","name_en":"Deadlift","name_ar":"رفعة ميتة","video_id":"vid_deadlift","equip":["barbell"],"muscles":["back","glutes"],"sets":3,"reps":"5–8","rest_s":210,"rpe":7.5},
+        {"ex_id":"incline_db_press","name_en":"Incline DB Press","name_ar":"ضغط دمبل مائل","video_id":"vid_incline_db_press","equip":["dumbbell"],"muscles":["chest"],"sets":4,"reps":"8–12","rest_s":120,"rpe":7},
+        {"ex_id":"pull_up","name_en":"Pull-up","name_ar":"عقلة","video_id":"vid_pull_up","equip":["pullup_bar"],"muscles":["lats"],"sets":3,"reps":"6–10","rest_s":150,"rpe":7.5},
+        {"ex_id":"goblet_squat","name_en":"Goblet Squat","name_ar":"سكوات غوبلت","video_id":"vid_goblet_squat","equip":["dumbbell"],"muscles":["quads"],"sets":3,"reps":"12–15","rest_s":90,"rpe":6.5},
+        {"ex_id":"plank","name_en":"Plank","name_ar":"بلانك","video_id":"vid_plank","equip":["bodyweight"],"muscles":["core"],"sets":3,"reps":"45–60s","rest_s":60}
+      ]
+    }
+  ],
+  "fitness_score": {
+    "method": "weekly_projection",
+    "components": {"adherence": 0.40, "strength": 0.50, "cardio": 0.10},
+    "weekly_expected": [
+      {"week":1,"score":70},{"week":2,"score":71},{"week":3,"score":73},{"week":4,"score":74},
+      {"week":5,"score":76},{"week":6,"score":77},{"week":7,"score":79},{"week":8,"score":80},
+      {"week":9,"score":82},{"week":10,"score":83},{"week":11,"score":81},{"week":12,"score":84}
+    ]
+  },
+  "routing": {"injury_swaps": true, "equipment_swaps": true},
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "intake_level": "starter",
+    "intake_questions_required": 3,
+    "tags": ["hypertrophy", "muscle_gain", "gym", "3_days", "starter"]
+  }
+}

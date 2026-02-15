@@ -27,7 +27,6 @@ import { FitnessScoreAssignmentDialog } from './FitnessScoreAssignmentDialog';
 import { WorkoutPlanBuilder } from './WorkoutPlanBuilder';
 import { NutritionPlanBuilder } from './NutritionPlanBuilder';
 import { CoachCalendarScreen } from './CoachCalendarScreen';
-import { CoachEarningsScreen } from './CoachEarningsScreen';
 import { CoachMessagingScreen } from './CoachMessagingScreen';
 import { CoachSettingsScreen } from './CoachSettingsScreen';
 import { ClientDetailScreen } from './ClientDetailScreen';
@@ -36,7 +35,6 @@ import { toast } from 'sonner@2.0.3';
 interface CoachDashboardProps {
   userProfile: UserProfile;
   onNavigate: (screen: 'home' | 'workout' | 'nutrition' | 'coach' | 'store' | 'account') => void;
-  onEditProfile?: () => void;
   isDemoMode: boolean;
 }
 
@@ -63,7 +61,7 @@ interface Appointment {
   status: 'upcoming' | 'completed' | 'missed';
 }
 
-export function CoachDashboard({ userProfile, onNavigate, onEditProfile, isDemoMode }: CoachDashboardProps) {
+export function CoachDashboard({ userProfile, onNavigate, isDemoMode }: CoachDashboardProps) {
   const { t, isRTL } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedClientForPlans, setSelectedClientForPlans] = useState<string | null>(null);
@@ -71,7 +69,6 @@ export function CoachDashboard({ userProfile, onNavigate, onEditProfile, isDemoM
   const [showWorkoutBuilder, setShowWorkoutBuilder] = useState(false);
   const [showNutritionBuilder, setShowNutritionBuilder] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [showEarnings, setShowEarnings] = useState(false);
   const [showMessaging, setShowMessaging] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [fitnessScoreDialog, setFitnessScoreDialog] = useState<{
@@ -244,16 +241,6 @@ export function CoachDashboard({ userProfile, onNavigate, onEditProfile, isDemoM
     );
   }
 
-  // Show Earnings Screen
-  if (showEarnings) {
-    return (
-      <CoachEarningsScreen
-        userProfile={userProfile}
-        onBack={() => setShowEarnings(false)}
-      />
-    );
-  }
-
   // Show Calendar Screen
   if (showCalendar) {
     return (
@@ -335,7 +322,7 @@ export function CoachDashboard({ userProfile, onNavigate, onEditProfile, isDemoM
           backgroundImage: 'url(https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.4
+          opacity: 0.8
         }}
       />
       
@@ -349,16 +336,6 @@ export function CoachDashboard({ userProfile, onNavigate, onEditProfile, isDemoM
             <p className="text-white/80">Welcome back, {userProfile.name}</p>
           </div>
           <div className="flex gap-2">
-            {onEditProfile && (
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={onEditProfile}
-                className="text-white hover:bg-white/20"
-              >
-                <User className="w-5 h-5" />
-              </Button>
-            )}
             <Button 
               variant="ghost" 
               size="icon"
@@ -421,14 +398,6 @@ export function CoachDashboard({ userProfile, onNavigate, onEditProfile, isDemoM
                 >
                   <Video className="w-5 h-5 mb-1" />
                   <span className="text-xs">Schedule Session</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="h-16 flex flex-col"
-                  onClick={() => setShowEarnings(true)}
-                >
-                  <BarChart3 className="w-5 h-5 mb-1" />
-                  <span className="text-xs">View Earnings</span>
                 </Button>
                 <Button 
                   variant="outline" 

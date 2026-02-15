@@ -172,21 +172,7 @@ export function PublicCoachProfileScreen({
               ))}
             </div>
 
-            {/* Contact Actions */}
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              {onMessage && (
-                <Button onClick={onMessage} className="w-full">
-                  <MessageCircle className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                  {t('coach.message')}
-                </Button>
-              )}
-              {onBookCall && (
-                <Button onClick={onBookCall} variant="outline" className="w-full">
-                  <Video className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                  {t('coach.bookCall')}
-                </Button>
-              )}
-            </div>
+            {/* Contact Actions - Removed messaging and booking functionality */}
           </CardContent>
         </Card>
 

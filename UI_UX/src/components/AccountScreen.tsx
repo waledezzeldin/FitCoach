@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Alert, AlertDescription } from './ui/alert';
 import { Progress } from './ui/progress';
+import { Textarea } from './ui/textarea';
 import { 
   ArrowLeft, 
   User, 
@@ -25,7 +26,15 @@ import {
   Globe,
   Zap,
   Activity,
-  Plus
+  Plus,
+  Award,
+  BookOpen,
+  Upload,
+  X,
+  Calendar,
+  Briefcase,
+  CheckCircle,
+  BarChart3
 } from 'lucide-react';
 import { UserProfile, SubscriptionTier } from '../App';
 import { toast } from 'sonner@2.0.3';
@@ -35,15 +44,18 @@ import { InBodyInputScreen } from './InBodyInputScreen';
 import { ProgressDetailScreen } from './ProgressDetailScreen';
 import { InBodyData } from '../types/InBodyTypes';
 
+type UserType = 'user' | 'coach' | 'admin';
+
 interface AccountScreenProps {
   userProfile: UserProfile;
+  userType: UserType;
   onNavigate: (screen: 'home' | 'workout' | 'nutrition' | 'coach' | 'store') => void;
   onLogout: () => void;
   onUpdateProfile: (updatedProfile: UserProfile) => void;
   isDemoMode: boolean;
 }
 
-export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfile, isDemoMode }: AccountScreenProps) {
+export function AccountScreen({ userProfile, userType, onNavigate, onLogout, onUpdateProfile, isDemoMode }: AccountScreenProps) {
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
@@ -64,6 +76,50 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
     nutritionTracking: false,
     promotions: true,
   });
+
+  // Coach-specific notifications
+  const [coachNotifications, setCoachNotifications] = useState({
+    newClientAssignments: true,
+    clientMessages: true,
+    sessionReminders: true,
+    paymentAlerts: true,
+  });
+
+  // Admin-specific notifications
+  const [adminNotifications, setAdminNotifications] = useState({
+    systemAlerts: true,
+    userReports: true,
+    coachApplications: true,
+    paymentIssues: true,
+    securityAlerts: true,
+  });
+
+  // Coach-specific profile data
+  const [coachProfile, setCoachProfile] = useState({
+    bio: 'Certified fitness coach with 8+ years of experience specializing in strength training and nutrition. Passionate about helping clients achieve their fitness goals through personalized training programs.',
+    yearsOfExperience: 8,
+    specializations: ['Strength Training', 'Nutrition', 'Weight Loss', 'Muscle Gain'],
+    certifications: [
+      { id: '1', name: 'NASM Certified Personal Trainer', organization: 'National Academy of Sports Medicine', year: 2016 },
+      { id: '2', name: 'Precision Nutrition Level 1', organization: 'Precision Nutrition', year: 2018 },
+      { id: '3', name: 'Functional Movement Screen', organization: 'FMS', year: 2019 },
+    ],
+    experience: [
+      { id: '1', title: 'Senior Fitness Coach', organization: 'Elite Fitness Center', years: '2018 - Present', description: 'Lead coach managing 20+ clients' },
+      { id: '2', title: 'Personal Trainer', organization: 'Gold Gym', years: '2016 - 2018', description: 'Trained individuals and small groups' },
+    ]
+  });
+  const [isEditingCoachProfile, setIsEditingCoachProfile] = useState(false);
+
+  // Admin-specific profile data
+  const [adminProfile, setAdminProfile] = useState({
+    role: 'System Administrator',
+    department: 'Platform Operations',
+    permissions: ['User Management', 'Coach Management', 'Content Management', 'System Settings', 'Analytics'],
+    employeeId: 'ADM-001',
+    joinedDate: '2023-01-15',
+  });
+  const [isEditingAdminProfile, setIsEditingAdminProfile] = useState(false);
 
   const subscriptionPlans = [
     {
@@ -235,12 +291,9 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
     <div className="min-h-screen bg-background relative">
       {/* Background Image */}
       <div 
-        className="fixed inset-0 z-0"
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80"
         style={{ 
           backgroundImage: 'url(https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1200)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.4
         }}
       />
       
@@ -273,38 +326,133 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
               <h3>{userProfile.name}</h3>
               <p className="text-primary-foreground/80 text-sm">{userProfile.email}</p>
             </div>
-            <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground">
-              {userProfile.subscriptionTier}
-            </Badge>
+            {userType !== 'coach' && (
+              <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground">
+                {userProfile.subscriptionTier}
+              </Badge>
+            )}
+            {userType === 'coach' && (
+              <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground">
+                <Award className="w-3 h-3 mr-1" />
+                Coach
+              </Badge>
+            )}
           </div>
-          <div className="grid grid-cols-3 gap-4 text-center text-sm">
-            <div>
-              <div className="font-semibold">{userProfile.age}</div>
-              <div className="text-primary-foreground/70">{t('account.years')}</div>
+          {userType !== 'coach' ? (
+            <div className="grid grid-cols-3 gap-4 text-center text-sm">
+              <div>
+                <div className="font-semibold">{userProfile.age}</div>
+                <div className="text-primary-foreground/70">{t('account.years')}</div>
+              </div>
+              <div>
+                <div className="font-semibold">{userProfile.weight}kg</div>
+                <div className="text-primary-foreground/70">{t('account.weight')}</div>
+              </div>
+              <div>
+                <div className="font-semibold">{userProfile.height}cm</div>
+                <div className="text-primary-foreground/70">{t('account.height')}</div>
+              </div>
             </div>
-            <div>
-              <div className="font-semibold">{userProfile.weight}kg</div>
-              <div className="text-primary-foreground/70">{t('account.weight')}</div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 text-center text-sm">
+              <div>
+                <div className="font-semibold">{coachProfile.yearsOfExperience} years</div>
+                <div className="text-primary-foreground/70">Experience</div>
+              </div>
+              <div>
+                <div className="font-semibold">{coachProfile.certifications.length}</div>
+                <div className="text-primary-foreground/70">Certifications</div>
+              </div>
             </div>
-            <div>
-              <div className="font-semibold">{userProfile.height}cm</div>
-              <div className="text-primary-foreground/70">{t('account.height')}</div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
       <div className="p-4">
+        {/* Dropdown Menu for Tab Selection */}
+        <div className="mb-4">
+          <Label className="text-sm font-medium mb-2 block">
+            {isRTL ? 'اختر القسم' : 'Select Section'}
+          </Label>
+          <Select value={activeTab} onValueChange={setActiveTab}>
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  {activeTab === 'profile' && (
+                    <>
+                      <User className="w-4 h-4" />
+                      <span>{t('account.profile')}</span>
+                    </>
+                  )}
+                  {activeTab === 'health' && (
+                    <>
+                      <Activity className="w-4 h-4" />
+                      <span>{t('account.health')}</span>
+                    </>
+                  )}
+                  {activeTab === 'subscription' && (
+                    <>
+                      <CreditCard className="w-4 h-4" />
+                      <span>{t('account.plan')}</span>
+                    </>
+                  )}
+                  {activeTab === 'notifications' && (
+                    <>
+                      <Bell className="w-4 h-4" />
+                      <span>{t('account.notifications')}</span>
+                    </>
+                  )}
+                  {activeTab === 'settings' && (
+                    <>
+                      <Settings className="w-4 h-4" />
+                      <span>{t('account.settings')}</span>
+                    </>
+                  )}
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="profile">
+                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <User className="w-4 h-4" />
+                  <span>{t('account.profile')}</span>
+                </div>
+              </SelectItem>
+              {userType !== 'coach' && userType !== 'admin' && (
+                <>
+                  <SelectItem value="health">
+                    <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <Activity className="w-4 h-4" />
+                      <span>{t('account.health')}</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="subscription">
+                    <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <CreditCard className="w-4 h-4" />
+                      <span>{t('account.plan')}</span>
+                    </div>
+                  </SelectItem>
+                </>
+              )}
+              <SelectItem value="notifications">
+                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <Bell className="w-4 h-4" />
+                  <span>{t('account.notifications')}</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="settings">
+                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <Settings className="w-4 h-4" />
+                  <span>{t('account.settings')}</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="profile">{t('account.profile')}</TabsTrigger>
-            <TabsTrigger value="health">{t('account.health')}</TabsTrigger>
-            <TabsTrigger value="subscription">{t('account.plan')}</TabsTrigger>
-            <TabsTrigger value="notifications">{t('account.alerts')}</TabsTrigger>
-            <TabsTrigger value="settings">{t('account.settings')}</TabsTrigger>
-          </TabsList>
-
           <TabsContent value="profile" className="mt-4 space-y-4">
+            {/* Basic Info - Same for all users */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -312,10 +460,19 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setIsEditing(!isEditing)}
+                    onClick={() => {
+                      if (userType === 'coach') {
+                        setIsEditingCoachProfile(!isEditingCoachProfile);
+                        if (isEditingCoachProfile) {
+                          toast.success('Profile updated successfully');
+                        }
+                      } else {
+                        setIsEditing(!isEditing);
+                      }
+                    }}
                   >
-                    {isEditing ? <Check className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-                    {isEditing ? t('account.save') : t('account.edit')}
+                    {(userType === 'coach' ? isEditingCoachProfile : isEditing) ? <Check className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                    {(userType === 'coach' ? isEditingCoachProfile : isEditing) ? t('account.save') : t('account.edit')}
                   </Button>
                 </div>
               </CardHeader>
@@ -327,7 +484,7 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
                       id="name"
                       value={profileData.name}
                       onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-                      disabled={!isEditing}
+                      disabled={userType === 'coach' ? !isEditingCoachProfile : !isEditing}
                     />
                   </div>
                   <div className="space-y-2">
@@ -336,85 +493,325 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
                       id="email"
                       value={profileData.email}
                       onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                      disabled={!isEditing}
+                      disabled={userType === 'coach' ? !isEditingCoachProfile : !isEditing}
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="age">{t('onboarding.age')}</Label>
-                    <Input
-                      id="age"
-                      type="number"
-                      value={profileData.age}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, age: e.target.value }))}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weight">{t('onboarding.weight')}</Label>
-                    <Input
-                      id="weight"
-                      type="number"
-                      value={profileData.weight}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, weight: e.target.value }))}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="height">{t('onboarding.height')}</Label>
-                    <Input
-                      id="height"
-                      type="number"
-                      value={profileData.height}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, height: e.target.value }))}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                </div>
-
-                {isEditing && (
-                  <div className="flex gap-2 pt-4">
-                    <Button onClick={handleSaveProfile} className="flex-1">
-                      {t('account.saveChanges')}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsEditing(false)}
-                      className="flex-1"
-                    >
-                      {t('account.cancel')}
-                    </Button>
+                {userType !== 'coach' && userType !== 'admin' && (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="age">{t('onboarding.age')}</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        value={profileData.age}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, age: e.target.value }))}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="weight">{t('onboarding.weight')}</Label>
+                      <Input
+                        id="weight"
+                        type="number"
+                        value={profileData.weight}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, weight: e.target.value }))}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="height">{t('onboarding.height')}</Label>
+                      <Input
+                        id="height"
+                        type="number"
+                        value={profileData.height}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, height: e.target.value }))}
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('account.fitnessProfile')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>{t('account.experienceLevel')}</Label>
-                    <p className="capitalize text-muted-foreground">{userProfile.experienceLevel}</p>
-                  </div>
-                  <div>
-                    <Label>{t('account.workoutLocation')}</Label>
-                    <p className="capitalize text-muted-foreground">{userProfile.workoutLocation}</p>
-                  </div>
-                </div>
-                <div>
-                  <Label>{t('account.workoutFrequency')}</Label>
-                  <p className="text-muted-foreground">{userProfile.workoutFrequency} {t('account.daysPerWeek')}</p>
-                </div>
-                <Button variant="outline" className="w-full">
-                  {t('account.updateGoals')}
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Coach-specific sections */}
+            {userType === 'coach' ? (
+              <>
+                {/* Coach Bio */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-5 h-5" />
+                      Professional Bio
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={coachProfile.bio}
+                      onChange={(e) => setCoachProfile(prev => ({ ...prev, bio: e.target.value }))}
+                      disabled={!isEditingCoachProfile}
+                      rows={4}
+                      className="resize-none"
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Experience */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Briefcase className="w-5 h-5" />
+                        Work Experience
+                      </CardTitle>
+                      {isEditingCoachProfile && (
+                        <Button size="sm" variant="outline">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Experience
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Years of Experience</Label>
+                      <Input
+                        type="number"
+                        value={coachProfile.yearsOfExperience}
+                        onChange={(e) => setCoachProfile(prev => ({ ...prev, yearsOfExperience: parseInt(e.target.value) || 0 }))}
+                        disabled={!isEditingCoachProfile}
+                      />
+                    </div>
+                    {coachProfile.experience.map((exp) => (
+                      <div key={exp.id} className="border rounded-lg p-4 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-semibold">{exp.title}</h4>
+                            <p className="text-sm text-muted-foreground">{exp.organization}</p>
+                            <p className="text-xs text-muted-foreground">{exp.years}</p>
+                          </div>
+                          {isEditingCoachProfile && (
+                            <Button size="sm" variant="ghost">
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-sm">{exp.description}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Certifications */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="w-5 h-5" />
+                        Certifications
+                      </CardTitle>
+                      {isEditingCoachProfile && (
+                        <Button size="sm" variant="outline">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Certification
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {coachProfile.certifications.map((cert) => (
+                      <div key={cert.id} className="border rounded-lg p-4 flex items-start justify-between">
+                        <div>
+                          <h4 className="font-semibold flex items-center gap-2">
+                            <Award className="w-4 h-4 text-blue-600" />
+                            {cert.name}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">{cert.organization}</p>
+                          <p className="text-xs text-muted-foreground">Obtained: {cert.year}</p>
+                        </div>
+                        {isEditingCoachProfile && (
+                          <Button size="sm" variant="ghost">
+                            <X className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Specializations */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="w-5 h-5" />
+                      Specializations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {coachProfile.specializations.map((spec, index) => (
+                        <Badge key={index} variant="secondary" className="text-sm">
+                          {spec}
+                          {isEditingCoachProfile && (
+                            <button className="ml-2">
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </Badge>
+                      ))}
+                      {isEditingCoachProfile && (
+                        <Button size="sm" variant="outline">
+                          <Plus className="w-3 h-3 mr-1" />
+                          Add
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            ) : userType === 'admin' ? (
+              <>
+                {/* Admin Role & Department */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Shield className="w-5 h-5" />
+                        {t('admin.adminInfo')}
+                      </CardTitle>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setIsEditingAdminProfile(!isEditingAdminProfile);
+                          if (isEditingAdminProfile) {
+                            toast.success('Admin profile updated successfully');
+                          }
+                        }}
+                      >
+                        {isEditingAdminProfile ? <Check className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                        {isEditingAdminProfile ? t('account.save') : t('account.edit')}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="role">{t('admin.role')}</Label>
+                        <Input
+                          id="role"
+                          value={adminProfile.role}
+                          onChange={(e) => setAdminProfile(prev => ({ ...prev, role: e.target.value }))}
+                          disabled={!isEditingAdminProfile}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="department">{t('admin.department')}</Label>
+                        <Input
+                          id="department"
+                          value={adminProfile.department}
+                          onChange={(e) => setAdminProfile(prev => ({ ...prev, department: e.target.value }))}
+                          disabled={!isEditingAdminProfile}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="employeeId">{t('admin.employeeId')}</Label>
+                      <Input
+                        id="employeeId"
+                        value={adminProfile.employeeId}
+                        disabled
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('admin.joinedDate')}</Label>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(adminProfile.joinedDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Admin Permissions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5" />
+                      {t('admin.permissions')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-2">
+                      {adminProfile.permissions.map((permission, index) => (
+                        <div key={index} className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-sm">{permission}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Admin Statistics */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5" />
+                      {t('admin.activityStats')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4">
+                        <div className="text-2xl font-bold">1,247</div>
+                        <div className="text-xs text-muted-foreground">{t('admin.totalUsers')}</div>
+                      </div>
+                      <div className="bg-purple-50 dark:bg-purple-950 rounded-lg p-4">
+                        <div className="text-2xl font-bold">43</div>
+                        <div className="text-xs text-muted-foreground">{t('admin.activeCoaches')}</div>
+                      </div>
+                      <div className="bg-green-50 dark:bg-green-950 rounded-lg p-4">
+                        <div className="text-2xl font-bold">87</div>
+                        <div className="text-xs text-muted-foreground">{t('admin.actionThisWeek')}</div>
+                      </div>
+                      <div className="bg-orange-50 dark:bg-orange-950 rounded-lg p-4">
+                        <div className="text-2xl font-bold">12</div>
+                        <div className="text-xs text-muted-foreground">{t('admin.pendingReviews')}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              /* User-specific fitness profile - only for regular users */
+              userType === 'user' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('account.fitnessProfile')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>{t('account.experienceLevel')}</Label>
+                        <p className="capitalize text-muted-foreground">{userProfile.experienceLevel}</p>
+                      </div>
+                      <div>
+                        <Label>{t('account.workoutLocation')}</Label>
+                        <p className="capitalize text-muted-foreground">{userProfile.workoutLocation}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>{t('account.workoutFrequency')}</Label>
+                      <p className="text-muted-foreground">{userProfile.workoutFrequency} {t('account.daysPerWeek')}</p>
+                    </div>
+                    <Button variant="outline" className="w-full">
+                      {t('account.updateGoals')}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )
+            )}
           </TabsContent>
 
           <TabsContent value="health" className="mt-4 space-y-4">
@@ -629,49 +1026,99 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
                 <CardTitle>{t('account.notificationPrefs')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('account.workoutReminders')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('account.workoutRemindersDesc')}</p>
-                  </div>
-                  <Switch 
-                    checked={notifications.workoutReminders}
-                    onCheckedChange={() => toggleNotification('workoutReminders')}
-                  />
-                </div>
+                {userType === 'coach' ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>New Client Assignments</Label>
+                        <p className="text-sm text-muted-foreground">Get notified when admin assigns you new clients</p>
+                      </div>
+                      <Switch 
+                        checked={coachNotifications.newClientAssignments}
+                        onCheckedChange={() => setCoachNotifications(prev => ({ ...prev, newClientAssignments: !prev.newClientAssignments }))}
+                      />
+                    </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('account.coachMessages')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('account.coachMessagesDesc')}</p>
-                  </div>
-                  <Switch 
-                    checked={notifications.coachMessages}
-                    onCheckedChange={() => toggleNotification('coachMessages')}
-                  />
-                </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Client Messages</Label>
+                        <p className="text-sm text-muted-foreground">Receive notifications for messages from clients</p>
+                      </div>
+                      <Switch 
+                        checked={coachNotifications.clientMessages}
+                        onCheckedChange={() => setCoachNotifications(prev => ({ ...prev, clientMessages: !prev.clientMessages }))}
+                      />
+                    </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('account.nutritionTracking')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('account.nutritionTrackingDesc')}</p>
-                  </div>
-                  <Switch 
-                    checked={notifications.nutritionTracking}
-                    onCheckedChange={() => toggleNotification('nutritionTracking')}
-                  />
-                </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Session Reminders</Label>
+                        <p className="text-sm text-muted-foreground">Get reminders about upcoming client sessions</p>
+                      </div>
+                      <Switch 
+                        checked={coachNotifications.sessionReminders}
+                        onCheckedChange={() => setCoachNotifications(prev => ({ ...prev, sessionReminders: !prev.sessionReminders }))}
+                      />
+                    </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('account.promotions')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('account.promotionsDesc')}</p>
-                  </div>
-                  <Switch 
-                    checked={notifications.promotions}
-                    onCheckedChange={() => toggleNotification('promotions')}
-                  />
-                </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Payment Alerts</Label>
+                        <p className="text-sm text-muted-foreground">Notifications about payment processing and earnings</p>
+                      </div>
+                      <Switch 
+                        checked={coachNotifications.paymentAlerts}
+                        onCheckedChange={() => setCoachNotifications(prev => ({ ...prev, paymentAlerts: !prev.paymentAlerts }))}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>{t('account.workoutReminders')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('account.workoutRemindersDesc')}</p>
+                      </div>
+                      <Switch 
+                        checked={notifications.workoutReminders}
+                        onCheckedChange={() => toggleNotification('workoutReminders')}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>{t('account.coachMessages')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('account.coachMessagesDesc')}</p>
+                      </div>
+                      <Switch 
+                        checked={notifications.coachMessages}
+                        onCheckedChange={() => toggleNotification('coachMessages')}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>{t('account.nutritionTracking')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('account.nutritionTrackingDesc')}</p>
+                      </div>
+                      <Switch 
+                        checked={notifications.nutritionTracking}
+                        onCheckedChange={() => toggleNotification('nutritionTracking')}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>{t('account.promotions')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('account.promotionsDesc')}</p>
+                      </div>
+                      <Switch 
+                        checked={notifications.promotions}
+                        onCheckedChange={() => toggleNotification('promotions')}
+                      />
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -714,7 +1161,7 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
               <CardContent className="space-y-3">
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => toast.info(isDemoMode 
                     ? 'Demo: Password change is disabled in demo mode' 
                     : 'Opening password change...'
@@ -725,7 +1172,7 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => toast.info('Security settings coming soon')}
                 >
                   Security Settings
@@ -740,7 +1187,7 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
               <CardContent className="space-y-3">
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => {
                     toast.success('Data export started. Download will begin shortly.');
                   }}
@@ -750,21 +1197,42 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => toast.info('Privacy settings coming soon')}
                 >
                   Privacy Settings
                 </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{isRTL ? 'إعادة تعيين الشاشات الترحيبية' : 'Reset Welcome Screens'}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  {isRTL 
+                    ? 'مسح جميع شاشات الترحيب لرؤيتها مرة أخرى عند زيارة كل قسم'
+                    : 'Clear all welcome screens to see them again when visiting each section'
+                  }
+                </p>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start text-destructive"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => {
-                    if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
-                      toast.error('Account deletion is disabled in demo mode');
-                    }
+                    localStorage.removeItem('workout_intro_seen');
+                    localStorage.removeItem('nutrition_intro_seen');
+                    localStorage.removeItem('coach_intro_seen');
+                    localStorage.removeItem('store_intro_seen');
+                    toast.success(
+                      isRTL 
+                        ? '✅ تم إعادة تعيين جميع الشاشات الترحيبية! قم بزيارة أي قسم لرؤية الشاشة الترحيبية.'
+                        : '✅ All welcome screens reset! Visit any section to see the welcome screen.'
+                    );
                   }}
                 >
-                  Delete Account
+                  <Zap className="w-4 h-4 mr-2" />
+                  {isRTL ? 'إعادة تعيين الآن' : 'Reset Now'}
                 </Button>
               </CardContent>
             </Card>
@@ -776,28 +1244,28 @@ export function AccountScreen({ userProfile, onNavigate, onLogout, onUpdateProfi
               <CardContent className="space-y-3">
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => window.open('https://help.fitcoach.com', '_blank')}
                 >
                   Help Center
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => toast.info('Contact support at support@fitcoach.com')}
                 >
                   Contact Support
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => window.open('https://fitcoach.com/terms', '_blank')}
                 >
                   Terms of Service
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start"
+                  className="w-full justify-start border-border hover:bg-accent hover:text-accent-foreground"
                   onClick={() => window.open('https://fitcoach.com/privacy', '_blank')}
                 >
                   Privacy Policy

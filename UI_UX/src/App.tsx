@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from './components/LanguageContext';
+import { SplashScreen } from './components/SplashScreen';
 import { LanguageSelectionScreen } from './components/LanguageSelectionScreen';
-import { AppIntroScreen } from './components/AppIntroScreen';
+import { OnboardingCarousel } from './components/OnboardingCarousel';
 import { AuthScreen } from './components/AuthScreen';
 import { FirstIntakeScreen } from './components/FirstIntakeScreen';
 import { SecondIntakeScreen } from './components/SecondIntakeScreen';
@@ -20,8 +21,10 @@ import { DemoUserSwitcher } from './components/DemoUserSwitcher';
 import { FirstIntakeData, SecondIntakeData } from './types/IntakeTypes';
 import { InBodyHistory } from './types/InBodyTypes';
 import { Toaster } from './components/ui/sonner';
+import { PageTransition } from './components/PageTransition';
+import { AnimatePresence } from 'motion/react';
 
-// FitCoach+ v2.0 - Complete bilingual fitness application
+// عاش - Complete bilingual fitness application
 type Screen = 'intro' | 'auth' | 'firstIntake' | 'secondIntake' | 'home' | 'workout' | 'nutrition' | 'coach' | 'store' | 'account' | 'coachProfile' | 'publicCoachProfile';
 type UserType = 'user' | 'coach' | 'admin';
 type SubscriptionTier = 'Freemium' | 'Premium' | 'Smart Premium';
@@ -61,10 +64,12 @@ export interface AppState {
   hasSeenIntro: boolean;
   firstIntakeData: FirstIntakeData | null;
   previousScreen?: Screen; // v2.0: Track where user came from before secondIntake
+  coachInitialTab?: 'messages' | 'sessions'; // v2.0: Track which tab to open in CoachScreen
 }
 
 function AppContent() {
   const { hasSelectedLanguage, selectInitialLanguage, t } = useLanguage();
+  const [showSplash, setShowSplash] = useState(true);
   
   const [appState, setAppState] = useState<AppState>({
     isAuthenticated: false,
@@ -76,10 +81,15 @@ function AppContent() {
     hasSeenIntro: false,
     firstIntakeData: null,
     previousScreen: undefined,
+    coachInitialTab: 'messages',
   });
 
   // Demo mode activation (long press on logo)
   const [logoPressDuration, setLogoPressDuration] = useState(0);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
 
   useEffect(() => {
     // Only check for demo mode and intro completion if language has been selected
@@ -387,12 +397,23 @@ function AppContent() {
     }));
   };
 
-  const navigateToScreen = (screen: Screen) => {
+  const navigateToScreen = (screen: Screen, options?: { coachTab?: 'messages' | 'sessions' }) => {
     setAppState(prev => {
       // v2.0: If navigating to secondIntake, save the current screen to return to later
       if (screen === 'secondIntake' && prev.currentScreen !== 'secondIntake') {
         return { ...prev, currentScreen: screen, previousScreen: prev.currentScreen };
       }
+      
+      // v2.0: Set coach initial tab if provided
+      if (screen === 'coach' && options?.coachTab) {
+        return { ...prev, currentScreen: screen, coachInitialTab: options.coachTab };
+      }
+      
+      // Reset coach tab to messages by default when navigating away and back
+      if (screen === 'coach' && !options?.coachTab) {
+        return { ...prev, currentScreen: screen, coachInitialTab: 'messages' };
+      }
+      
       return { ...prev, currentScreen: screen };
     });
   };
@@ -424,13 +445,18 @@ function AppContent() {
   };
 
   const renderCurrentScreen = () => {
-    // First, check if language has been selected
+    // First, show splash screen
+    if (showSplash) {
+      return <SplashScreen onComplete={handleSplashComplete} />;
+    }
+
+    // Then, check if language has been selected
     if (!hasSelectedLanguage) {
       return <LanguageSelectionScreen onLanguageSelect={selectInitialLanguage} />;
     }
 
     if (!appState.hasSeenIntro) {
-      return <AppIntroScreen onComplete={handleIntroComplete} />;
+      return <OnboardingCarousel onComplete={handleIntroComplete} />;
     }
 
     if (!appState.isAuthenticated) {
@@ -541,6 +567,7 @@ function AppContent() {
             onNavigate={navigateToScreen}
             onViewCoachProfile={() => navigateToScreen('publicCoachProfile')}
             isDemoMode={appState.isDemoMode}
+            initialTab={appState.coachInitialTab}
           />
         );
       case 'store':
@@ -555,6 +582,7 @@ function AppContent() {
         return (
           <AccountScreen 
             userProfile={appState.userProfile}
+            userType={appState.userType}
             onNavigate={navigateToScreen}
             onLogout={handleLogout}
             onUpdateProfile={updateUserProfile}
@@ -575,11 +603,6 @@ function AppContent() {
           <PublicCoachProfileScreen 
             coach={getMockCoachData()}
             onBack={() => navigateToScreen('coach')}
-            onMessage={() => navigateToScreen('coach')}
-            onBookCall={() => {
-              navigateToScreen('coach');
-              // Could show booking dialog here
-            }}
           />
         );
       default:
@@ -600,7 +623,11 @@ function AppContent() {
       {appState.isDemoMode && appState.userProfile && (
         <DemoUserSwitcher currentPhoneNumber={appState.userProfile.phoneNumber} />
       )}
-      {renderCurrentScreen()}
+      <AnimatePresence mode="wait">
+        <PageTransition key={appState.currentScreen}>
+          {renderCurrentScreen()}
+        </PageTransition>
+      </AnimatePresence>
       <Toaster />
     </div>
   );

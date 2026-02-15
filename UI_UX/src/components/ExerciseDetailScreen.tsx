@@ -14,7 +14,7 @@ import {
   Info,
   Zap
 } from 'lucide-react';
-import { ExerciseDetail, getExerciseById, getAlternativeExercises } from './EnhancedExerciseDatabase';
+import { ExerciseDetail, getExerciseById, getAlternativeExercises, translateExercise } from './EnhancedExerciseDatabase';
 import { useLanguage } from './LanguageContext';
 
 interface ExerciseDetailScreenProps {
@@ -38,10 +38,10 @@ export function ExerciseDetailScreen({
   const [activeTab, setActiveTab] = useState('overview');
   const [showAlternatives, setShowAlternatives] = useState(false);
   
-  const exercise = getExerciseById(exerciseId);
-  const alternatives = getAlternativeExercises(exerciseId);
+  const exerciseRaw = getExerciseById(exerciseId);
+  const alternativesRaw = getAlternativeExercises(exerciseId);
 
-  if (!exercise) {
+  if (!exerciseRaw) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -53,6 +53,10 @@ export function ExerciseDetailScreen({
       </div>
     );
   }
+
+  // Translate exercise data
+  const exercise = translateExercise(exerciseRaw, t);
+  const alternatives = alternativesRaw.map(alt => translateExercise(alt, t));
 
   const difficultyColors = {
     beginner: 'bg-green-100 text-green-800',
@@ -69,7 +73,7 @@ export function ExerciseDetailScreen({
           backgroundImage: 'url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.4
+          opacity: 0.8
         }}
       />
       

@@ -4,24 +4,15 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   agora_rtc_engine
-  connectivity_plus
-  desktop_drop
   file_selector_windows
-  firebase_auth
   firebase_core
   flutter_secure_storage_windows
-  gal
   iris_method_channel
-  media_kit_video
-  record_windows
-  share_plus
-  thumblr_windows
+  permission_handler_windows
   url_launcher_windows
-  volume_controller
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
-  flutter_local_notifications_windows
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

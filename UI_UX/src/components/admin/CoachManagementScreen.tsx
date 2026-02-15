@@ -77,7 +77,7 @@ export function CoachManagementScreen({ onBack }: { onBack: () => void }) {
           </Button>
           <div className="flex-1">
             <h1 className="text-xl font-semibold">{t('admin.coachManagement')}</h1>
-            <p className="text-sm text-white/80">{filteredCoaches.length} {filteredCoaches.length === 1 ? 'coach' : 'coaches'}</p>
+            <p className="text-sm text-white/80">{filteredCoaches.length} {filteredCoaches.length === 1 ? t('admin.coach') : t('admin.coaches')}</p>
           </div>
         </div>
       </div>

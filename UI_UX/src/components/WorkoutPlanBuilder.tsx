@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ScrollArea } from './ui/scroll-area';
 import { ArrowLeft, Plus, Trash2, Save, GripVertical, Search } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
-import { exerciseDatabase } from './EnhancedExerciseDatabase';
+import { exerciseDatabase, translateExercise } from './EnhancedExerciseDatabase';
 import { toast } from 'sonner@2.0.3';
 
 interface Exercise {
@@ -36,7 +36,10 @@ export function WorkoutPlanBuilder({ clientId, onBack, onSave }: WorkoutPlanBuil
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('all');
 
-  const filteredExercises = exerciseDatabase.filter(ex => {
+  // Translate exercises for display
+  const translatedExercises = exerciseDatabase.map(ex => translateExercise(ex, t));
+
+  const filteredExercises = translatedExercises.filter(ex => {
     const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesMuscle = selectedMuscleGroup === 'all' || ex.muscleGroup === selectedMuscleGroup;
     return matchesSearch && matchesMuscle;
@@ -46,10 +49,12 @@ export function WorkoutPlanBuilder({ clientId, onBack, onSave }: WorkoutPlanBuil
     const exercise = exerciseDatabase.find(ex => ex.id === exerciseId);
     if (!exercise) return;
 
+    const translated = translateExercise(exercise, t);
+
     const newExercise: Exercise = {
       id: Date.now().toString(),
       exerciseId: exercise.id,
-      name: exercise.name,
+      name: translated.name,
       sets: exercise.defaultSets,
       reps: exercise.defaultReps,
       restTime: exercise.defaultRestTime,
