@@ -35,22 +35,33 @@ class Message {
   });
   
   factory Message.fromJson(Map<String, dynamic> json) {
+    final conversationId = json['conversationId'] ?? json['conversation_id'];
+    final senderId = json['senderId'] ?? json['sender_id'];
+    final receiverId = json['receiverId'] ?? json['receiver_id'];
+    final content = json['content'];
+    final typeValue = json['type'] ?? json['messageType'] ?? json['message_type'];
+    final attachmentUrl = json['attachmentUrl'] ?? json['attachment_url'];
+    final attachmentType = json['attachmentType'] ?? json['attachment_type'];
+    final isReadValue = json['isRead'] ?? json['is_read'];
+    final createdAtValue = json['createdAt'] ?? json['created_at'];
+    final readAtValue = json['readAt'] ?? json['read_at'];
+
     return Message(
       id: json['id'] as String,
-      conversationId: json['conversationId'] as String,
-      senderId: json['senderId'] as String,
-      receiverId: json['receiverId'] as String,
-      content: json['content'] as String,
+      conversationId: conversationId as String,
+      senderId: senderId as String,
+      receiverId: receiverId as String? ?? '',
+      content: content as String? ?? '',
       type: MessageType.values.firstWhere(
-        (type) => type.name == json['type'],
+        (type) => type.name == typeValue,
         orElse: () => MessageType.text,
       ),
-      attachmentUrl: json['attachmentUrl'] as String?,
-      attachmentType: json['attachmentType'] as String?,
-      isRead: json['isRead'] as bool? ?? false,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      readAt: json['readAt'] != null
-          ? DateTime.parse(json['readAt'] as String)
+      attachmentUrl: attachmentUrl as String?,
+      attachmentType: attachmentType as String?,
+      isRead: isReadValue as bool? ?? false,
+      createdAt: DateTime.parse(createdAtValue as String),
+      readAt: readAtValue != null
+          ? DateTime.parse(readAtValue as String)
           : null,
     );
   }
@@ -102,17 +113,25 @@ class Conversation {
   });
   
   factory Conversation.fromJson(Map<String, dynamic> json) {
+    final userId = json['userId'] ?? json['user_id'];
+    final coachId = json['coachId'] ?? json['coach_id'];
+    final lastMessageContent = json['lastMessageContent'] ?? json['last_message_preview'];
+    final lastMessageAt = json['lastMessageAt'] ?? json['last_message_at'];
+    final unreadCount = json['unreadCount'] ?? json['unread_count'];
+    final createdAt = json['createdAt'] ?? json['created_at'];
+    final updatedAt = json['updatedAt'] ?? json['updated_at'] ?? json['created_at'];
+
     return Conversation(
       id: json['id'] as String,
-      userId: json['userId'] as String,
-      coachId: json['coachId'] as String,
-      lastMessageContent: json['lastMessageContent'] as String?,
-      lastMessageAt: json['lastMessageAt'] != null
-          ? DateTime.parse(json['lastMessageAt'] as String)
+      userId: userId as String,
+      coachId: coachId as String,
+      lastMessageContent: lastMessageContent as String?,
+      lastMessageAt: lastMessageAt != null
+          ? DateTime.parse(lastMessageAt as String)
           : null,
-      unreadCount: json['unreadCount'] as int? ?? 0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      unreadCount: unreadCount as int? ?? 0,
+      createdAt: DateTime.parse(createdAt as String),
+      updatedAt: DateTime.parse(updatedAt as String),
     );
   }
   

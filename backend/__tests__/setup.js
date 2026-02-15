@@ -51,3 +51,14 @@ global.console = {
   warn: jest.fn(),
   error: jest.fn()
 };
+
+afterAll(async () => {
+  try {
+    const db = require('../src/database');
+    if (db && typeof db.end === 'function') {
+      await db.end();
+    }
+  } catch (error) {
+    // ignore teardown errors
+  }
+});

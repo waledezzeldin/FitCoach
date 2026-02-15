@@ -57,21 +57,52 @@ class SubscriptionPlan {
   }
 
   factory SubscriptionPlan.fromJson(Map<String, dynamic> json) {
+    final rawFeatures = json['features'];
+    final parsedFeatures = rawFeatures is List
+        ? rawFeatures.map((item) {
+            if (item is Map<String, dynamic>) {
+              return SubscriptionPlanFeature.fromJson(item);
+            }
+            if (item is String) {
+              return SubscriptionPlanFeature(
+                id: item,
+                label: item,
+              );
+            }
+            return null;
+          }).whereType<SubscriptionPlanFeature>().toList()
+        : const <SubscriptionPlanFeature>[];
+
+    final monthlyPrice = (json['monthlyPrice'] as num?)?.toDouble() ??
+        (json['monthly_price'] as num?)?.toDouble() ??
+        (json['price'] as num?)?.toDouble() ??
+        0;
+
+    final yearlyPrice = (json['yearlyPrice'] as num?)?.toDouble() ??
+        (json['yearly_price'] as num?)?.toDouble();
+
+    final metadata = <String, dynamic>{
+      ...((json['metadata'] as Map<String, dynamic>?) ?? const {}),
+      if (json['message_quota'] != null) 'messagesLimit': json['message_quota'],
+      if (json['call_quota'] != null) 'videoCallsLimit': json['call_quota'],
+      if (json['has_nutrition_access'] != null)
+        'nutritionAccess': json['has_nutrition_access'],
+      if (json['has_chat_attachments'] != null)
+        'chatAttachments': json['has_chat_attachments'],
+    };
+
     return SubscriptionPlan(
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String? ?? '',
-      monthlyPrice: (json['monthlyPrice'] as num?)?.toDouble() ?? 0,
-      yearlyPrice: (json['yearlyPrice'] as num?)?.toDouble(),
+      monthlyPrice: monthlyPrice,
+      yearlyPrice: yearlyPrice,
       currency: json['currency'] as String? ?? 'SAR',
       isRecommended: json['isRecommended'] as bool? ?? false,
       badge: json['badge'] as String?,
       accentColor: json['accentColor'] as String? ?? '#7C3AED',
-      features: (json['features'] as List?)
-              ?.map((item) => SubscriptionPlanFeature.fromJson(item as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      metadata: (json['metadata'] as Map<String, dynamic>?) ?? const {},
+      features: parsedFeatures,
+      metadata: metadata,
     );
   }
 

@@ -17,11 +17,16 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
 ### users.js
 - GET `/users/:id`
 - PUT `/users/:id`
+- GET `/users/me`
+- GET `/users/quota`
 - POST `/users/first-intake`
 - POST `/users/second-intake`
+- POST `/users/intake/first`
+- POST `/users/intake/second`
 - GET `/users/:id/quota`
 - POST `/users/start-trial`
 - POST `/users/:id/upload-photo`
+- GET `/users/:id/appointments`
 
 ### intake.js
 - POST `/intake/stage1`
@@ -34,6 +39,11 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
 - GET `/workouts/templates/:id`
 - POST `/workouts/generate-from-template`
 - GET `/workouts/recommend-template/:userId?`
+- GET `/workouts/plan`
+- POST `/workouts/exercises/:exerciseId/complete`
+- POST `/workouts/exercises/substitute`
+- POST `/workouts/log`
+- GET `/workouts/history`
 - GET `/workouts`
 - GET `/workouts/:id`
 - POST `/workouts/:id/exercises/:exerciseId/complete`
@@ -49,8 +59,12 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
 
 ### nutrition.js
 - GET `/nutrition/access-status`
+- GET `/nutrition/trial-status`
 - POST `/nutrition/unlock-trial`
 - POST `/nutrition/generate`
+- GET `/nutrition/plan`
+- POST `/nutrition/meals/:mealId/log`
+- GET `/nutrition/history`
 - GET `/nutrition`
 - GET `/nutrition/:id`
 - POST `/nutrition/:id/meals/:mealId/complete`
@@ -62,11 +76,17 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
 - GET `/messages/conversations`
 - GET `/messages/conversations/:id`
 - POST `/messages`
+- POST `/messages/send`
 - PUT `/messages/:id/read`
+- PATCH `/messages/:id/read`
 - DELETE `/messages/:id`
-- POST `/messages/attachments`
+- POST `/messages/upload`
 - GET `/messages/unread/count`
 - GET `/messages/search`
+
+### conversations (compat)
+- GET `/conversations`
+- GET `/conversations/:id/messages`
 
 ### coaches.js
 - GET `/coaches/:id/profile`
@@ -74,6 +94,7 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
 - GET `/coaches/:id`
 - GET `/coaches/:id/clients` (coach/admin)
 - GET `/coaches/:id/appointments` (coach/admin)
+- GET `/coaches/:id/appointments/ics`
 - POST `/coaches/:id/appointments` (coach/admin)
 - PUT `/coaches/:id/appointments/:appointmentId` (coach/admin)
 - GET `/coaches/:id/earnings` (coach/admin)
@@ -96,7 +117,11 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
 - PUT `/admin/exercises/:id`
 - DELETE `/admin/exercises/:id`
 - GET `/admin/subscription-plans`
+- GET `/admin/subscriptions/plans`
+- POST `/admin/subscriptions/plans`
 - PUT `/admin/subscription-plans/:id`
+- PUT `/admin/subscriptions/plans/:id`
+- DELETE `/admin/subscriptions/plans/:id`
 - GET `/admin/settings`
 - PUT `/admin/settings`
 
@@ -180,6 +205,21 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
 - POST `/orders`
 - PUT `/orders/:id/status` (admin)
 - POST `/orders/:id/cancel`
+- PUT `/orders/:id/cancel`
+- GET `/orders/:id/track`
+
+### store.js
+- GET `/store/products`
+- GET `/store/products/:id`
+- GET `/store/products/:id/reviews`
+- POST `/store/products/:id/reviews`
+- POST `/store/products/:id/check-availability`
+- GET `/store/categories`
+- POST `/store/promo-codes/apply`
+- POST `/store/shipping/calculate`
+
+### subscriptions.js
+- GET `/subscriptions/plans`
 
 ### payments.js
 - POST `/payments/create-checkout`
@@ -210,6 +250,7 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
   - `backend/docs/API_OVERVIEW.md` (missing)
   - `backend/docs/AUTH_API.md`, `USER_API.md`, `WORKOUT_API.md`, `NUTRITION_API.md`,
     `COACH_API.md`, `ADMIN_API.md`, `STORE_API.md` (missing)
+- API contract is now tracked in [docs/api_contract_v2.md](api_contract_v2.md).
 
 ## Modularization Notes (Next Actions)
 - Validate controller -> service separation and move any business logic out of controllers.
@@ -217,4 +258,4 @@ Sources: `backend/src/routes`, `backend/src/services`, `backend/docs/README.md`.
 - Add request validation for all endpoints (shared validators).
 
 ## Progress Log
-- [ ] 2025-__-__: Route inventory captured; doc gaps noted.
+- [x] 2026-02-02: Route inventory updated for compatibility endpoints and store/subscriptions.

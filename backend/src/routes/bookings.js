@@ -1,15 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authMiddleware, checkCallQuota } = require('../middleware/auth');
-
-// Placeholder controller
-const bookingController = {
-  getUserBookings: (req, res) => res.json({ success: true, bookings: [] }),
-  createBooking: (req, res) => res.json({ success: true, booking: {} }),
-  updateBooking: (req, res) => res.json({ success: true }),
-  cancelBooking: (req, res) => res.json({ success: true }),
-  getAvailableSlots: (req, res) => res.json({ success: true, slots: [] })
-};
+const bookingController = require('../controllers/bookingController');
 
 router.get('/', authMiddleware, bookingController.getUserBookings);
 router.get('/available-slots', authMiddleware, bookingController.getAvailableSlots);

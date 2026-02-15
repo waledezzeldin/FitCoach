@@ -18,9 +18,29 @@ class InjuryMappingService {
    */
   async loadMappings() {
     try {
-      const mappingsPath = path.join(__dirname, '../data/injury-swaps.json');
-      const content = await fs.readFile(mappingsPath, 'utf8');
-      this.injuryMappings = JSON.parse(content);
+      const backendPath = path.join(__dirname, '../data/injury-swaps.json');
+      const mobilePath = path.resolve(__dirname, '../../../mobile/assets/data/new/injury_swap_table.json');
+
+      let content = null;
+      try {
+        content = await fs.readFile(mobilePath, 'utf8');
+        logger.info('Loaded injury mappings from mobile assets');
+      } catch (_) {
+        content = await fs.readFile(backendPath, 'utf8');
+        logger.info('Loaded injury mappings from backend data');
+      }
+
+      const rawMappings = JSON.parse(content);
+      this.injuryMappings = Object.keys(rawMappings || {}).reduce((acc, key) => {
+        const entry = rawMappings[key] || {};
+        acc[key] = {
+          description_en: entry.description_en || entry.description || entry.description_ar || key,
+          description_ar: entry.description_ar || entry.description || entry.description_en || key,
+          avoid_keywords: entry.avoid_keywords || [],
+          substitute_exercises: entry.substitute_exercises || []
+        };
+        return acc;
+      }, {});
       this.loaded = true;
       logger.info(`Loaded ${Object.keys(this.injuryMappings).length} injury mappings`);
       return this.injuryMappings;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/repositories/user_repository.dart';
@@ -8,7 +9,14 @@ import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
 
 class ProfileEditScreen extends StatefulWidget {
-  const ProfileEditScreen({super.key});
+  final UserRepository? userRepository;
+  final ImagePicker? imagePicker;
+
+  const ProfileEditScreen({
+    super.key,
+    this.userRepository,
+    this.imagePicker,
+  });
 
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
@@ -17,6 +25,7 @@ class ProfileEditScreen extends StatefulWidget {
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
+  bool _isUpdatingPhoto = false;
   
   late TextEditingController _nameController;
   late TextEditingController _emailController;
@@ -24,6 +33,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   late TextEditingController _weightController;
   late TextEditingController _heightController;
   String _selectedGender = 'male';
+
+  UserRepository get _userRepository => widget.userRepository ?? UserRepository();
+  ImagePicker get _imagePicker => widget.imagePicker ?? ImagePicker();
 
   @override
   void initState() {
@@ -51,7 +63,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
-    final isArabic = languageProvider.isArabic;
 
     return Scaffold(
       appBar: AppBar(
@@ -93,10 +104,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         ),
                         child: IconButton(
                           icon: const Icon(Icons.camera_alt, color: AppColors.textWhite, size: 20),
-                          onPressed: () {
-                            // TODO: Implement photo upload
-                            _showPhotoOptions(isArabic);
-                          },
+                          onPressed: _isUpdatingPhoto ? null : _showPhotoOptions,
                         ),
                       ),
                     ),
@@ -273,7 +281,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   text: _isSaving
                       ? languageProvider.t('edit_profile_saving')
                       : languageProvider.t('edit_profile_save'),
-                  onPressed: _isSaving ? null : () => _saveProfile(isArabic),
+                  onPressed: _isSaving ? null : _saveProfile,
                   variant: ButtonVariant.primary,
                   size: ButtonSize.large,
                   fullWidth: true,
@@ -329,7 +337,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     );
   }
   
-  void _showPhotoOptions(bool isArabic) {
+  void _showPhotoOptions() {
     final languageProvider = context.read<LanguageProvider>();
     showModalBottomSheet(
       context: context,
@@ -342,7 +350,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               title: Text(languageProvider.t('edit_profile_take_photo')),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement camera
+                _pickAndUploadPhoto(ImageSource.camera);
               },
             ),
             ListTile(
@@ -350,7 +358,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               title: Text(languageProvider.t('edit_profile_choose_gallery')),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement gallery
+                _pickAndUploadPhoto(ImageSource.gallery);
               },
             ),
             ListTile(
@@ -361,7 +369,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement remove photo
+                _removePhoto();
               },
             ),
           ],
@@ -370,7 +378,95 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     );
   }
   
-  Future<void> _saveProfile(bool isArabic) async {
+  Future<void> _pickAndUploadPhoto(ImageSource source) async {
+    if (_isUpdatingPhoto) return;
+    final languageProvider = context.read<LanguageProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final selected = await _imagePicker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1200,
+    );
+
+    if (selected == null) {
+      return;
+    }
+
+    setState(() {
+      _isUpdatingPhoto = true;
+    });
+
+    try {
+      await _userRepository.uploadProfilePhoto(selected.path);
+      await authProvider.refreshUserProfile();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(languageProvider.isArabic ? 'تم تحديث الصورة الشخصية' : 'Profile photo updated'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(languageProvider.isArabic ? 'فشل تحديث الصورة الشخصية' : 'Failed to update profile photo'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingPhoto = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _removePhoto() async {
+    if (_isUpdatingPhoto) return;
+    final languageProvider = context.read<LanguageProvider>();
+
+    setState(() {
+      _isUpdatingPhoto = true;
+    });
+
+    try {
+      final authProvider = context.read<AuthProvider>();
+      await _userRepository.removeProfilePhoto();
+      await authProvider.refreshUserProfile();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(languageProvider.isArabic ? 'تمت إزالة الصورة الشخصية' : 'Profile photo removed'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(languageProvider.isArabic ? 'فشل إزالة الصورة الشخصية' : 'Failed to remove profile photo'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingPhoto = false;
+        });
+      }
+    }
+  }
+
+  @visibleForTesting
+  Future<void> removePhotoForTest() {
+    return _removePhoto();
+  }
+
+  Future<void> _saveProfile() async {
     final languageProvider = context.read<LanguageProvider>();
     if (!_formKey.currentState!.validate()) {
       return;
@@ -382,7 +478,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     
     try {
       final authProvider = context.read<AuthProvider>();
-      final repository = UserRepository();
       
       final updatedData = {
         'fullName': _nameController.text,
@@ -393,7 +488,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         'gender': _selectedGender,
       };
       
-      await repository.updateProfile(authProvider.user!.id, updatedData);
+      await _userRepository.updateProfile(authProvider.user!.id, updatedData);
       
       // Refresh user data
       await authProvider.refreshUser();

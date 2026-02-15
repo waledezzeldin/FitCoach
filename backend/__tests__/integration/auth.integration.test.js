@@ -2,8 +2,12 @@ const request = require('supertest');
 const express = require('express');
 const authRoutes = require('../../src/routes/auth');
 const db = require('../../src/database');
+const userProfileService = require('../../src/services/userProfileService');
 
 jest.mock('../../src/database');
+jest.mock('../../src/services/userProfileService', () => ({
+  getUserProfileForApp: jest.fn()
+}));
 
 describe('Auth Integration Tests', () => {
   let app;
@@ -16,6 +20,7 @@ describe('Auth Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    userProfileService.getUserProfileForApp.mockResolvedValue(null);
   });
 
   describe('POST /v2/auth/send-otp', () => {

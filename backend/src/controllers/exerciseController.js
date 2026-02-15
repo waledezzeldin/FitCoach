@@ -1,5 +1,26 @@
 const db = require('../database');
 const logger = require('../utils/logger');
+const exerciseCatalogService = require('../services/exerciseCatalogService');
+
+const applyCatalogFallback = async (row) => {
+  if (!row || !row.ex_id) return row;
+  const catalog = await exerciseCatalogService.getById(row.ex_id);
+  if (!catalog) return row;
+
+  return {
+    ...row,
+    name_en: row.name_en || catalog.name_en,
+    name_ar: row.name_ar || catalog.name_ar,
+    instructions_en: row.instructions_en || catalog.instructions_en,
+    instructions_ar: row.instructions_ar || catalog.instructions_ar,
+    common_mistakes_en: row.common_mistakes_en || catalog.common_mistakes_en,
+    common_mistakes_ar: row.common_mistakes_ar || catalog.common_mistakes_ar,
+    equipment: row.equipment && row.equipment.length ? row.equipment : catalog.equip,
+    muscle_groups: row.muscle_groups && row.muscle_groups.length ? row.muscle_groups : catalog.muscles,
+    video_url: row.video_url || catalog.video_url,
+    thumbnail_url: row.thumbnail_url || catalog.thumbnail_url,
+  };
+};
 
 /**
  * Exercise Controller
@@ -25,6 +46,9 @@ exports.getAllExercises = async (req, res) => {
         ex_id,
         name_en,
         name_ar,
+        name_en AS name,
+        name_en AS "nameEn",
+        name_ar AS "nameAr",
         description_en,
         description_ar,
         muscle_groups,
@@ -42,6 +66,7 @@ exports.getAllExercises = async (req, res) => {
         location_type,
         is_compound,
         alternatives,
+        contraindications,
         created_at,
         updated_at
       FROM exercises
@@ -89,11 +114,18 @@ exports.getAllExercises = async (req, res) => {
     query += ` ORDER BY name_en ASC`;
 
     const result = await db.query(query, params);
+    const enrichedRows = await Promise.all(result.rows.map(applyCatalogFallback));
 
     res.json({
       success: true,
-      exercises: result.rows,
-      total: result.rows.length
+      exercises: enrichedRows.map((row) => ({
+        ...row,
+        name: row.name || row.name_en,
+        nameEn: row.nameEn || row.name_en,
+        nameAr: row.nameAr || row.name_ar,
+        muscleGroup: row.muscle_group || null
+      })),
+      total: enrichedRows.length
     });
 
   } catch (error) {
@@ -113,7 +145,8 @@ exports.getExerciseById = async (req, res) => {
     const { id } = req.params;
 
     const result = await db.query(
-      `SELECT * FROM exercises WHERE ex_id = $1 OR id = $1`,
+      `SELECT *, name_en AS name, name_en AS "nameEn", name_ar AS "nameAr"
+       FROM exercises WHERE ex_id = $1 OR id = $1`,
       [id]
     );
 
@@ -125,15 +158,18 @@ exports.getExerciseById = async (req, res) => {
     }
 
     // Get alternative exercises
-    const exercise = result.rows[0];
+    let exercise = result.rows[0];
+    exercise = await applyCatalogFallback(exercise);
     if (exercise.alternatives && exercise.alternatives.length > 0) {
       const alternativesResult = await db.query(
-        `SELECT id, ex_id, name_en, name_ar, muscle_groups, equipment, difficulty
+        `SELECT id, ex_id, name_en, name_ar, name_en AS name, name_en AS "nameEn", name_ar AS "nameAr",
+                muscle_groups, equipment, difficulty, contraindications, alternatives
          FROM exercises 
-         WHERE ex_id = ANY($1)`,
+         WHERE ex_id = ANY($1) OR id::text = ANY($1)`,
         [exercise.alternatives]
       );
-      exercise.alternative_exercises = alternativesResult.rows;
+      const enrichedAlternatives = await Promise.all(alternativesResult.rows.map(applyCatalogFallback));
+      exercise.alternative_exercises = enrichedAlternatives;
     }
 
     res.json({
@@ -146,6 +182,62 @@ exports.getExerciseById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to get exercise'
+    });
+  }
+};
+
+/**
+ * Get exercise alternatives (Flutter-compatible)
+ */
+exports.getExerciseAlternatives = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { injuries = [] } = req.body;
+
+    const result = await db.query(
+      `SELECT *, name_en AS name, name_en AS "nameEn", name_ar AS "nameAr"
+       FROM exercises WHERE ex_id = $1 OR id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Exercise not found'
+      });
+    }
+
+    let exercise = result.rows[0];
+    exercise = await applyCatalogFallback(exercise);
+    const alternatives = exercise.alternatives || [];
+
+    if (alternatives.length === 0) {
+      return res.json([]);
+    }
+
+    const alternativesResult = await db.query(
+      `SELECT id, ex_id, name_en, name_ar, name_en AS name, name_en AS "nameEn", name_ar AS "nameAr",
+              muscle_groups, equipment, difficulty, contraindications, alternatives, video_url, thumbnail_url,
+              instructions_en, instructions_ar
+       FROM exercises
+       WHERE ex_id = ANY($1) OR id::text = ANY($1)`,
+      [alternatives]
+    );
+
+    const enrichedAlternatives = await Promise.all(alternativesResult.rows.map(applyCatalogFallback));
+
+    const normalizedInjuries = (injuries || []).map((inj) => String(inj).toLowerCase());
+    const safeAlternatives = enrichedAlternatives.filter((row) => {
+      const contra = (row.contraindications || []).map((c) => String(c).toLowerCase());
+      return !contra.some((c) => normalizedInjuries.includes(c));
+    });
+
+    res.json(safeAlternatives);
+  } catch (error) {
+    logger.error('Get exercise alternatives error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get alternatives'
     });
   }
 };
@@ -165,11 +257,13 @@ exports.getExercisesByMuscleGroup = async (req, res) => {
       [muscleGroup]
     );
 
+    const enrichedRows = await Promise.all(result.rows.map(applyCatalogFallback));
+
     res.json({
       success: true,
       muscleGroup,
-      exercises: result.rows,
-      total: result.rows.length
+      exercises: enrichedRows,
+      total: enrichedRows.length
     });
 
   } catch (error) {
@@ -206,9 +300,11 @@ exports.getUserFavorites = async (req, res) => {
       [userId]
     );
 
+    const enrichedRows = await Promise.all(result.rows.map(applyCatalogFallback));
+
     res.json({
       success: true,
-      favorites: result.rows
+      favorites: enrichedRows
     });
 
   } catch (error) {

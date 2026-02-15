@@ -503,6 +503,53 @@ exports.cancelOrder = async (req, res) => {
 };
 
 /**
+ * Track order status
+ */
+exports.trackOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    let query = 'SELECT id, order_number, status, placed_at, updated_at FROM orders WHERE id = $1';
+    const params = [id];
+
+    if (userRole !== 'admin') {
+      query += ' AND user_id = $2';
+      params.push(userId);
+    }
+
+    const result = await db.query(query, params);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    const order = result.rows[0];
+
+    res.json({
+      success: true,
+      tracking: {
+        orderId: order.id,
+        orderNumber: order.order_number,
+        status: order.status,
+        placedAt: order.placed_at,
+        updatedAt: order.updated_at
+      }
+    });
+  } catch (error) {
+    logger.error('Track order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to track order'
+    });
+  }
+};
+
+/**
  * Get order statistics (Admin only)
  */
 exports.getOrderStats = async (req, res) => {

@@ -239,6 +239,13 @@ class AuthRepository implements AuthRepositoryBase {
   @override
   Future<void> logout() async {
     try {
+      final token = await getStoredToken();
+      if (token != null) {
+        await _dio.post(
+          '/auth/logout',
+          options: Options(headers: {'Authorization': 'Bearer $token'}),
+        );
+      }
       await _secureStorage.delete(key: _tokenKey);
     } catch (e) {
       throw Exception('Failed to logout');
@@ -257,12 +264,17 @@ class AuthRepository implements AuthRepositoryBase {
       
       final response = await _dio.post(
         '/auth/refresh',
+        data: {'refreshToken': currentToken},
         options: Options(
           headers: {'Authorization': 'Bearer $currentToken'},
         ),
       );
       
-      final newToken = response.data['token'] as String;
+      final data = response.data as Map<String, dynamic>;
+      final newToken = (data['token'] ?? data['accessToken']) as String?;
+      if (newToken == null) {
+        return null;
+      }
       await storeToken(newToken);
       
       return newToken;

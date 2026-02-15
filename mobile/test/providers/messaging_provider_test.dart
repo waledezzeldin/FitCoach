@@ -4,13 +4,125 @@ import 'package:fitapp/data/models/message.dart';
 import 'package:fitapp/data/repositories/messaging_repository.dart';
 import 'package:fitapp/core/config/demo_config.dart';
 
+class FakeMessagingRepository extends MessagingRepository {
+  final List<Message> _messages = [];
+  final Map<String, Conversation> _conversations = {};
+
+  FakeMessagingRepository() {
+    final now = DateTime.now();
+    final conversation = Conversation(
+      id: 'chat123',
+      userId: 'user123',
+      coachId: 'coach456',
+      createdAt: now,
+      updatedAt: now,
+    );
+    _conversations[conversation.id] = conversation;
+    _messages.add(
+      Message(
+        id: 'seed1',
+        conversationId: conversation.id,
+        senderId: 'coach',
+        receiverId: 'user123',
+        content: 'Workout tips for today',
+        type: MessageType.text,
+        isRead: false,
+        createdAt: now,
+      ),
+    );
+  }
+
+  @override
+  Future<void> connect() async {}
+
+  @override
+  void onMessageReceived(Function(Message) callback) {}
+
+  @override
+  void disconnect() {}
+
+  @override
+  Future<Conversation> getConversation(String conversationId) async {
+    return _conversations[conversationId] ?? Conversation(
+      id: conversationId,
+      userId: 'user123',
+      coachId: 'coach456',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<List<Conversation>> getConversations() async {
+    return _conversations.values.toList();
+  }
+
+  @override
+  Future<List<Message>> getMessages(String conversationId) async {
+    return _messages.where((m) => m.conversationId == conversationId).toList();
+  }
+
+  @override
+  Future<Message> sendMessage(
+    String? conversationId,
+    String content, {
+    String? recipientId,
+    MessageType type = MessageType.text,
+  }) async {
+    final targetConversationId = conversationId ?? 'chat123';
+    final message = Message(
+      id: 'msg_${_messages.length + 1}',
+      conversationId: targetConversationId,
+      senderId: 'user',
+      receiverId: 'coach',
+      content: content,
+      type: type,
+      isRead: false,
+      createdAt: DateTime.now(),
+    );
+    _messages.add(message);
+    return message;
+  }
+
+  @override
+  Future<void> markConversationAsRead(String conversationId) async {
+    final now = DateTime.now();
+    for (var i = 0; i < _messages.length; i++) {
+      final message = _messages[i];
+      if (message.conversationId == conversationId) {
+        _messages[i] = Message(
+          id: message.id,
+          conversationId: message.conversationId,
+          senderId: message.senderId,
+          receiverId: message.receiverId,
+          content: message.content,
+          type: message.type,
+          attachmentUrl: message.attachmentUrl,
+          attachmentType: message.attachmentType,
+          isRead: true,
+          createdAt: message.createdAt,
+          readAt: now,
+        );
+      }
+    }
+  }
+
+  @override
+  Future<void> deleteMessage(String messageId) async {}
+
+  @override
+  Future<void> deleteConversationMessages(String conversationId) async {
+    _messages.removeWhere((m) => m.conversationId == conversationId);
+  }
+}
+
 void main() {
   group('MessagingProvider Tests', () {
     late MessagingProvider messagingProvider;
     late MessagingRepository messagingRepository;
 
     setUp(() {
-      messagingRepository = MessagingRepository(); // Make sure MessagingRepository is imported and can be instantiated
+      messagingRepository = FakeMessagingRepository();
       messagingProvider = MessagingProvider(messagingRepository);
     });
 
@@ -42,10 +154,7 @@ void main() {
 
       expect(messagingProvider.messages, isNotEmpty);
       expect(messagingProvider.messages.last.content, 'Test message');
-      expect(
-        messagingProvider.messages.last.senderId,
-        DemoConfig.isDemo ? 'demo-user' : 'user',
-      );
+      expect(messagingProvider.messages.last.senderId, 'user');
     });
 
     // Skipped: sendMessage should check quota before sending
@@ -76,12 +185,12 @@ void main() {
       // Removed: setTypingStatus/isTyping tests, as MessagingProvider does not support typing indicator
     });
 
-    test('markAsRead should update read status', () async {
+    test('markConversationAsRead should update read status', () async {
       await messagingProvider.connect('user123', 'coach456');
       await messagingProvider.sendMessage('Test');
 
-      final messageId = messagingProvider.messages.last.id;
-      await messagingProvider.markAsRead(messageId);
+      final conversationId = messagingProvider.messages.last.conversationId;
+      await messagingProvider.markConversationAsRead(conversationId);
 
       expect(messagingProvider.messages.last.isRead, true);
     });
@@ -126,7 +235,8 @@ void main() {
         ),
       );
 
-      expect(messagingProvider.getUnreadCount(), initialUnread + 2);
+      // Incoming messages in the active conversation are auto-marked as read.
+      expect(messagingProvider.getUnreadCount(), initialUnread);
     });
 
     test('searchMessages should filter by query', () async {

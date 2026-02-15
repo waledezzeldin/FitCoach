@@ -3,6 +3,7 @@ const db = require('../database');
 const workoutTemplateService = require('./workoutTemplateService');
 const injuryMappingService = require('./injuryMappingService');
 const logger = require('../utils/logger');
+const exerciseCatalogService = require('./exerciseCatalogService');
 
 /**
  * Workout Generation Service
@@ -48,7 +49,7 @@ class WorkoutGenerationService {
       };
 
       // Get sessions from template (handles both starter and advanced)
-      const sessions = workoutTemplateService.getSessionsFromTemplate(template, userCriteria);
+      const sessions = await workoutTemplateService.getSessionsFromTemplate(template, userCriteria);
 
       // Get fitness score projection
       const fitnessScoreProjection = workoutTemplateService.getFitnessScoreProjection(
@@ -104,10 +105,15 @@ class WorkoutGenerationService {
       );
 
       // Create workout sessions based on extracted sessions
-      for (const session of sessions) {
-        // Determine which week this session belongs to (repeats across all weeks)
-        // For now, we'll create one session per week for each day
-        for (let weekNum = 1; weekNum <= template.weeks; weekNum++) {
+      for (let weekNum = 1; weekNum <= template.weeks; weekNum++) {
+        const weeklySessions = await workoutTemplateService.getSessionsForWeek(
+          template,
+          userCriteria,
+          weekNum,
+          sessions
+        );
+
+        for (const session of weeklySessions) {
           // Get or create week
           let weekResult = await client.query(
             'SELECT * FROM workout_weeks WHERE workout_plan_id = $1 AND week_number = $2',
@@ -153,6 +159,13 @@ class WorkoutGenerationService {
           for (const exercise of session.work) {
             // Get exercise definition if available
             const exDef = workoutTemplateService.getExerciseDefinition(template, exercise.ex_id);
+            const catalog = await exerciseCatalogService.getById(exercise.ex_id);
+
+            const resolvedNameEn = exercise.name_en || exDef?.name_en || catalog?.name_en || exercise.ex_id;
+            const resolvedNameAr = exercise.name_ar || exDef?.name_ar || catalog?.name_ar || resolvedNameEn;
+            const resolvedEquip = exercise.equip || exDef?.equip || catalog?.equip || [];
+            const resolvedMuscles = exercise.muscles || exDef?.muscles || catalog?.muscles || [];
+            const resolvedVideoId = exercise.video_id || exDef?.video_id || catalog?.video_id || null;
 
             await client.query(
               `INSERT INTO workout_day_exercises (
@@ -166,8 +179,8 @@ class WorkoutGenerationService {
                 uuidv4(),
                 workoutDay.id,
                 exercise.ex_id,
-                exercise.name_en || exDef?.name_en || exercise.ex_id,
-                exercise.name_ar || exDef?.name_ar || exercise.name_en || exercise.ex_id,
+                resolvedNameEn,
+                resolvedNameAr,
                 exercise.sets,
                 exercise.reps,
                 exercise.rest_s || exercise.rest_seconds || 90,
@@ -175,9 +188,9 @@ class WorkoutGenerationService {
                 exercise.notes_ar || exercise.notes_en || '',
                 order++,
                 exercise.rpe || null,
-                JSON.stringify(exercise.equip || exDef?.equip || []),
-                JSON.stringify(exercise.muscles || exDef?.muscles || []),
-                exercise.video_id || exDef?.video_id || null,
+                JSON.stringify(resolvedEquip),
+                JSON.stringify(resolvedMuscles),
+                resolvedVideoId,
                 exercise.was_substituted || false,
                 exercise.original_ex_id || null,
                 exercise.substitution_reason || null

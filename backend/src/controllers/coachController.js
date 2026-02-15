@@ -5,6 +5,19 @@ const PDFDocument = require('pdfkit');
 const isValidUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const allowedAppointmentTypes = new Set(['video', 'audio', 'in_person']);
 
+const resolveCoachRecord = async (coachRef) => {
+  const result = await db.query(
+    'SELECT * FROM coaches WHERE id = $1 OR user_id = $1',
+    [coachRef]
+  );
+  return result.rows[0] || null;
+};
+
+const formatIcsDate = (date) => {
+  const iso = new Date(date).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return iso;
+};
+
 /**
  * Generate client report
  */
@@ -14,10 +27,19 @@ exports.generateClientReport = async (req, res) => {
     const { clientId } = req.params;
     const { reportType = 'comprehensive', startDate, endDate } = req.query;
 
+    const coachRecord = await resolveCoachRecord(coachId);
+    if (!coachRecord) {
+      return res.status(404).json({ error: 'Coach not found' });
+    }
+
+    if (req.user.role !== 'admin' && req.user.userId !== coachRecord.user_id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
     // Verify coach owns this client
     const clientCheck = await db.query(
       'SELECT * FROM user_coaches WHERE coach_id = $1 AND user_id = $2',
-      [coachId, clientId]
+      [coachRecord.id, clientId]
     );
 
     if (clientCheck.rows.length === 0) {
@@ -242,9 +264,17 @@ exports.getCoachClients = async (req, res) => {
   try {
     const coachId = req.params.id;
     const { status, search, limit = 50, offset = 0 } = req.query;
+
+    const coachRecord = await resolveCoachRecord(coachId);
+    if (!coachRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
     
     // Check authorization
-    if (req.user.userId !== coachId && req.user.role !== 'admin') {
+    if (req.user.userId !== coachRecord.user_id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Unauthorized'
@@ -263,8 +293,8 @@ exports.getCoachClients = async (req, res) => {
         (
           SELECT COUNT(*) 
           FROM messages m 
-          WHERE (m.sender_id = u.id AND m.receiver_id = $1)
-             OR (m.sender_id = $1 AND m.receiver_id = u.id)
+          WHERE (m.sender_id = u.id AND m.receiver_id = $2)
+             OR (m.sender_id = $2 AND m.receiver_id = u.id)
         ) as message_count
       FROM users u
       JOIN user_coaches uc ON u.id = uc.user_id
@@ -273,8 +303,8 @@ exports.getCoachClients = async (req, res) => {
       WHERE uc.coach_id = $1
     `;
     
-    const params = [coachId];
-    let paramCount = 2;
+    const params = [coachRecord.id, coachRecord.user_id];
+    let paramCount = 3;
     
     if (status) {
       query += ` AND u.is_active = $${paramCount}`;
@@ -327,9 +357,17 @@ exports.getCoachAppointments = async (req, res) => {
   try {
     const coachId = req.params.id;
     const { status, startDate, endDate, limit = 50, offset = 0 } = req.query;
+
+    const coachRecord = await resolveCoachRecord(coachId);
+    if (!coachRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
     
     // Check authorization
-    if (req.user.userId !== coachId && req.user.role !== 'admin') {
+    if (req.user.userId !== coachRecord.user_id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Unauthorized'
@@ -339,14 +377,17 @@ exports.getCoachAppointments = async (req, res) => {
     let query = `
       SELECT 
         a.*,
-        u.full_name as client_name,
-        u.profile_photo_url as client_photo
+        u.full_name as user_name,
+        u.profile_photo_url as client_photo,
+        cu.full_name as coach_name
       FROM appointments a
       JOIN users u ON a.user_id = u.id
+      JOIN coaches c ON a.coach_id = c.id
+      JOIN users cu ON c.user_id = cu.id
       WHERE a.coach_id = $1
     `;
     
-    const params = [coachId];
+    const params = [coachRecord.id];
     let paramCount = 2;
     
     if (status) {
@@ -392,12 +433,116 @@ exports.getCoachAppointments = async (req, res) => {
 };
 
 /**
+ * Export coach appointments as ICS
+ */
+exports.exportCoachAppointmentsIcs = async (req, res) => {
+  try {
+    const coachId = req.params.id;
+    const { startDate, endDate, status } = req.query;
+
+    const coachRecord = await resolveCoachRecord(coachId);
+    if (!coachRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
+
+    if (req.user.userId !== coachRecord.user_id && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized'
+      });
+    }
+
+    const params = [coachRecord.id];
+    let query = `
+      SELECT
+        a.id,
+        a.scheduled_at,
+        a.duration_minutes,
+        a.type,
+        a.notes,
+        a.status,
+        u.full_name as user_name
+      FROM appointments a
+      JOIN users u ON a.user_id = u.id
+      WHERE a.coach_id = $1
+    `;
+
+    if (startDate) {
+      query += ` AND a.scheduled_at >= $${params.length + 1}`;
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      query += ` AND a.scheduled_at <= $${params.length + 1}`;
+      params.push(endDate);
+    }
+
+    if (status) {
+      query += ` AND a.status = $${params.length + 1}`;
+      params.push(status);
+    }
+
+    query += ' ORDER BY a.scheduled_at ASC';
+
+    const result = await db.query(query, params);
+
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//FitCoach//Coach Calendar//EN',
+      'CALSCALE:GREGORIAN'
+    ];
+
+    const nowStamp = formatIcsDate(new Date());
+
+    for (const appointment of result.rows) {
+      const start = formatIcsDate(appointment.scheduled_at);
+      const duration = appointment.duration_minutes || 30;
+      const summary = `FitCoach Session with ${appointment.user_name}`;
+      const description = `Type: ${appointment.type || 'session'}\\nStatus: ${appointment.status || 'scheduled'}${appointment.notes ? `\\nNotes: ${appointment.notes}` : ''}`;
+
+      lines.push('BEGIN:VEVENT');
+      lines.push(`UID:${appointment.id}`);
+      lines.push(`DTSTAMP:${nowStamp}`);
+      lines.push(`DTSTART:${start}`);
+      lines.push(`DURATION:PT${duration}M`);
+      lines.push(`SUMMARY:${summary}`);
+      lines.push(`DESCRIPTION:${description}`);
+      lines.push('END:VEVENT');
+    }
+
+    lines.push('END:VCALENDAR');
+
+    res.set('Content-Type', 'text/calendar; charset=utf-8');
+    res.set('Content-Disposition', 'attachment; filename="coach-appointments.ics"');
+    res.send(lines.join('\r\n'));
+  } catch (error) {
+    logger.error('Export coach appointments ICS error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export appointments'
+    });
+  }
+};
+
+/**
  * Create appointment
  */
 exports.createAppointment = async (req, res) => {
   try {
     const coachId = req.params.id;
     const { userId, scheduledAt, duration, type, notes } = req.body;
+
+    const coachRecord = await resolveCoachRecord(coachId);
+    if (!coachRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
 
     if (!coachId || !userId || !scheduledAt || !duration || !type) {
       return res.status(400).json({
@@ -406,7 +551,7 @@ exports.createAppointment = async (req, res) => {
       });
     }
 
-    if (!isValidUuid(coachId) || !isValidUuid(userId)) {
+    if (!isValidUuid(coachRecord.id) || !isValidUuid(userId)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid user or coach ID'
@@ -436,18 +581,10 @@ exports.createAppointment = async (req, res) => {
       });
     }
     
-    // Check authorization
-    if (req.user.userId !== coachId && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized'
-      });
-    }
-    
     // Check if user is client of this coach
     const clientCheck = await db.query(
       'SELECT id FROM user_coaches WHERE user_id = $1 AND coach_id = $2',
-      [userId, coachId]
+      [userId, coachRecord.id]
     );
     
     if (clientCheck.rows.length === 0) {
@@ -457,6 +594,13 @@ exports.createAppointment = async (req, res) => {
       });
     }
     
+    if (req.user.role !== 'admin' && req.user.userId !== coachRecord.user_id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized'
+      });
+    }
+
     const result = await db.query(
       `INSERT INTO appointments (
         coach_id,
@@ -468,13 +612,22 @@ exports.createAppointment = async (req, res) => {
         status
       ) VALUES ($1, $2, $3, $4, $5, $6, 'scheduled')
       RETURNING *`,
-      [coachId, userId, scheduledAt, duration, type, notes]
+      [coachRecord.id, userId, scheduledAt, duration, type, notes]
     );
-    
+    const details = await db.query(
+      `SELECT a.*, u.full_name as user_name, cu.full_name as coach_name
+       FROM appointments a
+       JOIN users u ON a.user_id = u.id
+       JOIN coaches c ON a.coach_id = c.id
+       JOIN users cu ON c.user_id = cu.id
+       WHERE a.id = $1`,
+      [result.rows[0].id]
+    );
+
     res.status(201).json({
       success: true,
       message: 'Appointment created successfully',
-      appointment: result.rows[0]
+      appointment: details.rows[0] || result.rows[0]
     });
     
     logger.info(`Appointment created: ${result.rows[0].id}`);
@@ -496,21 +649,22 @@ exports.updateAppointment = async (req, res) => {
 
   try {
     const { id: coachId, appointmentId } = req.params;
-    const { status, notes } = req.body;
+    const { status, notes, scheduledAt, duration, type } = req.body;
+
+    const coachRecord = await resolveCoachRecord(coachId);
+    if (!coachRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
 
     // Check authorization
-    if (req.user.role !== 'admin') {
-      const coachResult = await client.query(
-        'SELECT user_id FROM coaches WHERE id = $1',
-        [coachId]
-      );
-
-      if (coachResult.rows.length === 0 || coachResult.rows[0].user_id !== req.user.userId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized'
-        });
-      }
+    if (req.user.role !== 'admin' && coachRecord.user_id !== req.user.userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized'
+      });
     }
 
     await client.query('BEGIN');
@@ -521,8 +675,8 @@ exports.updateAppointment = async (req, res) => {
        FROM appointments a
        JOIN users u ON a.user_id = u.id
        JOIN coaches c ON a.coach_id = c.id
-       WHERE a.id = $1 AND a.coach_id = $2`,
-      [appointmentId, coachId]
+      WHERE a.id = $1 AND a.coach_id = $2`,
+      [appointmentId, coachRecord.id]
     );
 
     if (appointmentResult.rows.length === 0) {
@@ -538,12 +692,15 @@ exports.updateAppointment = async (req, res) => {
     // Update appointment
     const updateResult = await client.query(
       `UPDATE appointments
-       SET status = $1,
+       SET status = COALESCE($1, status),
            notes = COALESCE($2, notes),
+           scheduled_at = COALESCE($3, scheduled_at),
+           duration_minutes = COALESCE($4, duration_minutes),
+           type = COALESCE($5, type),
            updated_at = NOW()
-       WHERE id = $3
+       WHERE id = $6
        RETURNING *`,
-      [status, notes, appointmentId]
+      [status, notes, scheduledAt, duration, type, appointmentId]
     );
 
     // Create notifications based on status
@@ -605,10 +762,20 @@ exports.updateAppointment = async (req, res) => {
     await client.query('COMMIT');
     client.release();
 
+    const details = await client.query(
+      `SELECT a.*, u.full_name as user_name, cu.full_name as coach_name
+       FROM appointments a
+       JOIN users u ON a.user_id = u.id
+       JOIN coaches c ON a.coach_id = c.id
+       JOIN users cu ON c.user_id = cu.id
+       WHERE a.id = $1`,
+      [appointmentId]
+    );
+
     res.json({
       success: true,
       message: 'Appointment updated successfully',
-      appointment: updateResult.rows[0]
+      appointment: details.rows[0] || updateResult.rows[0]
     });
 
     logger.info(`Appointment ${appointmentId} updated to ${status} by coach ${coachId}`);
@@ -631,9 +798,17 @@ exports.getCoachEarnings = async (req, res) => {
   try {
     const coachId = req.params.id;
     const { startDate, endDate, period = 'month' } = req.query;
+
+    const coachRecord = await resolveCoachRecord(coachId);
+    if (!coachRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
     
     // Check authorization
-    if (req.user.userId !== coachId && req.user.role !== 'admin') {
+    if (req.user.userId !== coachRecord.user_id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Unauthorized'
@@ -649,7 +824,7 @@ exports.getCoachEarnings = async (req, res) => {
        FROM coach_earnings
        WHERE coach_id = $1
        AND status = 'paid'`,
-      [coachId]
+      [coachRecord.id]
     );
     
     // Get earnings by period
@@ -663,7 +838,7 @@ exports.getCoachEarnings = async (req, res) => {
       AND status = 'paid'
     `;
     
-    const params = [coachId, period];
+    const params = [coachRecord.id, period];
     
     if (startDate) {
       periodQuery += ` AND created_at >= $3`;
@@ -689,7 +864,7 @@ exports.getCoachEarnings = async (req, res) => {
        WHERE ce.coach_id = $1
        ORDER BY ce.created_at DESC
        LIMIT 20`,
-      [coachId]
+      [coachRecord.id]
     );
     
     res.json({
@@ -715,7 +890,14 @@ exports.assignFitnessScore = async (req, res) => {
   try {
     const { clientId } = req.params;
     const { fitnessScore, notes } = req.body;
-    const coachId = req.user.userId;
+    const coachRecord = await resolveCoachRecord(req.user.userId);
+
+    if (!coachRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
 
     if (!isValidUuid(clientId)) {
       return res.status(400).json({
@@ -735,7 +917,7 @@ exports.assignFitnessScore = async (req, res) => {
     // Check if coach assigned to client
     const clientCheck = await db.query(
       'SELECT id FROM user_coaches WHERE user_id = $1 AND coach_id = $2',
-      [clientId, coachId]
+      [clientId, coachRecord.id]
     );
     
     if (clientCheck.rows.length === 0) {
@@ -766,7 +948,7 @@ exports.assignFitnessScore = async (req, res) => {
         notes,
         assigned_by
       ) VALUES ($1, $2, $3, $4, 'coach')`,
-      [clientId, coachId, fitnessScore, notes]
+      [clientId, coachRecord.id, fitnessScore, notes]
     );
     
     res.json({
@@ -775,7 +957,7 @@ exports.assignFitnessScore = async (req, res) => {
       user: result.rows[0]
     });
     
-    logger.info(`Fitness score ${fitnessScore} assigned to user ${clientId} by coach ${coachId}`);
+    logger.info(`Fitness score ${fitnessScore} assigned to user ${clientId} by coach ${coachRecord.id}`);
     
   } catch (error) {
     logger.error('Assign fitness score error:', error);
@@ -792,9 +974,17 @@ exports.assignFitnessScore = async (req, res) => {
 exports.getCoachAnalytics = async (req, res) => {
   try {
     const coachId = req.params.id;
+
+    const coachRecord = await resolveCoachRecord(coachId);
+    if (!coachRecord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Coach not found'
+      });
+    }
     
     // Check authorization
-    if (req.user.userId !== coachId && req.user.role !== 'admin') {
+    if (req.user.userId !== coachRecord.user_id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Unauthorized'
@@ -806,7 +996,7 @@ exports.getCoachAnalytics = async (req, res) => {
       `SELECT COUNT(*) as count
        FROM user_coaches
        WHERE coach_id = $1 AND is_active = TRUE`,
-      [coachId]
+      [coachRecord.id]
     );
     
     // Upcoming appointments
@@ -816,7 +1006,7 @@ exports.getCoachAnalytics = async (req, res) => {
        WHERE coach_id = $1 
        AND scheduled_at > NOW()
        AND status = 'scheduled'`,
-      [coachId]
+      [coachRecord.id]
     );
     
     // Today's earnings
@@ -826,7 +1016,7 @@ exports.getCoachAnalytics = async (req, res) => {
        WHERE coach_id = $1
        AND DATE(created_at) = CURRENT_DATE
        AND status = 'paid'`,
-      [coachId]
+      [coachRecord.id]
     );
     
     // Month's earnings
@@ -836,7 +1026,7 @@ exports.getCoachAnalytics = async (req, res) => {
        WHERE coach_id = $1
        AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', CURRENT_DATE)
        AND status = 'paid'`,
-      [coachId]
+      [coachRecord.id]
     );
     
     // Unread messages
@@ -845,7 +1035,7 @@ exports.getCoachAnalytics = async (req, res) => {
        FROM messages
        WHERE receiver_id = $1
        AND is_read = FALSE`,
-      [coachId]
+      [coachRecord.user_id]
     );
     
     res.json({

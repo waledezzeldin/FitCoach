@@ -129,20 +129,29 @@ class CoachCustomizationService {
 
           // Clone exercises for this day
           const exercisesResult = await client.query(
-            'SELECT * FROM workout_exercises WHERE workout_day_id = $1 ORDER BY order_index',
+            'SELECT * FROM workout_day_exercises WHERE workout_day_id = $1 ORDER BY exercise_order',
             [day.id]
           );
 
           for (const exercise of exercisesResult.rows) {
             await client.query(
-              `INSERT INTO workout_exercises (
-                id, workout_day_id, exercise_id, sets, reps, rest_seconds,
-                rpe, tempo, notes, notes_ar, order_index, created_at, updated_at
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
+              `INSERT INTO workout_day_exercises (
+                id, workout_day_id, exercise_id, exercise_name, exercise_name_ar,
+                sets, reps, rest_seconds, rpe, tempo, notes, notes_ar, exercise_order,
+                equipment, muscles, video_id, was_substituted, original_exercise_id,
+                substitution_reason, is_completed, completed_at, created_at, updated_at
+              ) VALUES (
+                $1, $2, $3, $4, $5,
+                $6, $7, $8, $9, $10, $11, $12, $13,
+                $14, $15, $16, $17, $18,
+                $19, $20, $21, NOW(), NOW()
+              )`,
               [
                 uuidv4(),
                 newDayId,
                 exercise.exercise_id,
+                exercise.exercise_name || exercise.exercise_id,
+                exercise.exercise_name_ar || null,
                 exercise.sets,
                 exercise.reps,
                 exercise.rest_seconds,
@@ -150,7 +159,15 @@ class CoachCustomizationService {
                 exercise.tempo,
                 exercise.notes,
                 exercise.notes_ar,
-                exercise.order_index
+                exercise.exercise_order,
+                exercise.equipment,
+                exercise.muscles,
+                exercise.video_id,
+                exercise.was_substituted || false,
+                exercise.original_exercise_id || null,
+                exercise.substitution_reason || null,
+                exercise.is_completed || false,
+                exercise.completed_at || null
               ]
             );
           }
@@ -248,7 +265,7 @@ class CoachCustomizationService {
       updateValues.push(exerciseId);
 
       const result = await client.query(
-        `UPDATE workout_exercises 
+        `UPDATE workout_day_exercises 
          SET ${updateFields.join(', ')}
          WHERE id = $${paramCount}
          RETURNING *`,

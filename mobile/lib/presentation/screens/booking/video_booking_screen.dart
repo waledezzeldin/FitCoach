@@ -4,8 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/config/demo_config.dart';
+import '../../../data/models/coach_profile.dart';
+import '../../../data/repositories/booking_repository.dart';
+import '../../../data/repositories/coach_repository.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/appointment_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_button.dart';
 import '../subscription/subscription_manager_screen.dart';
@@ -22,6 +26,17 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   DateTime? _selectedDate;
   String? _selectedTime;
   final TextEditingController _notesController = TextEditingController();
+  final CoachRepository _coachRepository = CoachRepository();
+  final BookingRepository _bookingRepository = BookingRepository();
+
+  CoachProfile? _coachProfile;
+  bool _isCoachLoading = false;
+  String? _coachError;
+
+  final Map<String, List<String>> _availableSlotsByDate = {};
+  bool _isSlotsLoading = false;
+  String? _slotsError;
+  bool _isBooking = false;
 
   // Assigned coach info (in real app, comes from user profile)
   final Map<String, dynamic> _assignedCoach = {
@@ -46,6 +61,20 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   void dispose() {
     _notesController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || DemoConfig.isDemo) return;
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.refreshUserProfile(notify: false);
+      if (!mounted) return;
+      final coachId = authProvider.user?.coachId;
+      if (coachId == null) return;
+      _loadCoachProfile(coachId);
+    });
   }
 
   @override
@@ -83,6 +112,8 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                   // Assigned coach card
                   if (hasAssignedCoach)
                     _buildCoachCard(languageProvider, isArabic, coachData),
+                  if (!hasAssignedCoach)
+                    _buildNoCoachAssigned(languageProvider, isArabic),
                   const SizedBox(height: 20),
 
                   // Date selection
@@ -98,8 +129,8 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                   // Book button
                   CustomButton(
                     text: isArabic ? 'تأكيد الحجز' : 'Confirm Booking',
-                    onPressed: (_selectedDate != null && _selectedTime != null && hasCallsAvailable)
-                        ? () => _showConfirmDialog(context, isArabic, languageProvider)
+                    onPressed: (_selectedDate != null && _selectedTime != null && hasCallsAvailable && hasAssignedCoach && !_isBooking)
+                      ? () => _showConfirmDialog(context, isArabic, languageProvider)
                         : null,
                     variant: ButtonVariant.primary,
                     size: ButtonSize.large,
@@ -266,15 +297,18 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
     if (DemoConfig.isDemo) {
       return _assignedCoach;
     }
-    final coachName = lang.t('coach');
+    final coachName = _coachProfile?.name ?? lang.t('coach');
+    final specializations = _coachProfile?.specializations ?? <String>[];
+    final rating = _coachProfile?.stats.avgRating;
+    final yearsExperience = _coachProfile?.yearsOfExperience;
     return {
       'id': authProvider.user?.coachId ?? 'coach',
       'name': coachName,
       'nameAr': coachName,
-      'specialties': <String>[],
-      'specialtiesAr': <String>[],
-      'rating': null,
-      'yearsExperience': null,
+      'specialties': specializations,
+      'specialtiesAr': specializations,
+      'rating': rating == 0 ? null : rating,
+      'yearsExperience': yearsExperience == 0 ? null : yearsExperience,
       'availableSlots': _allTimeSlots,
     };
   }
@@ -292,6 +326,48 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
         : (coachData['specialties'] as List<String>);
     final rating = coachData['rating'] as num?;
     final yearsExperience = coachData['yearsExperience'] as num?;
+
+    if (_isCoachLoading && _coachProfile == null && !DemoConfig.isDemo) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                isArabic ? 'جارٍ تحميل بيانات المدرب...' : 'Loading coach details...',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_coachError != null && _coachProfile == null && !DemoConfig.isDemo) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF7ED),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFFED7AA)),
+        ),
+        child: Text(
+          isArabic ? 'تعذر تحميل بيانات المدرب' : 'Unable to load coach details',
+          style: const TextStyle(color: Color(0xFF9A3412)),
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -464,6 +540,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                 _focusedDay = focusedDay;
                 _selectedTime = null; // Reset time when date changes
               });
+              _loadSlotsForDate(selectedDay);
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
@@ -476,9 +553,10 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   }
 
   Widget _buildTimeSection(LanguageProvider lang, bool isArabic) {
+    final dateKey = _selectedDate == null ? null : _formatDateKey(_selectedDate!);
     final availableSlots = DemoConfig.isDemo
-        ? (_assignedCoach['availableSlots'] as List<String>)
-        : _allTimeSlots;
+      ? (_assignedCoach['availableSlots'] as List<String>)
+      : (dateKey != null ? (_availableSlotsByDate[dateKey] ?? <String>[]) : <String>[]);
 
     return CustomCard(
       child: Column(
@@ -506,71 +584,80 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 2.5,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemCount: _allTimeSlots.length,
-            itemBuilder: (context, index) {
-              final slot = _allTimeSlots[index];
-              final isAvailable = DemoConfig.isDemo ? availableSlots.contains(slot) : true;
-              final isSelected = _selectedTime == slot;
+          if (_isSlotsLoading && !DemoConfig.isDemo)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else ...[
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 2.5,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemCount: _allTimeSlots.length,
+              itemBuilder: (context, index) {
+                final slot = _allTimeSlots[index];
+                final isAvailable = DemoConfig.isDemo
+                    ? availableSlots.contains(slot)
+                    : availableSlots.contains(slot);
+                final isSelected = _selectedTime == slot;
 
-              return GestureDetector(
-                onTap: isAvailable
-                    ? () => setState(() => _selectedTime = slot)
-                    : null,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFF9333EA)
-                        : isAvailable
-                            ? Colors.white
-                            : AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
+                return GestureDetector(
+                  onTap: isAvailable
+                      ? () => setState(() => _selectedTime = slot)
+                      : null,
+                  child: Container(
+                    decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(0xFF9333EA)
                           : isAvailable
-                              ? AppColors.border
-                              : Colors.transparent,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      slot,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                              ? Colors.white
+                              : AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
                         color: isSelected
-                            ? Colors.white
+                            ? const Color(0xFF9333EA)
                             : isAvailable
-                                ? AppColors.textPrimary
-                                : AppColors.textDisabled,
+                                ? AppColors.border
+                                : Colors.transparent,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        slot,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          color: isSelected
+                              ? Colors.white
+                              : isAvailable
+                                  ? AppColors.textPrimary
+                                  : AppColors.textDisabled,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-          if (DemoConfig.isDemo && availableSlots.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Center(
-                child: Text(
-                  isArabic
-                      ? 'لا توجد أوقات متاحة لهذا التاريخ'
-                      : 'No slots available for this date',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                );
+              },
+            ),
+            if (!_isSlotsLoading && availableSlots.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Center(
+                  child: Text(
+                    _slotsError != null
+                        ? (isArabic ? 'تعذر تحميل المواعيد المتاحة' : 'Unable to load available slots')
+                        : (isArabic ? 'لا توجد أوقات متاحة لهذا التاريخ' : 'No slots available for this date'),
+                    style: const TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
               ),
-            ),
+          ],
         ],
       ),
     );
@@ -579,12 +666,12 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   void _showConfirmDialog(BuildContext context, bool isArabic, LanguageProvider lang) {
     final coachName = DemoConfig.isDemo
       ? (isArabic ? (_assignedCoach['nameAr'] ?? _assignedCoach['name']) : _assignedCoach['name'])
-      : (isArabic ? 'المدرب' : 'Coach');
+      : (_coachProfile?.name ?? (isArabic ? 'المدرب' : 'Coach'));
     final specialties = DemoConfig.isDemo
       ? (isArabic
         ? (_assignedCoach['specialtiesAr'] as List<String>)
         : (_assignedCoach['specialties'] as List<String>))
-      : const <String>[];
+      : (_coachProfile?.specializations ?? const <String>[]);
 
     showDialog(
       context: context,
@@ -617,7 +704,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                     child: Text(
                       DemoConfig.isDemo
                           ? _assignedCoach['name'].toString().split(' ').map((n) => n[0]).join('')
-                          : 'C',
+                          : (coachName.isNotEmpty ? coachName.split(' ').map((n) => n[0]).join('') : 'C'),
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -694,18 +781,151 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
     );
   }
 
-  void _confirmBooking(BuildContext context, bool isArabic) {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isArabic
-              ? 'تم حجز جلسة الفيديو بنجاح'
-              : 'Video session booked successfully',
+  Future<void> _confirmBooking(BuildContext context, bool isArabic) async {
+    if (_selectedDate == null || _selectedTime == null) return;
+    if (_isBooking) return;
+
+    setState(() {
+      _isBooking = true;
+    });
+
+    try {
+      if (DemoConfig.isDemo) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      } else {
+        final authProvider = context.read<AuthProvider>();
+        await _bookingRepository.createBooking(
+          scheduledDate: _selectedDate!,
+          scheduledTime: _selectedTime!,
+          notes: _notesController.text,
+          coachId: authProvider.user?.coachId,
+        );
+        final appointmentProvider = context.read<AppointmentProvider>();
+        final userId = authProvider.user?.id;
+        if (userId != null) {
+          await appointmentProvider.loadUserAppointments(userId: userId, refresh: true);
+        }
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isArabic
+                ? 'تم حجز جلسة الفيديو بنجاح'
+                : 'Video session booked successfully',
+          ),
+          backgroundColor: AppColors.success,
         ),
-        backgroundColor: AppColors.success,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isArabic
+                ? 'تعذر إتمام الحجز. حاول مرة أخرى.'
+                : 'Unable to complete booking. Please try again.',
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBooking = false;
+        });
+      }
+    }
+  }
+
+  Widget _buildNoCoachAssigned(LanguageProvider lang, bool isArabic) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFED7AA)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: Color(0xFF9A3412)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              isArabic
+                  ? 'لم يتم تعيين مدرب لك بعد. سيتم تفعيل الحجز بعد التعيين.'
+                  : 'No coach is assigned yet. Booking will be available once assigned.',
+              style: const TextStyle(color: Color(0xFF9A3412)),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _loadCoachProfile(String coachId) async {
+    if (_isCoachLoading) return;
+    setState(() {
+      _isCoachLoading = true;
+      _coachError = null;
+    });
+    try {
+      final profile = await _coachRepository.getCoachProfile(coachId: coachId);
+      if (!mounted) return;
+      setState(() {
+        _coachProfile = profile;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _coachError = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCoachLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadSlotsForDate(DateTime date) async {
+    if (DemoConfig.isDemo || _isSlotsLoading) return;
+    final dateKey = _formatDateKey(date);
+    if (_availableSlotsByDate.containsKey(dateKey)) return;
+
+    setState(() {
+      _isSlotsLoading = true;
+      _slotsError = null;
+    });
+    try {
+      final authProvider = context.read<AuthProvider>();
+      final slots = await _bookingRepository.getAvailableSlots(
+        startDate: date,
+        endDate: date,
+        coachId: authProvider.user?.coachId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _availableSlotsByDate.addAll(slots);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _slotsError = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSlotsLoading = false;
+        });
+      }
+    }
+  }
+
+  String _formatDateKey(DateTime date) {
+    return date.toIso8601String().split('T')[0];
   }
 
   int _getCallsLimit(String tier) {

@@ -15,43 +15,46 @@ This plan defines test scope for controllers, services, and routes.
 
 ### Users & Intake
 - [ ] Profile CRUD
-- [ ] Intake stage 1 + 2
+- [x] Intake stage 1 + 2
 - [ ] Quota checks, trial start
-- [ ] Photo upload validation
+- [x] Photo upload validation
 
 ### Workouts & Exercises
 - [ ] Template retrieval
 - [ ] Workout generation
 - [ ] Exercise completion
-- [ ] Injury substitution
+- [x] Injury substitution
+- [x] Workout logging persistence (`POST /workouts/log`)
 - [ ] Coach/admin plan CRUD
 
 ### Nutrition
-- [ ] Access status & trial unlock
+- [x] Access status & trial unlock
 - [ ] Plan generation
-- [ ] Meal completion
-- [ ] Coach/admin plan CRUD
+- [x] Meal completion
+- [x] Coach/admin plan CRUD
 
 ### Messaging & Notifications
-- [ ] Conversation list and message send/read/delete
-- [ ] Attachments gating
+- [x] Conversation list and message send/read/delete
+- [x] Attachments gating
 - [ ] Notification preferences, register/unregister, history
 
 ### Store & Payments
-- [ ] Product CRUD and reviews
-- [ ] Orders (create, cancel, admin status updates)
+- [x] Product CRUD and reviews
+- [x] Orders (create, cancel, admin status updates)
 - [ ] Payments (checkout/upgrade/cancel/subscription/history/invoice)
-- [ ] Webhook signature validation
+- [x] Webhook signature validation (Tap HMAC + Stripe signature path)
 
 ### Coach & Admin
 - [ ] Coach analytics, earnings, appointments
 - [ ] Client reports, fitness score assignment
-- [ ] Admin settings, subscription plan updates, audit logs
+- [x] Admin settings, subscription plan updates, audit logs
+- [x] Admin create-coach route + role authorization checks
 
 ### InBody & Progress
 - [ ] Scan CRUD
 - [ ] Trends/progress/statistics
 - [ ] Goals set/get
+- [x] Progress entry CRUD
 
 ## Infrastructure
 - [ ] Test DB fixtures and teardown
@@ -60,4 +63,10 @@ This plan defines test scope for controllers, services, and routes.
 - [ ] Coverage gates in CI
 
 ## Progress Log
-- [ ] 2025-__-__: Backend testing plan created.
+- [x] 2026-02-02: Added intake, messaging, nutrition, store/orders, progress tests.
+- [x] 2026-02-12: Added workout logging controller tests.
+- [x] 2026-02-12: Added Tap webhook signature verification controller tests.
+- [x] 2026-02-12: Added AI extraction feature-flag behavior service tests.
+- [x] 2026-02-12: Added users photo upload route contract/validation tests.
+- [x] 2026-02-12: Added admin create-coach route authorization tests.
+- [x] 2026-02-12: Added messaging response-wrapper contract tests.

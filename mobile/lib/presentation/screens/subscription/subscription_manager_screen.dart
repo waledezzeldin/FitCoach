@@ -374,27 +374,37 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
     LanguageProvider languageProvider,
   ) async {
     final authProvider = context.read<AuthProvider>();
+    final userProvider = context.read<UserProvider>();
     String tr(String key, {Map<String, String>? args}) =>
         languageProvider.t(key, args: args);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          tr('subscription_update_success'),
-        ),
-        backgroundColor: AppColors.success,
-      ),
-    );
+    final wasFreemium =
+        currentPlan?.isFree ?? (authProvider.user?.subscriptionTier == 'Freemium');
 
-    if (DemoConfig.isDemo) {
-      final userProvider = context.read<UserProvider>();
-      await userProvider.updateSubscription(targetPlan.name);
-      if (userProvider.profile != null) {
-        authProvider.updateUser(userProvider.profile!);
-      }
+    final updated = await userProvider.updateSubscription(targetPlan.name);
+    if (!mounted) return;
+
+    if (!updated) {
+      final message = userProvider.error ?? tr('subscription_update_failed');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
     }
 
-    final wasFreemium = currentPlan?.isFree ?? (authProvider.user?.subscriptionTier == 'Freemium');
+    await userProvider.loadProfile();
+    if (!mounted) return;
+
+    if (userProvider.profile != null) {
+      authProvider.updateUser(userProvider.profile!);
+    } else {
+      await authProvider.refreshUserProfile();
+      if (!mounted) return;
+    }
+
     if (wasFreemium && !targetPlan.isFree) {
       final authUserId = authProvider.user?.id;
       final userId = authUserId ?? (DemoConfig.isDemo ? DemoConfig.demoUserId : null);
@@ -404,6 +414,16 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
         await prefs.setBool('nutrition_preferences_completed_$userId', false);
       }
     }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          tr('subscription_update_success'),
+        ),
+        backgroundColor: AppColors.success,
+      ),
+    );
   }
 
   bool _isUpgrade(

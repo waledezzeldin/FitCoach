@@ -326,9 +326,15 @@ CREATE INDEX idx_payments_status ON payments(status);
 CREATE TABLE IF NOT EXISTS subscription_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
+    name_ar VARCHAR(255),
     price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     currency VARCHAR(3) DEFAULT 'SAR',
     duration_months INTEGER DEFAULT 1,
+    features JSONB,
+    message_quota INTEGER,
+    call_quota INTEGER,
+    has_nutrition_access BOOLEAN DEFAULT FALSE,
+    has_chat_attachments BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -352,17 +358,26 @@ CREATE TABLE IF NOT EXISTS system_settings (
 
 CREATE TABLE exercises (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ex_id VARCHAR(100),
     
     -- Names
     name VARCHAR(255) NOT NULL,
     name_ar VARCHAR(255) NOT NULL,
     name_en VARCHAR(255) NOT NULL,
     
+    -- Descriptions
+    description TEXT,
+    description_en TEXT,
+    description_ar TEXT,
+    
     -- Details
     category VARCHAR(100), -- 'Chest', 'Back', 'Legs', etc.
     muscle_group VARCHAR(100),
-    equipment VARCHAR(100), -- 'Barbell', 'Dumbbell', 'Bodyweight', etc.
+    muscle_groups TEXT[],
+    equipment TEXT[], -- Array of equipment
     difficulty fitness_level DEFAULT 'beginner',
+    location_type VARCHAR(50),
+    is_compound BOOLEAN DEFAULT FALSE,
     
     -- Media
     video_url TEXT,
@@ -372,6 +387,11 @@ CREATE TABLE exercises (
     instructions TEXT,
     instructions_ar TEXT,
     instructions_en TEXT,
+    common_mistakes_en TEXT,
+    common_mistakes_ar TEXT,
+    default_sets INTEGER,
+    default_reps VARCHAR(50),
+    default_rest_seconds INTEGER,
     
     -- Safety
     contraindications TEXT[], -- List of injuries that conflict with this exercise
@@ -389,7 +409,9 @@ CREATE TABLE exercises (
 
 CREATE INDEX idx_exercises_category ON exercises(category);
 CREATE INDEX idx_exercises_muscle ON exercises(muscle_group);
-CREATE INDEX idx_exercises_equipment ON exercises(equipment);
+CREATE INDEX idx_exercises_equipment ON exercises USING GIN (equipment);
+CREATE UNIQUE INDEX idx_exercises_ex_id ON exercises(ex_id);
+CREATE INDEX idx_exercises_muscle_groups ON exercises USING GIN (muscle_groups);
 CREATE INDEX idx_exercises_difficulty ON exercises(difficulty);
 
 -- ============================================
@@ -592,11 +614,11 @@ CREATE TABLE conversations (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     coach_id UUID NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,
     
-    last_message_content TEXT,
+    last_message_preview TEXT,
     last_message_at TIMESTAMP,
     
-    user_unread_count INTEGER DEFAULT 0,
-    coach_unread_count INTEGER DEFAULT 0,
+    unread_count_user INTEGER DEFAULT 0,
+    unread_count_coach INTEGER DEFAULT 0,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -618,10 +640,11 @@ CREATE TABLE messages (
     receiver_id UUID NOT NULL REFERENCES users(id),
     
     content TEXT NOT NULL,
-    type message_type DEFAULT 'text',
+    message_type message_type DEFAULT 'text',
     
     attachment_url TEXT,
     attachment_type VARCHAR(100),
+    attachment_name VARCHAR(255),
     attachment_size INTEGER,
     
     is_read BOOLEAN DEFAULT FALSE,
@@ -743,7 +766,7 @@ CREATE TABLE orders (
     
     subtotal DECIMAL(10,2) NOT NULL,
     tax DECIMAL(10,2) DEFAULT 0.00,
-    shipping DECIMAL(10,2) DEFAULT 0.00,
+    shipping_fee DECIMAL(10,2) DEFAULT 0.00,
     total DECIMAL(10,2) NOT NULL,
     
     currency VARCHAR(3) DEFAULT 'SAR',
@@ -752,12 +775,7 @@ CREATE TABLE orders (
     payment_status payment_status DEFAULT 'pending',
     
     -- Shipping Address
-    shipping_address_line1 TEXT,
-    shipping_address_line2 TEXT,
-    shipping_city VARCHAR(100),
-    shipping_state VARCHAR(100),
-    shipping_postal_code VARCHAR(20),
-    shipping_country VARCHAR(100) DEFAULT 'Saudi Arabia',
+    shipping_address JSONB,
     
     -- Payment
     payment_method VARCHAR(50),
@@ -787,8 +805,8 @@ CREATE TABLE order_items (
     product_id UUID NOT NULL REFERENCES products(id),
     
     quantity INTEGER NOT NULL CHECK (quantity > 0),
-    unit_price DECIMAL(10,2) NOT NULL,
-    total_price DECIMAL(10,2) NOT NULL,
+    price_at_time DECIMAL(10,2) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -796,6 +814,52 @@ CREATE TABLE order_items (
 
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 CREATE INDEX idx_order_items_product ON order_items(product_id);
+
+-- ============================================
+-- INBODY SCANS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS inbody_scans (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+    total_body_water DECIMAL(6,3),
+    intracellular_water DECIMAL(6,3),
+    extracellular_water DECIMAL(6,3),
+    dry_lean_mass DECIMAL(6,3),
+    body_fat_mass DECIMAL(6,3),
+    weight DECIMAL(6,3),
+    skeletal_muscle_mass DECIMAL(6,3),
+    body_shape VARCHAR(10),
+
+    bmi DECIMAL(6,3),
+    percent_body_fat DECIMAL(6,3),
+
+    basal_metabolic_rate INTEGER,
+    visceral_fat_level INTEGER,
+    ecw_tbw_ratio DECIMAL(6,3),
+    inbody_score INTEGER,
+
+    scan_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    scan_location VARCHAR(255),
+    notes TEXT,
+
+    left_arm_muscle_percent INTEGER,
+    right_arm_muscle_percent INTEGER,
+    trunk_muscle_percent INTEGER,
+    left_leg_muscle_percent INTEGER,
+    right_leg_muscle_percent INTEGER,
+
+    extracted_via_ai BOOLEAN DEFAULT FALSE,
+    ai_confidence_score DECIMAL(4,3),
+    original_image_url TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_inbody_user ON inbody_scans(user_id);
+CREATE INDEX idx_inbody_scan_date ON inbody_scans(scan_date DESC);
 
 -- ============================================
 -- PROGRESS TRACKING TABLE

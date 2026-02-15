@@ -175,7 +175,8 @@ class IntakeService {
         health_conditions,
         available_equipment,
         training_preference,
-        nutrition_preference
+        nutrition_preference,
+        training_days_per_week
       } = intakeData;
 
       // Update user_intake
@@ -192,9 +193,10 @@ class IntakeService {
              available_equipment = $9,
              training_preference = $10,
              nutrition_preference = $11,
+             training_days_per_week = COALESCE($12, training_days_per_week),
              intake_completed_stage = 'full',
              updated_at = NOW()
-         WHERE user_id = $12`,
+         WHERE user_id = $13`,
         [
           age, weight, height, gender, experience_level, fitness_level,
           JSON.stringify(injury_history || []),
@@ -202,6 +204,7 @@ class IntakeService {
           JSON.stringify(available_equipment || []),
           training_preference,
           nutrition_preference,
+          training_days_per_week || null,
           userId
         ]
       );
@@ -215,13 +218,28 @@ class IntakeService {
              gender = $4,
              experience_level = $5,
              fitness_level = $6,
+             training_days_per_week = COALESCE($7, training_days_per_week),
              updated_at = NOW()
-         WHERE id = $7`,
-        [age, weight, height, gender, experience_level, fitness_level, userId]
+         WHERE id = $8`,
+        [age, weight, height, gender, experience_level, fitness_level, training_days_per_week || null, userId]
       );
 
       // Get recommended advanced template
       const recommendation = await workoutGenerationService.recommendTemplate(userId);
+
+      let generatedPlan = null;
+      if (recommendation && recommendation.plan_id) {
+        const planResult = await workoutGenerationService.generateFromTemplate(
+          userId,
+          recommendation.plan_id,
+          null,
+          {
+            startDate: new Date(),
+            injuries: injury_history || []
+          }
+        );
+        generatedPlan = planResult?.plan || null;
+      }
 
       await client.query('COMMIT');
 
@@ -235,6 +253,12 @@ class IntakeService {
           name: recommendation.name_en,
           nameAr: recommendation.name_ar,
           trainingDays: recommendation.training_days
+        } : null,
+        workoutPlanGenerated: !!generatedPlan,
+        workoutPlan: generatedPlan ? {
+          id: generatedPlan.id,
+          name: generatedPlan.name,
+          trainingDays: generatedPlan.days_per_week
         } : null
       };
 

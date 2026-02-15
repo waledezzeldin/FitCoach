@@ -14,16 +14,33 @@ const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'fitcoach-uploads';
 /**
  * Upload file to S3
  */
-exports.uploadFile = async (file, folder = 'general') => {
+exports.uploadFile = async (fileOrBuffer, folderOrKey = 'general', mimeType) => {
   try {
-    const fileExtension = file.originalname.split('.').pop();
-    const fileName = `${folder}/${uuidv4()}.${fileExtension}`;
-    
+    let key;
+    let body;
+    let contentType;
+
+    if (Buffer.isBuffer(fileOrBuffer)) {
+      body = fileOrBuffer;
+      contentType = mimeType || 'application/octet-stream';
+      if (typeof folderOrKey === 'string' && folderOrKey.includes('/')) {
+        key = folderOrKey;
+      } else {
+        key = `${folderOrKey}/${uuidv4()}`;
+      }
+    } else {
+      const file = fileOrBuffer;
+      const fileExtension = file.originalname.split('.').pop();
+      key = `${folderOrKey}/${uuidv4()}.${fileExtension}`;
+      body = file.buffer;
+      contentType = file.mimetype;
+    }
+
     const params = {
       Bucket: BUCKET_NAME,
-      Key: fileName,
-      Body: file.buffer,
-      ContentType: file.mimetype,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
       ACL: 'public-read'
     };
     

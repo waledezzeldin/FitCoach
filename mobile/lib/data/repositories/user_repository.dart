@@ -23,18 +23,28 @@ class UserRepository {
     }
   final Dio _dio;
   final FlutterSecureStorage _secureStorage;
+  final Future<String?> Function()? _tokenReader;
   
   static const String _tokenKey = 'fitcoach_auth_token';
   
-  UserRepository()
-      : _dio = Dio(BaseOptions(
-          baseUrl: ApiConfig.baseUrl,
-          connectTimeout: ApiConfig.connectTimeout,
-          receiveTimeout: ApiConfig.receiveTimeout,
-        )),
-        _secureStorage = const FlutterSecureStorage();
+  UserRepository({
+    Dio? dio,
+    FlutterSecureStorage? secureStorage,
+    Future<String?> Function()? tokenReader,
+  })
+      : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: ApiConfig.baseUrl,
+              connectTimeout: ApiConfig.connectTimeout,
+              receiveTimeout: ApiConfig.receiveTimeout,
+            )),
+        _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _tokenReader = tokenReader;
   
   Future<String?> _getToken() async {
+    if (_tokenReader != null) {
+      return _tokenReader();
+    }
     return await _secureStorage.read(key: _tokenKey);
   }
   
@@ -198,12 +208,17 @@ class UserRepository {
   // Upload profile photo
   Future<String> uploadProfilePhoto(String imagePath) async {
     try {
+      final userId = await _getUserId();
+      if (userId == null || userId.isEmpty) {
+        throw Exception('Unable to resolve user profile');
+      }
+
       final formData = FormData.fromMap({
         'photo': await MultipartFile.fromFile(imagePath),
       });
       
       final response = await _dio.post(
-        '/users/${await _getUserId()}/upload-photo',
+        '/users/$userId/upload-photo',
         data: formData,
         options: await _getAuthOptions(),
       );
@@ -213,10 +228,78 @@ class UserRepository {
       throw Exception(e.response?.data['message'] ?? 'Failed to upload photo');
     }
   }
+
+  // Remove profile photo
+  Future<void> removeProfilePhoto() async {
+    try {
+      final userId = await _getUserId();
+      if (userId == null || userId.isEmpty) {
+        throw Exception('Unable to resolve user profile');
+      }
+
+      await _dio.post(
+        '/users/$userId/upload-photo',
+        data: {'remove': true},
+        options: await _getAuthOptions(),
+      );
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to remove photo');
+    }
+  }
+
+  Future<Map<String, dynamic>> getCoachProfileSettings() async {
+    try {
+      final response = await _dio.get(
+        '/settings/coach-profile',
+        options: await _getAuthOptions(),
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return (data['coach'] as Map?)?.cast<String, dynamic>() ?? data;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to load coach profile');
+    }
+  }
+
+  Future<Map<String, dynamic>> getAdminProfileSettings() async {
+    try {
+      final response = await _dio.get(
+        '/settings/admin-profile',
+        options: await _getAuthOptions(),
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return (data['admin'] as Map?)?.cast<String, dynamic>() ?? data;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to load admin profile');
+    }
+  }
   
   Future<String?> _getUserId() async {
-    // Get user ID from secure storage or auth state
-    // This is a placeholder - implement based on your auth setup
+    try {
+      final response = await _dio.get(
+        '/users/me',
+        options: await _getAuthOptions(),
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final directId = data['id'];
+        if (directId is String && directId.isNotEmpty) {
+          return directId;
+        }
+
+        final nestedUser = data['user'];
+        if (nestedUser is Map<String, dynamic>) {
+          final nestedId = nestedUser['id'];
+          if (nestedId is String && nestedId.isNotEmpty) {
+            return nestedId;
+          }
+        }
+      }
+    } catch (_) {
+      // Keep null fallback so caller can surface a consistent error message.
+    }
     return null;
   }
 }

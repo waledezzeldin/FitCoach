@@ -3,20 +3,43 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitapp/presentation/widgets/rating_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:fitapp/presentation/providers/language_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  Future<LanguageProvider> _createEnglishLanguageProvider() async {
+    final provider = LanguageProvider();
+    await provider.setLanguage('en');
+    return provider;
+  }
+
+  Widget _wrapWithLanguageProvider({
+    required Widget child,
+    required LanguageProvider languageProvider,
+  }) {
+    return ChangeNotifierProvider<LanguageProvider>.value(
+      value: languageProvider,
+      child: MaterialApp(
+        home: Scaffold(
+          body: child,
+        ),
+      ),
+    );
+  }
+
   group('RatingModal Widget Tests', () {
     testWidgets('renders modal', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) => LanguageProvider(),
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {},
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {},
           ),
         ),
       );
@@ -24,16 +47,13 @@ void main() {
     });
 
     testWidgets('shows 5 stars', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) => LanguageProvider(),
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {},
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {},
           ),
         ),
       );
@@ -43,16 +63,13 @@ void main() {
     });
 
     testWidgets('tapping star updates selection', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) => LanguageProvider(),
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {},
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {},
           ),
         ),
       );
@@ -65,16 +82,13 @@ void main() {
     });
 
     testWidgets('submit button enabled only after rating', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) => LanguageProvider(),
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {},
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {},
           ),
         ),
       );
@@ -89,21 +103,18 @@ void main() {
     });
 
     testWidgets('onSubmit called with correct rating and feedback', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       int? submittedRating;
       String? submittedFeedback;
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) => LanguageProvider(),
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {
-                  submittedRating = rating;
-                  submittedFeedback = feedback;
-                },
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {
+              submittedRating = rating;
+              submittedFeedback = feedback;
+            },
           ),
         ),
       );
@@ -121,21 +132,18 @@ void main() {
     });
 
     testWidgets('onSubmit called with null feedback if empty', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       int? submittedRating;
       String? submittedFeedback;
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) => LanguageProvider(),
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {
-                  submittedRating = rating;
-                  submittedFeedback = feedback;
-                },
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {
+              submittedRating = rating;
+              submittedFeedback = feedback;
+            },
           ),
         ),
       );
@@ -150,16 +158,13 @@ void main() {
     });
 
     testWidgets('skip button closes modal', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) => LanguageProvider(),
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {},
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {},
           ),
         ),
       );
@@ -173,6 +178,7 @@ void main() {
     });
 
     testWidgets('shows correct title and subtitle for each type', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       final types = {
         'workout': 'Rate Workout',
         'nutrition': 'Rate Nutrition Plan',
@@ -181,15 +187,11 @@ void main() {
       };
       for (final entry in types.entries) {
         await tester.pumpWidget(
-          ChangeNotifierProvider<LanguageProvider>(
-            create: (_) => LanguageProvider(),
-            child: MaterialApp(
-              home: Scaffold(
-                body: RatingModal(
-                  type: entry.key,
-                  onSubmit: (rating, feedback) {},
-                ),
-              ),
+          _wrapWithLanguageProvider(
+            languageProvider: languageProvider,
+            child: RatingModal(
+              type: entry.key,
+              onSubmit: (rating, feedback) {},
             ),
           ),
         );
@@ -199,16 +201,13 @@ void main() {
     });
 
     testWidgets('shows correct rating label and color', (WidgetTester tester) async {
+      final languageProvider = await _createEnglishLanguageProvider();
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) => LanguageProvider(),
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {},
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {},
           ),
         ),
       );
@@ -223,20 +222,13 @@ void main() {
     // Note: RTL/Arabic test is a smoke test, as full RTL rendering requires more setup
     testWidgets('renders Arabic/RTL labels if LanguageProvider is Arabic', (WidgetTester tester) async {
       // This test assumes LanguageProvider is mocked or set to Arabic
+      final languageProvider = LanguageProvider();
       await tester.pumpWidget(
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (_) {
-            final provider = LanguageProvider();
-            provider.setLanguage('ar');
-            return provider;
-          },
-          child: MaterialApp(
-            home: Scaffold(
-              body: RatingModal(
-                type: 'workout',
-                onSubmit: (rating, feedback) {},
-              ),
-            ),
+        _wrapWithLanguageProvider(
+          languageProvider: languageProvider,
+          child: RatingModal(
+            type: 'workout',
+            onSubmit: (rating, feedback) {},
           ),
         ),
       );

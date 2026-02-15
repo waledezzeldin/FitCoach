@@ -1,9 +1,61 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
+const jwksClient = require('jwks-rsa');
 const db = require('../database');
 const logger = require('../utils/logger');
 const { sendOTPSMS } = require('../services/twilioService');
 const { generateOTP } = require('../utils/helpers');
+const userProfileService = require('../services/userProfileService');
+
+const appleJwks = jwksClient({
+  jwksUri: 'https://appleid.apple.com/auth/keys',
+  cache: true,
+  cacheMaxEntries: 5,
+  cacheMaxAge: 60 * 60 * 1000,
+  rateLimit: true,
+  jwksRequestsPerMinute: 10
+});
+
+const getAppleSigningKey = async (kid) => {
+  const key = await appleJwks.getSigningKey(kid);
+  return key.getPublicKey();
+};
+
+const verifyAppleIdentityToken = async (identityToken) => {
+  const decoded = jwt.decode(identityToken, { complete: true });
+  if (!decoded || !decoded.header || !decoded.header.kid) {
+    throw new Error('Invalid Apple identity token');
+  }
+
+  const publicKey = await getAppleSigningKey(decoded.header.kid);
+  const verifyOptions = {
+    issuer: 'https://appleid.apple.com'
+  };
+  const audience = process.env.APPLE_SERVICE_ID || process.env.APPLE_CLIENT_ID;
+  if (audience) {
+    verifyOptions.audience = audience;
+  }
+
+  return jwt.verify(identityToken, publicKey, verifyOptions);
+};
+
+const verifyGoogleAccessToken = async (accessToken) => {
+  const response = await axios.get('https://www.googleapis.com/oauth2/v3/tokeninfo', {
+    params: { access_token: accessToken }
+  });
+  return response.data;
+};
+
+const verifyFacebookAccessToken = async (accessToken) => {
+  const response = await axios.get('https://graph.facebook.com/me', {
+    params: {
+      fields: 'id,name,email,picture',
+      access_token: accessToken
+    }
+  });
+  return response.data;
+};
 
 /**
  * Send OTP to phone number
@@ -31,8 +83,8 @@ exports.sendOTP = async (req, res) => {
     
     await client.query('BEGIN');
     
-    // Generate 4-digit OTP
-    const otpCode = generateOTP(4);
+    // Generate 6-digit OTP
+    const otpCode = generateOTP(6);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
     
     // Delete old OTPs for this phone number
@@ -186,18 +238,19 @@ exports.verifyOTP = async (req, res) => {
     
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user.id, role: user.role, tier: user.subscription_tier },
       process.env.JWT_SECRET,
       { expiresIn: '30d' }
     );
     
     delete user.password_hash;
+    const profile = await userProfileService.getUserProfileForApp(user.id);
     
     res.json({
       success: true,
       message: 'OTP verification successful',
       token,
-      user,
+      user: profile || user,
       isNewUser
     });
     
@@ -272,18 +325,19 @@ exports.login = async (req, res) => {
     
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user.id, role: user.role, tier: user.subscription_tier },
       process.env.JWT_SECRET,
       { expiresIn: '30d' }
     );
     
     delete user.password_hash;
+    const profile = await userProfileService.getUserProfileForApp(user.id);
     
     res.json({
       success: true,
       message: 'Login successful',
       token,
-      user,
+      user: profile || user,
       isNewUser: false
     });
     
@@ -379,18 +433,19 @@ exports.signup = async (req, res) => {
     
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user.id, role: user.role, tier: user.subscription_tier },
       process.env.JWT_SECRET,
       { expiresIn: '30d' }
     );
     
     delete user.password_hash;
+    const profile = await userProfileService.getUserProfileForApp(user.id);
     
     res.status(201).json({
       success: true,
       message: 'Account created successfully',
       token,
-      user,
+      user: profile || user,
       isNewUser: true
     });
     
@@ -432,6 +487,83 @@ exports.socialLogin = async (req, res) => {
       });
     }
     
+    if (!accessToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Access token is required'
+      });
+    }
+
+    let verifiedProfile = {
+      id: socialId,
+      email,
+      name,
+      profilePhoto
+    };
+
+    if (provider === 'google') {
+      const googleData = await verifyGoogleAccessToken(accessToken);
+      const googleId = googleData.sub;
+      if (socialId && googleId && socialId !== googleId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Social ID mismatch'
+        });
+      }
+      const expectedAud = process.env.GOOGLE_CLIENT_ID;
+      if (expectedAud && googleData.aud !== expectedAud) {
+        return res.status(400).json({
+          success: false,
+          message: 'Google token audience mismatch'
+        });
+      }
+      verifiedProfile = {
+        id: googleId || socialId,
+        email: googleData.email || email,
+        name: googleData.name || name,
+        profilePhoto: googleData.picture || profilePhoto
+      };
+    }
+
+    if (provider === 'facebook') {
+      const fbData = await verifyFacebookAccessToken(accessToken);
+      if (socialId && fbData.id && socialId !== fbData.id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Social ID mismatch'
+        });
+      }
+      verifiedProfile = {
+        id: fbData.id || socialId,
+        email: fbData.email || email,
+        name: fbData.name || name,
+        profilePhoto: fbData.picture?.data?.url || profilePhoto
+      };
+    }
+
+    if (provider === 'apple') {
+      const applePayload = await verifyAppleIdentityToken(accessToken);
+      if (socialId && applePayload.sub && socialId !== applePayload.sub) {
+        return res.status(400).json({
+          success: false,
+          message: 'Social ID mismatch'
+        });
+      }
+      verifiedProfile = {
+        id: applePayload.sub || socialId,
+        email: applePayload.email || email,
+        name: name || 'Apple User',
+        profilePhoto
+      };
+    }
+
+    if (!verifiedProfile.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unable to verify social identity'
+      });
+    }
+
     await client.query('BEGIN');
     
     // Check if user exists with this social account
@@ -439,7 +571,7 @@ exports.socialLogin = async (req, res) => {
       `SELECT u.* FROM users u
        LEFT JOIN social_logins sl ON u.id = sl.user_id
        WHERE sl.provider = $1 AND sl.provider_user_id = $2`,
-      [provider, socialId]
+      [provider, verifiedProfile.id]
     );
     
     let user;
@@ -447,10 +579,10 @@ exports.socialLogin = async (req, res) => {
     
     if (userResult.rows.length === 0) {
       // Check if user exists with email
-      if (email) {
+      if (verifiedProfile.email) {
         userResult = await client.query(
           'SELECT * FROM users WHERE email = $1',
-          [email]
+          [verifiedProfile.email]
         );
       }
       
@@ -463,7 +595,7 @@ exports.socialLogin = async (req, res) => {
            VALUES ($1, $2, $3, $4)
            ON CONFLICT (provider, provider_user_id) DO UPDATE
            SET access_token = $4, updated_at = NOW()`,
-          [user.id, provider, socialId, accessToken]
+          [user.id, provider, verifiedProfile.id, accessToken]
         );
       } else {
         // Create new user
@@ -477,7 +609,7 @@ exports.socialLogin = async (req, res) => {
             quota_reset_date
           ) VALUES ($1, $2, $3, 'freemium', TRUE, NOW() + INTERVAL '1 month')
           RETURNING *`,
-          [name || 'User', email, profilePhoto]
+          [verifiedProfile.name || 'User', verifiedProfile.email, verifiedProfile.profilePhoto]
         );
         
         user = userResult.rows[0];
@@ -487,7 +619,7 @@ exports.socialLogin = async (req, res) => {
         await client.query(
           `INSERT INTO social_logins (user_id, provider, provider_user_id, access_token)
            VALUES ($1, $2, $3, $4)`,
-          [user.id, provider, socialId, accessToken]
+          [user.id, provider, verifiedProfile.id, accessToken]
         );
         
         logger.info(`New user via ${provider}: ${user.id}`);
@@ -500,7 +632,7 @@ exports.socialLogin = async (req, res) => {
         `UPDATE social_logins
          SET access_token = $1, updated_at = NOW()
          WHERE provider = $2 AND provider_user_id = $3`,
-        [accessToken, provider, socialId]
+        [accessToken, provider, verifiedProfile.id]
       );
     }
     
@@ -514,18 +646,19 @@ exports.socialLogin = async (req, res) => {
     
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user.id, role: user.role, tier: user.subscription_tier },
       process.env.JWT_SECRET,
       { expiresIn: '30d' }
     );
     
     delete user.password_hash;
+    const profile = await userProfileService.getUserProfileForApp(user.id);
     
     res.json({
       success: true,
       message: 'Social login successful',
       token,
-      user,
+      user: profile || user,
       isNewUser
     });
     
@@ -547,8 +680,12 @@ exports.socialLogin = async (req, res) => {
 exports.refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
+    const headerToken = req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.substring(7)
+      : null;
+    const resolvedRefreshToken = refreshToken || headerToken;
     
-    if (!refreshToken) {
+    if (!resolvedRefreshToken) {
       return res.status(400).json({
         success: false,
         message: 'Refresh token required'
@@ -556,7 +693,7 @@ exports.refreshToken = async (req, res) => {
     }
     
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const decoded = jwt.verify(resolvedRefreshToken, process.env.JWT_SECRET);
     
     // Get user
     const result = await db.query(
@@ -586,7 +723,8 @@ exports.refreshToken = async (req, res) => {
     
     res.json({
       success: true,
-      accessToken
+      accessToken,
+      token: accessToken
     });
     
   } catch (error) {

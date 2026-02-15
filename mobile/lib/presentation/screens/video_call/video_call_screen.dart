@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import '../../../core/config/demo_config.dart';
+import '../../../data/repositories/rating_repository.dart';
 import '../../providers/video_call_provider.dart';
 import '../../widgets/rating_modal.dart';
 
@@ -13,14 +15,18 @@ class VideoCallScreen extends StatefulWidget {
   final String coachId;
   final String coachName;
   final bool isCoach;
+  final RatingRepository? ratingRepository;
+  final bool autoInitialize;
 
   const VideoCallScreen({
-    Key? key,
+    super.key,
     required this.appointmentId,
     required this.coachId,
     required this.coachName,
     this.isCoach = false,
-  }) : super(key: key);
+    this.ratingRepository,
+    this.autoInitialize = true,
+  });
 
   @override
   State<VideoCallScreen> createState() => _VideoCallScreenState();
@@ -43,14 +49,20 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   String? _channelName;
   int? _uid;
   String? _appId;
+  bool _engineInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeVideoCall();
+    if (widget.autoInitialize) {
+      _initializeVideoCall();
+    } else {
+      _isLoading = false;
+    }
   }
 
   Future<void> _initializeVideoCall() async {
+    final provider = Provider.of<VideoCallProvider>(context, listen: false);
     try {
       // Request permissions
       final permissionsGranted = await _requestPermissions();
@@ -63,7 +75,14 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       }
 
       // Get call token from backend
-      final provider = Provider.of<VideoCallProvider>(context, listen: false);
+      final joinStatus = await provider.canJoinCall(widget.appointmentId);
+      if (joinStatus == null || joinStatus['canJoin'] != true) {
+        setState(() {
+          _errorMessage = joinStatus?['reason'] ?? 'Unable to join call right now';
+          _isLoading = false;
+        });
+        return;
+      }
       final callData = await provider.startCall(widget.appointmentId);
 
       if (callData == null) {
@@ -105,6 +124,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     try {
       // Create RTC engine
       _engine = createAgoraRtcEngine();
+      _engineInitialized = true;
 
       // Initialize engine
       await _engine.initialize(RtcEngineContext(
@@ -215,6 +235,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   Future<void> _endCall() async {
+    final provider = Provider.of<VideoCallProvider>(context, listen: false);
     // Stop timer
     _callTimer?.cancel();
 
@@ -225,7 +246,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     await _engine.leaveChannel();
 
     // Send end call to backend
-    final provider = Provider.of<VideoCallProvider>(context, listen: false);
     await provider.endCall(widget.appointmentId, durationMinutes);
 
     // Navigate back
@@ -247,17 +267,53 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       builder: (context) => RatingModal(
         type: 'video_call',
         onSubmit: (rating, comment) {
-          Navigator.of(context).pop();
+          _submitRating(rating, comment);
         },
       ),
     );
   }
 
+  Future<void> _submitRating(int rating, String? comment) async {
+    if (DemoConfig.isDemo) {
+      return;
+    }
+
+    try {
+      final repository = widget.ratingRepository ?? RatingRepository();
+      await repository.submitVideoCallRating(
+        coachId: widget.coachId,
+        appointmentId: widget.appointmentId,
+        rating: rating,
+        feedback: comment,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Thanks for your feedback.'),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not submit rating.'),
+        ),
+      );
+    }
+  }
+
+  @visibleForTesting
+  Future<void> submitRatingForTest(int rating, String? comment) {
+    return _submitRating(rating, comment);
+  }
+
   @override
   void dispose() {
     _callTimer?.cancel();
-    _engine.leaveChannel();
-    _engine.release();
+    if (_engineInitialized) {
+      _engine.leaveChannel();
+      _engine.release();
+    }
     super.dispose();
   }
 

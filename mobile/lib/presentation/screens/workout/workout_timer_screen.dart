@@ -26,9 +26,16 @@ class WorkoutTimerScreen extends StatefulWidget {
 class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
   int _currentSet = 1;
   int _remainingSeconds = 0;
+  int _restSeconds = 0;
   bool _isResting = false;
   bool _isPaused = false;
   Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _restSeconds = widget.restSeconds;
+  }
 
   @override
   void dispose() {
@@ -273,7 +280,7 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
       // Start rest timer
       setState(() {
         _isResting = true;
-        _remainingSeconds = widget.restSeconds;
+        _remainingSeconds = _restSeconds;
         _isPaused = false;
       });
       _startRestTimer();
@@ -327,13 +334,27 @@ class _WorkoutTimerScreenState extends State<WorkoutTimerScreen> {
               title: Text(lang.t('workouts_seconds_label', args: {'seconds': '$seconds'})),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Update rest time
+                _setRestDuration(seconds);
               },
             );
           }).toList(),
         ),
       ),
     );
+  }
+
+  void _setRestDuration(int seconds) {
+    setState(() {
+      _restSeconds = seconds;
+      if (_isResting) {
+        _remainingSeconds = seconds;
+        _isPaused = false;
+      }
+    });
+
+    if (_isResting) {
+      _startRestTimer();
+    }
   }
   
   void _skipExercise(BuildContext context, LanguageProvider lang) {

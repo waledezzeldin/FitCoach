@@ -1,9 +1,13 @@
 const authController = require('../../src/controllers/authController');
 const db = require('../../src/database');
 const jwt = require('jsonwebtoken');
+const userProfileService = require('../../src/services/userProfileService');
 const { mockRequest, mockResponse, mockNext, createTestUser } = require('../helpers/testHelpers');
 
 jest.mock('../../src/database');
+jest.mock('../../src/services/userProfileService', () => ({
+  getUserProfileForApp: jest.fn()
+}));
 
 describe('AuthController', () => {
   let req, res, next;
@@ -83,6 +87,7 @@ describe('AuthController', () => {
 
       const testUser = createTestUser();
       const otpRow = { id: 'otp-id' };
+      userProfileService.getUserProfileForApp.mockResolvedValueOnce(null);
 
       const mockClient = {
         query: jest.fn()
@@ -120,6 +125,7 @@ describe('AuthController', () => {
       const newUser = createTestUser();
       const otpRow = { id: 'otp-id' };
       const defaultCoach = { id: 'coach-id', user_id: 'coach-user-id' };
+      userProfileService.getUserProfileForApp.mockResolvedValueOnce(null);
 
       const mockClient = {
         query: jest.fn()
@@ -194,10 +200,13 @@ describe('AuthController', () => {
 
       await authController.refreshToken(req, res);
 
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        accessToken: expect.any(String)
-      });
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          accessToken: expect.any(String),
+          token: expect.any(String)
+        })
+      );
     });
 
     it('should return 400 if refresh token is missing', async () => {

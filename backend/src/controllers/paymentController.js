@@ -1,6 +1,35 @@
 const paymentService = require('../services/paymentService');
 const logger = require('../utils/logger');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const crypto = require('crypto');
+
+const normalizeSignature = (signature) => {
+  if (!signature || typeof signature !== 'string') return '';
+  return signature.trim().replace(/^sha256=/i, '');
+};
+
+const matchesTapSignature = (rawPayload, signature, secret) => {
+  if (!signature || !secret) return false;
+
+  const expectedHex = crypto
+    .createHmac('sha256', secret)
+    .update(rawPayload)
+    .digest('hex');
+  const expectedBase64 = crypto
+    .createHmac('sha256', secret)
+    .update(rawPayload)
+    .digest('base64');
+
+  const provided = normalizeSignature(signature);
+  return [expectedHex, expectedBase64].some((candidate) => {
+    const candidateNormalized = normalizeSignature(candidate);
+    if (candidateNormalized.length !== provided.length) return false;
+    return crypto.timingSafeEqual(
+      Buffer.from(candidateNormalized),
+      Buffer.from(provided)
+    );
+  });
+};
 
 /**
  * Payment Controller
@@ -87,10 +116,19 @@ exports.stripeWebhook = async (req, res) => {
 exports.tapWebhook = async (req, res) => {
   try {
     const payload = req.body;
+    const tapSignature = req.headers['tap-signature'] || req.headers['x-tap-signature'];
+    const webhookSecret = process.env.TAP_WEBHOOK_SECRET || process.env.TAP_SECRET_KEY;
+    const rawPayload = req.rawBody || JSON.stringify(payload || {});
 
-    // Verify webhook signature (Tap provides this)
-    const tapSignature = req.headers['tap-signature'];
-    // TODO: Implement Tap signature verification
+    if (!webhookSecret) {
+      logger.error('Tap webhook secret is not configured');
+      return res.status(500).json({ error: 'Webhook secret not configured' });
+    }
+
+    if (!matchesTapSignature(rawPayload, tapSignature, webhookSecret)) {
+      logger.warn('Tap webhook signature verification failed');
+      return res.status(401).json({ error: 'Invalid webhook signature' });
+    }
 
     await paymentService.handleTapWebhook(payload);
     

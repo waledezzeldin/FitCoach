@@ -10,6 +10,11 @@ router.post('/generate-from-template', authMiddleware, workoutController.generat
 router.get('/recommend-template/:userId?', authMiddleware, workoutController.getRecommendedTemplate);
 
 // User routes
+router.get('/plan', authMiddleware, workoutController.getActivePlan);
+router.post('/exercises/:exerciseId/complete', authMiddleware, workoutController.completeExerciseCompat);
+router.post('/exercises/substitute', authMiddleware, workoutController.substituteExerciseCompat);
+router.post('/log', authMiddleware, workoutController.logWorkoutCompat);
+router.get('/history', authMiddleware, workoutController.getWorkoutHistoryCompat);
 router.get('/', authMiddleware, workoutController.getUserWorkouts);
 router.get('/:id', authMiddleware, workoutController.getWorkoutById);
 router.post('/:id/exercises/:exerciseId/complete', authMiddleware, workoutController.completeExercise);

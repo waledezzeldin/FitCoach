@@ -44,13 +44,28 @@ class _CoachMessageThreadScreenState extends State<CoachMessageThreadScreen> {
   Future<void> _connect() async {
     final messagingProvider = context.read<MessagingProvider>();
     final languageProvider = context.read<LanguageProvider>();
-    final coachId =
-        context.read<AuthProvider>().user?.id ?? DemoConfig.demoCoachId;
+    final currentUserId = context.read<AuthProvider>().user?.id;
+    final coachId = currentUserId ??
+        (DemoConfig.isDemo ? DemoConfig.demoCoachId : null);
+
+    if (coachId == null || coachId.isEmpty) {
+      if (mounted) {
+        setState(() => _isConnecting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(languageProvider.t('auth_session_expired')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
 
     await messagingProvider.connect(
       widget.clientId,
       coachId,
       isArabic: languageProvider.isArabic,
+      currentUserId: currentUserId,
     );
     setState(() => _isConnecting = false);
   }

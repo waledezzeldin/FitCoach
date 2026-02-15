@@ -44,8 +44,8 @@ router.post(
       .matches(/^\+966[0-9]{9}$/)
       .withMessage('Phone number must be in Saudi format'),
     body('otpCode')
-      .isLength({ min: 4, max: 6 })
-      .withMessage('OTP code must be 4-6 digits')
+      .isLength({ min: 6, max: 6 })
+      .withMessage('OTP code must be 6 digits')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -157,6 +157,13 @@ router.post(
  * @access  Public
  */
 router.post('/refresh-token', authController.refreshToken);
+
+/**
+ * @route   POST /api/v2/auth/refresh
+ * @desc    Refresh JWT token (Flutter compatibility)
+ * @access  Public
+ */
+router.post('/refresh', authController.refreshToken);
 
 /**
  * @route   POST /api/v2/auth/logout

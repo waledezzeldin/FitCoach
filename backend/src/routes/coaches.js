@@ -40,6 +40,13 @@ router.get('/:id/clients', authMiddleware, roleCheck('coach', 'admin'), coachCon
 router.get('/:id/appointments', authMiddleware, roleCheck('coach', 'admin'), coachController.getCoachAppointments);
 
 /**
+ * @route   GET /api/v2/coaches/:id/appointments/ics
+ * @desc    Export coach appointments as ICS
+ * @access  Private (Coach/Admin)
+ */
+router.get('/:id/appointments/ics', authMiddleware, roleCheck('coach', 'admin'), coachController.exportCoachAppointmentsIcs);
+
+/**
  * @route   POST /api/v2/coaches/:id/appointments
  * @desc    Create appointment
  * @access  Private (Coach/Admin)

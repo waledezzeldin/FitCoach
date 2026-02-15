@@ -10,6 +10,7 @@ const injuryMappingService = require('./injuryMappingService');
  */
 
 const TEMPLATES_DIR = path.join(__dirname, '../data/workout-templates');
+const MOBILE_TEMPLATES_DIR = path.resolve(__dirname, '../../../mobile/assets/data/new');
 const VALID_TYPES = ['starter', 'advanced'];
 const VALID_GOALS = ['fat_loss', 'muscle_gain', 'general_fitness', 'endurance', 'strength', 'hypertrophy'];
 const VALID_LOCATIONS = ['gym', 'home', 'outdoors', 'hybrid'];
@@ -20,6 +21,7 @@ class WorkoutTemplateService {
     this.templates = new Map();
     this.templatesByType = new Map(); // starter vs advanced
     this.templatesByGoalLocation = new Map(); // goal + location combos
+    this.exerciseLibrary = null;
   }
 
   /**
@@ -31,20 +33,10 @@ class WorkoutTemplateService {
       
       for (const type of VALID_TYPES) {
         const typeDir = path.join(TEMPLATES_DIR, type);
-        
-        try {
-          const files = await fs.readdir(typeDir);
-          
-          for (const file of files) {
-            if (file.endsWith('.json') && !file.startsWith('.')) {
-              const filePath = path.join(typeDir, file);
-              await this.loadTemplate(filePath, type);
-            }
-          }
-        } catch (error) {
-          logger.warn(`Directory not found or empty: ${typeDir}`);
-        }
+        await this.loadTemplatesFromDir(typeDir, type);
       }
+
+      await this.loadTemplatesFromDir(MOBILE_TEMPLATES_DIR);
 
       logger.info(`Loaded ${this.templates.size} workout templates`);
       return this.templates.size;
@@ -54,6 +46,26 @@ class WorkoutTemplateService {
     }
   }
 
+  async loadTemplatesFromDir(directory, type = null) {
+    try {
+      const files = await fs.readdir(directory);
+
+      for (const file of files) {
+        if (!file.endsWith('.json') || file.startsWith('.')) {
+          continue;
+        }
+        if (file.includes('injury_swap_table')) {
+          continue;
+        }
+        const filePath = path.join(directory, file);
+        await this.loadTemplate(filePath, type);
+      }
+    } catch (error) {
+      logger.warn(`Directory not found or empty: ${directory}`);
+    }
+  }
+
+
   /**
    * Load a single template file
    */
@@ -62,17 +74,37 @@ class WorkoutTemplateService {
       const content = await fs.readFile(filePath, 'utf8');
       const template = JSON.parse(content);
 
+      if (!template.type) {
+        if (template.programs) {
+          template.type = 'advanced';
+        } else if (template.sessions) {
+          template.type = 'starter';
+        }
+      }
+
+      if (template.type === 'starter' && !template.training_days && template.frequency_days_per_week) {
+        template.training_days = template.frequency_days_per_week;
+      }
+
+      const resolvedType = template.type || type;
+      if (resolvedType) {
+        template.type = resolvedType;
+      }
+
       // Validate template
       this.validateTemplate(template);
 
       // Store template
       this.templates.set(template.plan_id, template);
+      this.exerciseLibrary = null;
 
       // Index by type
       if (!this.templatesByType.has(type)) {
         this.templatesByType.set(type, []);
       }
-      this.templatesByType.get(type).push(template);
+      if (template.type) {
+        this.templatesByType.get(template.type).push(template);
+      }
 
       // Index by goal and location
       const key = `${template.goal}_${template.location}_${template.training_days}d`;
@@ -81,11 +113,64 @@ class WorkoutTemplateService {
       }
       this.templatesByGoalLocation.get(key).push(template);
 
-      logger.info(`Loaded template: ${template.plan_id} (${template.name_en})`);
+      logger.info(`Loaded template: ${template.plan_id} (${template.name_en || template.plan_id})`);
     } catch (error) {
       logger.error(`Error loading template ${filePath}:`, error.message);
       // Don't throw - continue loading other templates
     }
+  }
+
+  buildExerciseLibraryFromTemplates() {
+    if (this.exerciseLibrary) {
+      return this.exerciseLibrary;
+    }
+
+    const library = {};
+
+    const addExercise = (exercise) => {
+      if (!exercise || !exercise.ex_id) return;
+      if (!library[exercise.ex_id]) {
+        library[exercise.ex_id] = {
+          ex_id: exercise.ex_id,
+          name_en: exercise.name_en || exercise.name || exercise.ex_id,
+          name_ar: exercise.name_ar || null,
+          video_id: exercise.video_id || null,
+          equip: exercise.equip || exercise.equipment || [],
+          muscles: exercise.muscles || exercise.muscle_groups || []
+        };
+      }
+    };
+
+    const addSessionExercises = (session) => {
+      if (!session || !Array.isArray(session.work)) return;
+      session.work.forEach(addExercise);
+    };
+
+    for (const template of this.templates.values()) {
+      if (Array.isArray(template.exercises)) {
+        template.exercises.forEach(addExercise);
+      }
+
+      if (Array.isArray(template.sessions)) {
+        template.sessions.forEach(addSessionExercises);
+      }
+
+      if (template.programs && typeof template.programs === 'object') {
+        Object.values(template.programs).forEach((goals) => {
+          if (!goals || typeof goals !== 'object') return;
+          Object.values(goals).forEach((experiences) => {
+            if (!experiences || typeof experiences !== 'object') return;
+            Object.values(experiences).forEach((sessions) => {
+              if (!Array.isArray(sessions)) return;
+              sessions.forEach(addSessionExercises);
+            });
+          });
+        });
+      }
+    }
+
+    this.exerciseLibrary = library;
+    return library;
   }
 
   /**
@@ -416,29 +501,51 @@ class WorkoutTemplateService {
       candidates = this.getTemplatesByType('starter');
     }
 
+    const goalMap = {
+      'lose_weight': 'fat_loss',
+      'build_muscle': 'muscle_gain',
+      'improve_endurance': 'endurance',
+      'general_fitness': 'general_fitness',
+      'get_stronger': 'strength'
+    };
+    const locationMap = {
+      'at_gym': 'gym',
+      'at_home': 'home',
+      'outdoors': 'outdoors',
+      'both': 'hybrid'
+    };
+    const mappedGoal = goalMap[primary_goal] || primary_goal;
+    const mappedLocation = locationMap[workout_location] || workout_location;
+
+    const matchesAdvancedPrograms = (template) => {
+      if (!template.programs || !mappedLocation || !mappedGoal) return false;
+      const locationPrograms = template.programs[mappedLocation];
+      if (!locationPrograms) return false;
+      const goalPrograms = locationPrograms[mappedGoal];
+      if (!goalPrograms) return false;
+      if (!experience_level) return true;
+      return !!goalPrograms[experience_level];
+    };
+
     // Filter by goal if specified
     if (primary_goal) {
-      const goalMap = {
-        'lose_weight': 'fat_loss',
-        'build_muscle': 'muscle_gain',
-        'improve_endurance': 'endurance',
-        'general_fitness': 'general_fitness',
-        'get_stronger': 'strength'
-      };
-      const mappedGoal = goalMap[primary_goal] || primary_goal;
-      candidates = candidates.filter(t => t.goal === mappedGoal);
+      candidates = candidates.filter(t => {
+        if (t.type === 'advanced' && !t.goal) {
+          return matchesAdvancedPrograms(t);
+        }
+        return t.goal === mappedGoal;
+      });
     }
 
     // Filter by location if specified
     if (workout_location) {
-      const locationMap = {
-        'at_gym': 'gym',
-        'at_home': 'home',
-        'outdoors': 'outdoors',
-        'both': 'hybrid'
-      };
-      const mappedLocation = locationMap[workout_location] || workout_location;
-      candidates = candidates.filter(t => t.location === mappedLocation);
+      candidates = candidates.filter(t => {
+        if (t.type === 'advanced' && !t.location) {
+          if (!t.programs) return false;
+          return !!t.programs[mappedLocation];
+        }
+        return t.location === mappedLocation;
+      });
     }
 
     // Filter by available days if specified
@@ -576,16 +683,31 @@ class WorkoutTemplateService {
   /**
    * Get sessions from template (works for both starter and advanced)
    */
-  getSessionsFromTemplate(template, userCriteria = {}) {
+  async getSessionsFromTemplate(template, userCriteria = {}) {
     if (template.type === 'starter') {
-      // Starter templates have direct sessions array
-      return template.sessions;
+      const sessions = JSON.parse(JSON.stringify(template.sessions || []));
+      const { injuries = [] } = userCriteria;
+
+      if (injuries && injuries.length > 0) {
+        const library = this.buildExerciseLibraryFromTemplates();
+        const swapped = [];
+        for (const session of sessions) {
+          const updated = await injuryMappingService.applyInjurySwapsToSession(session, injuries, library);
+          swapped.push(updated);
+        }
+        return swapped;
+      }
+
+      return sessions;
     } else if (template.type === 'advanced') {
-      // Advanced templates need extraction based on criteria
       return this.extractSessionsFromAdvancedTemplate(template, userCriteria);
     }
 
     throw new Error(`Unknown template type: ${template.type}`);
+  }
+
+  async getSessionsForWeek(template, userCriteria = {}, weekNumber, fallbackSessions = null) {
+    return fallbackSessions || this.getSessionsFromTemplate(template, userCriteria);
   }
 
   /**

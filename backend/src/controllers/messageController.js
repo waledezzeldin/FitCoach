@@ -3,6 +3,11 @@ const logger = require('../utils/logger');
 const s3Service = require('../services/s3Service');
 const quotaService = require('../services/quotaService');
 
+const resolveCoachRecordByUserId = async (userId) => {
+  const result = await db.query('SELECT id FROM coaches WHERE user_id = $1', [userId]);
+  return result.rows[0] || null;
+};
+
 /**
  * Message Controller
  * Handles all messaging operations including conversations, messages, and attachments
@@ -19,23 +24,37 @@ exports.getConversations = async (req, res) => {
     const result = await db.query(
       `SELECT 
         c.id,
-        c.created_at,
-        c.last_message_at,
-        c.last_message_preview,
-        c.unread_count_user,
-        c.unread_count_coach,
-        u.id as other_user_id,
-        u.full_name as other_user_name,
-        u.profile_picture_url as other_user_avatar,
-        u.role as other_user_role
+        c.user_id as "userId",
+        cu.id as "coachId",
+        c.created_at as "createdAt",
+        c.updated_at as "updatedAt",
+        c.last_message_at as "lastMessageAt",
+        c.last_message_preview as "lastMessageContent",
+        CASE
+          WHEN u.id = $1 THEN c.unread_count_user
+          ELSE c.unread_count_coach
+        END as "unreadCount",
+        CASE
+          WHEN u.id = $1 THEN cu.id
+          ELSE u.id
+        END as "otherUserId",
+        CASE
+          WHEN u.id = $1 THEN cu.full_name
+          ELSE u.full_name
+        END as "otherUserName",
+        CASE
+          WHEN u.id = $1 THEN cu.profile_picture_url
+          ELSE u.profile_picture_url
+        END as "otherUserAvatar",
+        CASE
+          WHEN u.id = $1 THEN cu.role
+          ELSE u.role
+        END as "otherUserRole"
        FROM conversations c
-       LEFT JOIN users u ON (
-         CASE 
-           WHEN c.user_id = $1 THEN c.coach_id = u.id
-           ELSE c.user_id = u.id
-         END
-       )
-       WHERE c.user_id = $1 OR c.coach_id = $1
+       JOIN users u ON c.user_id = u.id
+       JOIN coaches ch ON c.coach_id = ch.id
+       JOIN users cu ON ch.user_id = cu.id
+      WHERE u.id = $1 OR cu.id = $1
        ORDER BY c.last_message_at DESC NULLS LAST, c.created_at DESC
        LIMIT $2 OFFSET $3`,
       [userId, limit, offset]
@@ -57,6 +76,56 @@ exports.getConversations = async (req, res) => {
 };
 
 /**
+ * Get a single conversation (metadata)
+ */
+exports.getConversation = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id: conversationId } = req.params;
+
+    const result = await db.query(
+      `SELECT 
+        c.id,
+        c.user_id as "userId",
+        cu.id as "coachId",
+        c.created_at as "createdAt",
+        c.updated_at as "updatedAt",
+        c.last_message_at as "lastMessageAt",
+        c.last_message_preview as "lastMessageContent",
+        CASE
+          WHEN u.id = $2 THEN c.unread_count_user
+          ELSE c.unread_count_coach
+        END as "unreadCount"
+       FROM conversations c
+       JOIN users u ON c.user_id = u.id
+       JOIN coaches ch ON c.coach_id = ch.id
+       JOIN users cu ON ch.user_id = cu.id
+       WHERE c.id = $1 AND (u.id = $2 OR cu.id = $2)
+       LIMIT 1`,
+      [conversationId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      conversation: result.rows[0]
+    });
+  } catch (error) {
+    logger.error('Get conversation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get conversation'
+    });
+  }
+};
+
+/**
  * Get messages for a specific conversation
  */
 exports.getConversationMessages = async (req, res) => {
@@ -67,8 +136,10 @@ exports.getConversationMessages = async (req, res) => {
 
     // Verify user is part of conversation
     const conversationCheck = await db.query(
-      `SELECT id FROM conversations 
-       WHERE id = $1 AND (user_id = $2 OR coach_id = $2)`,
+      `SELECT c.id
+       FROM conversations c
+       JOIN coaches ch ON c.coach_id = ch.id
+       WHERE c.id = $1 AND (c.user_id = $2 OR ch.user_id = $2)`,
       [conversationId, userId]
     );
 
@@ -84,11 +155,13 @@ exports.getConversationMessages = async (req, res) => {
         m.id,
         m.conversation_id,
         m.sender_id,
+        m.receiver_id,
         m.content,
         m.message_type,
         m.attachment_url,
         m.attachment_type,
         m.attachment_name,
+        m.is_read,
         m.read_at,
         m.created_at,
         u.full_name as sender_name,
@@ -153,40 +226,50 @@ exports.sendMessage = async (req, res) => {
     // Create conversation if it doesn't exist
     if (!conversationId && recipientId) {
       // Check if conversation already exists
+      // Determine who is user and who is coach
+      const userRoles = await client.query(
+        `SELECT id, role FROM users WHERE id IN ($1, $2)`,
+        [userId, recipientId]
+      );
+
+      const currentUser = userRoles.rows.find(u => u.id === userId);
+      const recipient = userRoles.rows.find(u => u.id === recipientId);
+
+      if (!currentUser || !recipient) {
+        throw new Error('Invalid sender or recipient');
+      }
+
+      let coachUserId = null;
+      let conversationUserId = null;
+      if (currentUser.role === 'coach') {
+        coachUserId = currentUser.id;
+        conversationUserId = recipient.id;
+      } else if (recipient.role === 'coach') {
+        coachUserId = recipient.id;
+        conversationUserId = currentUser.id;
+      } else {
+        throw new Error('Conversation requires a coach participant');
+      }
+
+      const coachRecord = await resolveCoachRecordByUserId(coachUserId);
+      if (!coachRecord) {
+        throw new Error('Coach record not found');
+      }
+
       const existingConv = await client.query(
         `SELECT id FROM conversations 
-         WHERE (user_id = $1 AND coach_id = $2) 
-         OR (user_id = $2 AND coach_id = $1)`,
-        [userId, recipientId]
+         WHERE user_id = $1 AND coach_id = $2`,
+        [conversationUserId, coachRecord.id]
       );
 
       if (existingConv.rows.length > 0) {
         finalConversationId = existingConv.rows[0].id;
       } else {
-        // Determine who is user and who is coach
-        const userRoles = await client.query(
-          `SELECT id, role FROM users WHERE id IN ($1, $2)`,
-          [userId, recipientId]
-        );
-
-        const currentUser = userRoles.rows.find(u => u.id === userId);
-        const recipient = userRoles.rows.find(u => u.id === recipientId);
-
-        let conversationUserId, conversationCoachId;
-        if (currentUser.role === 'coach') {
-          conversationUserId = recipientId;
-          conversationCoachId = userId;
-        } else {
-          conversationUserId = userId;
-          conversationCoachId = recipientId;
-        }
-
-        // Create new conversation
         const newConv = await client.query(
           `INSERT INTO conversations (user_id, coach_id)
            VALUES ($1, $2)
            RETURNING id`,
-          [conversationUserId, conversationCoachId]
+          [conversationUserId, coachRecord.id]
         );
 
         finalConversationId = newConv.rows[0].id;
@@ -197,19 +280,37 @@ exports.sendMessage = async (req, res) => {
       throw new Error('Conversation ID is required');
     }
 
+    const conversationResult = await client.query(
+      `SELECT c.id, c.user_id, c.coach_id, ch.user_id as coach_user_id
+       FROM conversations c
+       JOIN coaches ch ON c.coach_id = ch.id
+       WHERE c.id = $1`,
+      [finalConversationId]
+    );
+
+    if (conversationResult.rows.length === 0) {
+      throw new Error('Conversation not found');
+    }
+
+    const conversation = conversationResult.rows[0];
+    const receiverId = conversation.user_id === userId
+      ? conversation.coach_user_id
+      : conversation.user_id;
+
     // Insert message
     const messageResult = await client.query(
       `INSERT INTO messages (
         conversation_id, 
-        sender_id, 
+        sender_id,
+        receiver_id,
         content, 
         message_type,
         attachment_url,
         attachment_type,
         attachment_name
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *`,
-      [finalConversationId, userId, content, messageType, attachmentUrl, attachmentType, attachmentName]
+      [finalConversationId, userId, receiverId, content, messageType, attachmentUrl, attachmentType, attachmentName]
     );
 
     const message = messageResult.rows[0];
@@ -219,14 +320,16 @@ exports.sendMessage = async (req, res) => {
       ? content.substring(0, 100) 
       : (messageType === 'image' ? '📷 Image' : '📎 Attachment');
 
+    const unreadField = conversation.user_id === userId
+      ? 'unread_count_coach'
+      : 'unread_count_user';
     await client.query(
       `UPDATE conversations
        SET last_message_at = NOW(),
            last_message_preview = $1,
-           unread_count_user = CASE WHEN user_id != $2 THEN unread_count_user + 1 ELSE unread_count_user END,
-           unread_count_coach = CASE WHEN coach_id != $2 THEN unread_count_coach + 1 ELSE unread_count_coach END
-       WHERE id = $3`,
-      [contentPreview, userId, finalConversationId]
+           ${unreadField} = ${unreadField} + 1
+       WHERE id = $2`,
+      [contentPreview, finalConversationId]
     );
 
     // Increment quota usage
@@ -274,12 +377,24 @@ exports.markAsRead = async (req, res) => {
 
     // Verify user is part of conversation
     const conversation = await db.query(
-      `SELECT user_id, coach_id FROM conversations 
-       WHERE id = $1 AND (user_id = $2 OR coach_id = $2)`,
-      [conversationId, userId]
+      `SELECT c.user_id, ch.user_id as coach_user_id
+       FROM conversations c
+       JOIN coaches ch ON c.coach_id = ch.id
+       WHERE c.id = $1`,
+      [conversationId]
     );
 
     if (conversation.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+    }
+
+    const isUser = conversation.rows[0].user_id === userId;
+    const isCoach = conversation.rows[0].coach_user_id === userId;
+
+    if (!isUser && !isCoach) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -289,7 +404,8 @@ exports.markAsRead = async (req, res) => {
     // Mark all unread messages as read
     await db.query(
       `UPDATE messages
-       SET read_at = NOW()
+       SET read_at = NOW(),
+           is_read = TRUE
        WHERE conversation_id = $1 
        AND sender_id != $2 
        AND read_at IS NULL`,
@@ -297,7 +413,6 @@ exports.markAsRead = async (req, res) => {
     );
 
     // Reset unread count
-    const isUser = conversation.rows[0].user_id === userId;
     await db.query(
       `UPDATE conversations
        SET ${isUser ? 'unread_count_user' : 'unread_count_coach'} = 0
@@ -418,6 +533,58 @@ exports.deleteMessage = async (req, res) => {
 };
 
 /**
+ * Delete all messages in a conversation (participant only)
+ */
+exports.deleteConversationMessages = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id: conversationId } = req.params;
+
+    const conversation = await db.query(
+      `SELECT c.id
+       FROM conversations c
+       JOIN coaches ch ON c.coach_id = ch.id
+       WHERE c.id = $1 AND (c.user_id = $2 OR ch.user_id = $2)`,
+      [conversationId, userId]
+    );
+
+    if (conversation.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    await db.query(
+      'DELETE FROM messages WHERE conversation_id = $1',
+      [conversationId]
+    );
+
+    await db.query(
+      `UPDATE conversations
+       SET last_message_preview = NULL,
+           last_message_at = NULL,
+           unread_count_user = 0,
+           unread_count_coach = 0,
+           updated_at = NOW()
+       WHERE id = $1`,
+      [conversationId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Conversation cleared'
+    });
+  } catch (error) {
+    logger.error('Delete conversation messages error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to clear conversation'
+    });
+  }
+};
+
+/**
  * Get unread message count
  */
 exports.getUnreadCount = async (req, res) => {
@@ -426,9 +593,15 @@ exports.getUnreadCount = async (req, res) => {
 
     const result = await db.query(
       `SELECT 
-        SUM(CASE WHEN user_id = $1 THEN unread_count_user ELSE unread_count_coach END) as total_unread
-       FROM conversations
-       WHERE user_id = $1 OR coach_id = $1`,
+        SUM(
+          CASE
+            WHEN c.user_id = $1 THEN c.unread_count_user
+            ELSE c.unread_count_coach
+          END
+        ) as total_unread
+       FROM conversations c
+       JOIN coaches ch ON c.coach_id = ch.id
+       WHERE c.user_id = $1 OR ch.user_id = $1`,
       [userId]
     );
 
@@ -471,8 +644,9 @@ exports.searchMessages = async (req, res) => {
         c.last_message_preview
       FROM messages m
       JOIN conversations c ON m.conversation_id = c.id
+      JOIN coaches ch ON c.coach_id = ch.id
       JOIN users u ON m.sender_id = u.id
-      WHERE (c.user_id = $1 OR c.coach_id = $1)
+      WHERE (c.user_id = $1 OR ch.user_id = $1)
       AND m.content ILIKE $2
     `;
 

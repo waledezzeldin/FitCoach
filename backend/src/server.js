@@ -25,7 +25,9 @@ const messageRoutes = require('./routes/messages');
 const bookingRoutes = require('./routes/bookings');
 const exerciseRoutes = require('./routes/exercises');
 const productRoutes = require('./routes/products');
+const storeRoutes = require('./routes/store');
 const orderRoutes = require('./routes/orders');
+const subscriptionRoutes = require('./routes/subscriptions');
 const coachRoutes = require('./routes/coaches');
 const adminRoutes = require('./routes/admin');
 const progressRoutes = require('./routes/progress');
@@ -92,9 +94,11 @@ app.get('/', (req, res) => {
       bookings: `/${API_VERSION}/bookings`,
       exercises: `/${API_VERSION}/exercises`,
       products: `/${API_VERSION}/products`,
+      store: `/${API_VERSION}/store`,
       orders: `/${API_VERSION}/orders`,
       coaches: `/${API_VERSION}/coaches`,
       admin: `/${API_VERSION}/admin`,
+      subscriptions: `/${API_VERSION}/subscriptions`,
       progress: `/${API_VERSION}/progress`,
       ratings: `/${API_VERSION}/ratings`,
       payments: `/${API_VERSION}/payments`,
@@ -134,10 +138,12 @@ app.use(`/${API_VERSION}/workouts`, workoutRoutes);
 app.use(`/${API_VERSION}/nutrition`, nutritionRoutes);
 app.use(`/${API_VERSION}/coaches`, coachRoutes);
 app.use(`/${API_VERSION}/admin`, require('./routes/admin'));
+app.use(`/${API_VERSION}/subscriptions`, subscriptionRoutes);
 app.use(`/${API_VERSION}/messages`, messageRoutes);
 app.use(`/${API_VERSION}/bookings`, bookingRoutes);
 app.use(`/${API_VERSION}/exercises`, exerciseRoutes);
 app.use(`/${API_VERSION}/products`, productRoutes);
+app.use(`/${API_VERSION}/store`, storeRoutes);
 app.use(`/${API_VERSION}/orders`, orderRoutes);
 app.use(`/${API_VERSION}/progress`, progressRoutes);
 app.use(`/${API_VERSION}/ratings`, ratingRoutes);

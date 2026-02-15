@@ -52,4 +52,18 @@ router.put('/:id/status', authMiddleware, roleCheck('admin'), orderController.up
  */
 router.post('/:id/cancel', authMiddleware, orderController.cancelOrder);
 
+/**
+ * @route   PUT /api/v2/orders/:id/cancel
+ * @desc    Cancel order (Flutter-compatible)
+ * @access  Private
+ */
+router.put('/:id/cancel', authMiddleware, orderController.cancelOrder);
+
+/**
+ * @route   GET /api/v2/orders/:id/track
+ * @desc    Track order
+ * @access  Private
+ */
+router.get('/:id/track', authMiddleware, orderController.trackOrder);
+
 module.exports = router;

@@ -4,7 +4,50 @@ const { authMiddleware, tierCheck } = require('../middleware/auth');
 const userController = require('../controllers/userController');
 const settingsController = require('../controllers/settingsController');
 const { body } = require('express-validator');
+const { validateUpdateProfile } = require('../middleware/validation');
 const upload = require('../middleware/upload');
+
+/**
+ * @route   GET /api/v2/users/me
+ * @desc    Get current user profile (Flutter-compatible)
+ * @access  Private
+ */
+router.get('/me', authMiddleware, userController.getMe);
+
+/**
+ * @route   GET /api/v2/users/quota
+ * @desc    Get current user's quota status
+ * @access  Private
+ */
+router.get('/quota', authMiddleware, userController.getMyQuotaStatus);
+
+/**
+ * @route   PATCH /api/v2/users/subscription
+ * @desc    Update current user's subscription tier (Flutter contract)
+ * @access  Private
+ */
+router.patch('/subscription', authMiddleware, userController.updateSubscription);
+
+/**
+ * @route   POST /api/v2/users/intake/first
+ * @desc    Complete first intake (Flutter contract)
+ * @access  Private
+ */
+router.post('/intake/first', authMiddleware, userController.submitFirstIntakeCompat);
+
+/**
+ * @route   POST /api/v2/users/intake/second
+ * @desc    Complete second intake (Flutter contract)
+ * @access  Private
+ */
+router.post('/intake/second', authMiddleware, userController.submitSecondIntakeCompat);
+
+/**
+ * @route   GET /api/v2/users/:id/appointments
+ * @desc    Get user appointments (Flutter-compatible)
+ * @access  Private
+ */
+router.get('/:id/appointments', authMiddleware, userController.getUserAppointments);
 
 /**
  * @route   GET /api/v2/users/:id
@@ -18,10 +61,7 @@ router.get('/:id', authMiddleware, userController.getUserProfile);
  * @desc    Update user profile
  * @access  Private
  */
-router.put('/:id', authMiddleware, [
-  body('fullName').optional().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
-  body('email').optional().isEmail().withMessage('Invalid email format'),
-], userController.updateProfile);
+router.put('/:id', authMiddleware, validateUpdateProfile, userController.updateProfile);
 
 /**
  * @route   POST /api/v2/users/first-intake

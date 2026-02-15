@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
+import '../../../data/repositories/store_repository.dart';
 import '../../providers/language_provider.dart';
 import '../../widgets/custom_card.dart';
 // ...existing code...
@@ -17,7 +18,10 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
   String _selectedTab = 'products'; // products, categories, orders
   String _searchQuery = '';
 
-  final List<Map<String, dynamic>> _products = [
+  bool _loading = false;
+  String? _error;
+
+  List<Map<String, dynamic>> _products = [
     {
       'id': '1',
       'name': 'Whey Protein',
@@ -47,7 +51,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     },
   ];
 
-  final List<Map<String, dynamic>> _categories = [
+  List<Map<String, dynamic>> _categories = [
     {
       'id': 'c1',
       'name': 'Supplements',
@@ -64,7 +68,7 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     {'id': 'c4', 'name': 'Accessories', 'count': 15, 'icon': Icons.watch},
   ];
 
-  final List<Map<String, dynamic>> _orders = [
+  List<Map<String, dynamic>> _orders = [
     {
       'id': '#1234',
       'customer': 'Ahmed Ali',
@@ -95,28 +99,86 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (!DemoConfig.isDemo) {
+      _loadData();
+    }
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final repository = StoreRepository();
+      final products = await repository.getProducts(limit: 100, offset: 0);
+      final categories = await repository.getCategories();
+      final orders = await repository.getAllOrdersAdmin(limit: 50, offset: 0);
+
+      if (!mounted) return;
+
+      setState(() {
+        _products = products
+            .map((product) {
+              final stock = product.stockQuantity;
+              final status = stock == 0
+                  ? 'out_of_stock'
+                  : stock <= 10
+                      ? 'low_stock'
+                      : 'active';
+              return {
+                'id': product.id,
+                'name': product.name,
+                'category': product.category,
+                'price': product.price,
+                'stock': stock,
+                'status': status,
+                'sales': 0,
+              };
+            })
+            .toList();
+
+        _categories = categories
+            .map((name) => {
+                  'id': name,
+                  'name': name,
+                  'count': 0,
+                  'icon': Icons.category,
+                })
+            .toList();
+
+        _orders = orders
+            .map((order) => {
+                  'id': order['order_number'] ?? order['id'],
+                  'customer': order['user_name'] ?? 'Unknown',
+                  'total': order['total'] ?? 0,
+                  'status': order['status'] ?? 'pending',
+                  'date': order['created_at'] ?? '',
+                  'items': order['item_count'] ?? 0,
+                  'address': order['shipping_address'] ?? '',
+                })
+            .toList();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
     final lang = languageProvider;
-
-    if (!DemoConfig.isDemo) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(lang.t('store_management_title')),
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              lang.t('store_demo_only'),
-              textAlign: TextAlign.center,
-              style:
-                  const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-          ),
-        ),
-      );
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -124,6 +186,17 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
       ),
       body: Column(
         children: [
+          if (_loading)
+            const LinearProgressIndicator(minHeight: 4),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                _error!,
+                style: const TextStyle(color: AppColors.error, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ),
           // Tabs
           Container(
             color: AppColors.background,
@@ -543,6 +616,15 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
       return;
     }
     if (_selectedTab == 'categories') {
+      if (!DemoConfig.isDemo) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(lang.t('store_demo_only')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
       _openCategoryForm(lang);
       return;
     }
@@ -627,43 +709,79 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
             child: Text(lang.t('cancel')),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               final name = nameController.text.trim();
               if (name.isEmpty) return;
-              final category = categoryController.text.trim();
-              final price = int.tryParse(priceController.text.trim()) ?? 0;
+              final category = categoryController.text.trim().isEmpty
+                  ? 'General'
+                  : categoryController.text.trim();
+              final price = double.tryParse(priceController.text.trim()) ?? 0;
               final stock = int.tryParse(stockController.text.trim()) ?? 0;
 
-              setState(() {
-                if (isEdit) {
-                  final index =
-                      _products.indexWhere((p) => p['id'] == product['id']);
-                  if (index != -1) {
-                    _products[index] = {
-                      ..._products[index],
+              if (DemoConfig.isDemo) {
+                setState(() {
+                  if (isEdit) {
+                    final index =
+                        _products.indexWhere((p) => p['id'] == product['id']);
+                    if (index != -1) {
+                      _products[index] = {
+                        ..._products[index],
+                        'name': name,
+                        'category': category,
+                        'price': price,
+                        'stock': stock,
+                        'status': status,
+                      };
+                    }
+                  } else {
+                    _products.insert(0, {
+                      'id': DateTime.now().millisecondsSinceEpoch.toString(),
                       'name': name,
-                      'category': category.isEmpty
-                          ? _products[index]['category']
-                          : category,
+                      'category': category,
                       'price': price,
                       'stock': stock,
                       'status': status,
-                    };
+                      'sales': 0,
+                    });
                   }
-                } else {
-                  _products.insert(0, {
-                    'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                    'name': name,
-                    'category': category.isEmpty ? 'General' : category,
-                    'price': price,
-                    'stock': stock,
-                    'status': status,
-                    'sales': 0,
-                  });
-                }
-              });
+                });
 
-              Navigator.pop(context);
+                Navigator.pop(context);
+                return;
+              }
+
+              try {
+                final repository = StoreRepository();
+                if (isEdit) {
+                  await repository.updateProductAdmin(
+                    productId: product['id'] as String,
+                    name: name,
+                    category: category,
+                    price: price,
+                    stockQuantity: stock,
+                    isActive: status != 'out_of_stock',
+                  );
+                } else {
+                  await repository.createProductAdmin(
+                    name: name,
+                    category: category,
+                    price: price,
+                    stockQuantity: stock,
+                  );
+                }
+
+                if (!mounted) return;
+                await _loadData();
+                Navigator.pop(context);
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.toString()),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+              }
             },
             child: Text(lang.t('save')),
           ),
@@ -694,14 +812,41 @@ class _StoreManagementScreenState extends State<StoreManagementScreen> {
     );
 
     if (confirm == true) {
-      setState(() {
-        _products.removeWhere((p) => p['id'] == product['id']);
-      });
+      if (DemoConfig.isDemo) {
+        setState(() {
+          _products.removeWhere((p) => p['id'] == product['id']);
+        });
+        return;
+      }
+
+      try {
+        final repository = StoreRepository();
+        await repository.deleteProductAdmin(product['id'] as String);
+        if (!mounted) return;
+        await _loadData();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _openCategoryForm(LanguageProvider lang,
       {Map<String, dynamic>? category}) async {
+    if (!DemoConfig.isDemo) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(lang.t('store_demo_only')),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
     final isEdit = category != null;
     final nameController =
         TextEditingController(text: category?['name']?.toString() ?? '');

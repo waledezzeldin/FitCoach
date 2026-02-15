@@ -1,5 +1,7 @@
 const logger = require('../utils/logger');
-const axios = require('axios');
+
+const isSimulatedExtractionEnabled = () =>
+  String(process.env.ENABLE_SIMULATED_AI_EXTRACTION || '').toLowerCase() === 'true';
 
 /**
  * AI InBody Extraction Service
@@ -20,13 +22,22 @@ const axios = require('axios');
  */
 async function extractInBodyData(imageBuffer, imageMimeType) {
   try {
+    if (!isSimulatedExtractionEnabled()) {
+      const error = new Error('AI extraction is currently disabled');
+      error.statusCode = 503;
+      throw error;
+    }
+
     logger.info('Starting AI InBody extraction');
 
     // TODO: In production, integrate with actual AI service
     // For now, simulate AI extraction with realistic demo data
     
     // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const processingDelayMs = Number.isFinite(Number(process.env.AI_EXTRACTION_DELAY_MS))
+      ? Math.max(0, Number(process.env.AI_EXTRACTION_DELAY_MS))
+      : 2000;
+    await new Promise(resolve => setTimeout(resolve, processingDelayMs));
 
     // Generate realistic InBody data
     // In production, this would come from actual OCR + ML model
@@ -38,12 +49,15 @@ async function extractInBodyData(imageBuffer, imageMimeType) {
       success: true,
       data: extractedData,
       confidence: 0.92, // Overall confidence score
-      extractionMethod: 'ai_ocr',
-      processingTime: 2000 // ms
+      extractionMethod: 'simulated_ai_ocr',
+      processingTime: processingDelayMs // ms
     };
 
   } catch (error) {
     logger.error('AI InBody extraction error:', error);
+    if (error.statusCode) {
+      throw error;
+    }
     throw new Error('Failed to extract InBody data from image');
   }
 }

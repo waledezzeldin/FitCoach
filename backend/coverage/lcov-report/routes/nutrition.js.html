@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>19/19</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>19/19</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -86,60 +86,78 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
-const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
-const { authMiddleware, roleCheck } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth');</span>
-const { checkNutritionAccess, addNutritionAccessInfo } = <span class="cstat-no" title="statement not covered" >require('../middleware/nutritionAccessControl');</span>
-const nutritionController = <span class="cstat-no" title="statement not covered" >require('../controllers/nutritionController');</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span></td><td class="text"><pre class="prettyprint lang-js">const express = require('express');
+const router = express.Router();
+const { authMiddleware, roleCheck } = require('../middleware/auth');
+const { checkNutritionAccess, addNutritionAccessInfo } = require('../middleware/nutritionAccessControl');
+const nutritionController = require('../controllers/nutritionController');
 &nbsp;
 // Access status routes (no access check needed)
-<span class="cstat-no" title="statement not covered" >router.get('/access-status', authMiddleware, nutritionController.getAccessStatus);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/unlock-trial', authMiddleware, nutritionController.unlockTrial);</span>
+router.get('/access-status', authMiddleware, nutritionController.getAccessStatus);
+router.get('/trial-status', authMiddleware, nutritionController.getTrialStatusCompat);
+router.post('/unlock-trial', authMiddleware, nutritionController.unlockTrial);
 &nbsp;
 // Generate nutrition plan (requires access)
-<span class="cstat-no" title="statement not covered" >router.post('/generate', authMiddleware, checkNutritionAccess, nutritionController.generatePlan);</span>
+router.post('/generate', authMiddleware, checkNutritionAccess, nutritionController.generatePlan);
+&nbsp;
+// Flutter-compatible routes
+router.get('/plan', authMiddleware, checkNutritionAccess, nutritionController.getActivePlanCompat);
+router.post('/meals/:mealId/log', authMiddleware, checkNutritionAccess, nutritionController.logMealCompat);
+router.get('/history', authMiddleware, checkNutritionAccess, nutritionController.getNutritionHistoryCompat);
 &nbsp;
 // Protected nutrition routes (require access)
-<span class="cstat-no" title="statement not covered" >router.get('/', authMiddleware, checkNutritionAccess, nutritionController.getUserPlans);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/:id', authMiddleware, checkNutritionAccess, nutritionController.getPlanById);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/:id/meals/:mealId/complete', authMiddleware, checkNutritionAccess, nutritionController.completeMeal);</span>
+router.get('/', authMiddleware, checkNutritionAccess, nutritionController.getUserPlans);
+router.get('/:id', authMiddleware, checkNutritionAccess, nutritionController.getPlanById);
+router.post('/:id/meals/:mealId/complete', authMiddleware, checkNutritionAccess, nutritionController.completeMeal);
 &nbsp;
 // Coach/Admin routes (bypass access check)
-<span class="cstat-no" title="statement not covered" >router.post('/', authMiddleware, roleCheck('coach', 'admin'), nutritionController.createPlan);</span>
-<span class="cstat-no" title="statement not covered" >router.put('/:id', authMiddleware, roleCheck('coach', 'admin'), nutritionController.updatePlan);</span>
-<span class="cstat-no" title="statement not covered" >router.delete('/:id', authMiddleware, roleCheck('coach', 'admin'), nutritionController.deletePlan);</span>
+router.post('/', authMiddleware, roleCheck('coach', 'admin'), nutritionController.createPlan);
+router.put('/:id', authMiddleware, roleCheck('coach', 'admin'), nutritionController.updatePlan);
+router.delete('/:id', authMiddleware, roleCheck('coach', 'admin'), nutritionController.deletePlan);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = router;</span></pre></td></tr></table></pre>
+module.exports = router;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-30T20:53:57.737Z
+                at 2026-02-06T15:40:46.295Z
             </div>
         <script src="../prettify.js"></script>
         <script>

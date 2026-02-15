@@ -559,6 +559,7 @@ class _SubscriptionUpgradeScreenState extends State<SubscriptionUpgradeScreen> {
     });
     String tr(String key, {Map<String, String>? args}) =>
         languageProvider.t(key, args: args);
+    final tierCode = _resolveTierCode(plan);
     
     try {
       if (DemoConfig.isDemo) {
@@ -587,7 +588,7 @@ class _SubscriptionUpgradeScreenState extends State<SubscriptionUpgradeScreen> {
       if (_selectedPaymentMethod == 'stripe') {
         // Create Stripe payment
         paymentResult = await repository.createStripePayment(
-          tier: plan.id,
+          tier: tierCode,
           billingCycle: _selectedCycle,
         );
         
@@ -598,7 +599,7 @@ class _SubscriptionUpgradeScreenState extends State<SubscriptionUpgradeScreen> {
       } else {
         // Create Tap payment
         paymentResult = await repository.createTapPayment(
-          tier: plan.id,
+          tier: tierCode,
           billingCycle: _selectedCycle,
         );
         
@@ -640,6 +641,20 @@ class _SubscriptionUpgradeScreenState extends State<SubscriptionUpgradeScreen> {
         });
       }
     }
+  }
+
+  String _resolveTierCode(SubscriptionPlan plan) {
+    const supported = {'freemium', 'premium', 'smart_premium'};
+    final idValue = plan.id.toLowerCase();
+    if (supported.contains(idValue)) return idValue;
+
+    final normalizedName = plan.name
+        .toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll('-', '_');
+    if (supported.contains(normalizedName)) return normalizedName;
+
+    return idValue;
   }
   
   Future<void> _launchPaymentUrl(String url) async {

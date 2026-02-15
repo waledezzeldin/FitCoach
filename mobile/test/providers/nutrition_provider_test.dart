@@ -3,6 +3,92 @@ import 'package:fitapp/data/repositories/nutrition_repository.dart';
 import 'package:fitapp/presentation/providers/nutrition_provider.dart';
 import 'package:fitapp/data/models/nutrition_plan.dart'; // Import FoodItem and MacroTargets
 
+class FakeNutritionRepository extends NutritionRepository {
+  NutritionPlan? _plan;
+
+  FakeNutritionRepository() {
+    _plan = _buildPlan();
+  }
+
+  static NutritionPlan _buildPlan() {
+    final breakfast = Meal(
+      id: 'meal_breakfast',
+      name: 'Breakfast',
+      nameAr: 'فطور',
+      nameEn: 'Breakfast',
+      type: 'breakfast',
+      time: '08:00',
+      foods: [],
+      macros: MacroTargets(protein: 10, carbs: 20, fats: 5),
+      calories: 200,
+    );
+    final lunch = Meal(
+      id: 'meal_lunch',
+      name: 'Lunch',
+      nameAr: 'غداء',
+      nameEn: 'Lunch',
+      type: 'lunch',
+      time: '13:00',
+      foods: [],
+      macros: MacroTargets(protein: 20, carbs: 30, fats: 10),
+      calories: 400,
+    );
+    final dinner = Meal(
+      id: 'meal_dinner',
+      name: 'Dinner',
+      nameAr: 'عشاء',
+      nameEn: 'Dinner',
+      type: 'dinner',
+      time: '19:00',
+      foods: [],
+      macros: MacroTargets(protein: 15, carbs: 25, fats: 8),
+      calories: 350,
+    );
+
+    final day = DayMealPlan(
+      id: 'day1',
+      dayName: 'Day 1',
+      dayNumber: 1,
+      meals: [breakfast, lunch, dinner],
+    );
+
+    return NutritionPlan(
+      id: 'plan1',
+      userId: 'user1',
+      name: 'Test Plan',
+      description: 'Test Nutrition Plan',
+      days: [day],
+      createdAt: DateTime.now(),
+      macroTargets: {
+        'calories': 2000,
+        'protein': 150,
+        'carbs': 250,
+        'fat': 70,
+      },
+    );
+  }
+
+  @override
+  Future<NutritionPlan?> getActivePlan() async {
+    return _plan;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getTrialStatus() async {
+    return {
+      'startDate': DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
+    };
+  }
+
+  @override
+  Future<void> logMeal(String mealId, Map<String, dynamic> data) async {}
+
+  @override
+  Future<List<Map<String, dynamic>>> getNutritionHistory() async {
+    return [];
+  }
+}
+
 // Extension to mock macroTargets for testing if not present in NutritionProvider
 extension NutritionProviderTestExt on NutritionProvider {
   Map<String, dynamic> get macroTargets => {
@@ -65,7 +151,7 @@ void main() {
 
     setUp(() {
       // authProvider = AuthProvider();
-      nutritionRepository = NutritionRepository(); // Add this line to initialize nutritionRepository
+      nutritionRepository = FakeNutritionRepository();
       nutritionProvider = NutritionProvider(nutritionRepository);
     });
 
@@ -244,7 +330,7 @@ void main() {
 
     test('error handling should set error state', () async {
       // Test error handling
-      nutritionProvider.loadActivePlan();
+      await nutritionProvider.loadActivePlan();
       expect(nutritionProvider.isLoading, false);
     });
 

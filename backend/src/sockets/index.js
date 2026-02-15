@@ -113,7 +113,10 @@ exports.setupSocketHandlers = (io) => {
         
         // Get conversation details
         const convResult = await client.query(
-          'SELECT * FROM conversations WHERE id = $1',
+          `SELECT c.*, ch.user_id as coach_user_id
+           FROM conversations c
+           JOIN coaches ch ON c.coach_id = ch.id
+           WHERE c.id = $1`,
           [conversationId]
         );
         
@@ -127,13 +130,13 @@ exports.setupSocketHandlers = (io) => {
         
         // Determine sender and receiver
         const receiverId = conversation.user_id === socket.userId 
-          ? conversation.coach_id 
+          ? conversation.coach_user_id 
           : conversation.user_id;
         
         // Insert message
         const messageResult = await client.query(
           `INSERT INTO messages (
-            conversation_id, sender_id, receiver_id, content, type, 
+            conversation_id, sender_id, receiver_id, content, message_type, 
             attachment_url, attachment_type
           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
           RETURNING *`,
@@ -143,12 +146,14 @@ exports.setupSocketHandlers = (io) => {
         const message = messageResult.rows[0];
         
         // Update conversation
+        const unreadField = conversation.user_id === socket.userId
+          ? 'unread_count_coach'
+          : 'unread_count_user';
         await client.query(
           `UPDATE conversations
-           SET last_message_content = $1,
+           SET last_message_preview = $1,
                last_message_at = NOW(),
-               ${conversation.user_id === socket.userId ? 'coach_unread_count' : 'user_unread_count'} = 
-               ${conversation.user_id === socket.userId ? 'coach_unread_count' : 'user_unread_count'} + 1
+               ${unreadField} = ${unreadField} + 1
            WHERE id = $2`,
           [content, conversationId]
         );
@@ -158,20 +163,27 @@ exports.setupSocketHandlers = (io) => {
         
         await client.query('COMMIT');
         
+        const payload = {
+          id: message.id,
+          conversationId: message.conversation_id,
+          senderId: message.sender_id,
+          receiverId: message.receiver_id,
+          content: message.content,
+          type: message.message_type,
+          attachmentUrl: message.attachment_url,
+          attachmentType: message.attachment_type,
+          isRead: false,
+          createdAt: new Date(message.created_at).toISOString(),
+          readAt: null
+        };
+
         // Emit message to conversation room
         io.to(`conversation_${conversationId}`).emit('new_message', {
-          message: {
-            id: message.id,
-            conversationId: message.conversation_id,
-            senderId: message.sender_id,
-            receiverId: message.receiver_id,
-            content: message.content,
-            type: message.type,
-            attachmentUrl: message.attachment_url,
-            attachmentType: message.attachment_type,
-            createdAt: message.created_at
-          }
+          message: payload
         });
+
+        // Flutter socket compatibility
+        io.to(`conversation_${conversationId}`).emit('message:new', payload);
         
         // Notify receiver if they're online
         const receiverSocketId = userSockets.get(receiverId);
@@ -182,6 +194,8 @@ exports.setupSocketHandlers = (io) => {
             senderId: socket.userId,
             content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
           });
+
+          io.to(receiverSocketId).emit('message:new', payload);
         }
         
         logger.info(`Message sent: ${message.id} in conversation ${conversationId}`);

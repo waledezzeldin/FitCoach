@@ -259,6 +259,40 @@ exports.getFeaturedProducts = async (req, res) => {
 };
 
 /**
+ * Get product reviews (paginated)
+ */
+exports.getReviews = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { limit = 20, offset = 0 } = req.query;
+
+    const result = await db.query(
+      `SELECT 
+        pr.*,
+        u.full_name,
+        u.profile_photo_url
+       FROM product_reviews pr
+       JOIN users u ON pr.user_id = u.id
+       WHERE pr.product_id = $1
+       ORDER BY pr.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [id, parseInt(limit), parseInt(offset)]
+    );
+
+    res.json({
+      success: true,
+      reviews: result.rows
+    });
+  } catch (error) {
+    logger.error('Get product reviews error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get reviews'
+    });
+  }
+};
+
+/**
  * Create product (Admin only)
  */
 exports.createProduct = async (req, res) => {

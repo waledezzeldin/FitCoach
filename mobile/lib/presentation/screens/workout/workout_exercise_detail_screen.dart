@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/models/workout_plan.dart';
+import '../../../data/services/exercise_catalog_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/workout_provider.dart';
@@ -26,6 +27,7 @@ class WorkoutExerciseDetailScreen extends StatefulWidget {
 class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScreen> {
   bool _showTutorial = false;
   bool _tutorialLoaded = false;
+  final ExerciseCatalogService _catalogService = ExerciseCatalogService.instance;
 
   @override
   void initState() {
@@ -182,6 +184,8 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
     final lang = context.watch<LanguageProvider>();
     final isArabic = lang.isArabic;
     final exercise = widget.exercise;
+    final equipmentLabel = _localizeEquipment(exercise.equipment, isArabic, lang.t('equipment'));
+    final muscleLabel = _localizeMuscles(exercise.muscleGroup, isArabic);
     final heroImage = exercise.thumbnailUrl ?? 'assets/placeholders/splash_onboarding/workout_onboarding.png';
     final instructions = _splitLines(
       isArabic ? exercise.instructionsAr ?? exercise.instructions : exercise.instructionsEn ?? exercise.instructions,
@@ -248,7 +252,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${exercise.muscleGroup ?? ''} \u2022 ${exercise.category ?? ''}',
+                                '${muscleLabel.isEmpty ? '' : muscleLabel} \u2022 ${exercise.category ?? ''}',
                                 style: TextStyle(
                                   color: AppColors.textWhite.withValues(alpha: 0.7),
                                   fontSize: 12,
@@ -370,7 +374,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                                           Wrap(
                                             spacing: 8,
                                             children: [
-                                              _Badge(text: exercise.equipment ?? lang.t('equipment')),
+                                              _Badge(text: equipmentLabel),
                                             ],
                                           ),
                                         ],
@@ -387,7 +391,7 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
                                             style: const TextStyle(fontWeight: FontWeight.w600),
                                           ),
                                           const SizedBox(height: 8),
-                                          _Badge(text: exercise.muscleGroup ?? ''),
+                                          _Badge(text: muscleLabel),
                                         ],
                                       ),
                                     ),
@@ -531,6 +535,30 @@ class _WorkoutExerciseDetailScreenState extends State<WorkoutExerciseDetailScree
         ),
       ),
     );
+  }
+
+  String _localizeEquipment(String? equipment, bool isArabic, String fallback) {
+    if (equipment == null || equipment.trim().isEmpty) {
+      return fallback;
+    }
+    return _localizeList(equipment, isArabic, isEquipment: true);
+  }
+
+  String _localizeMuscles(String? muscles, bool isArabic) {
+    if (muscles == null || muscles.trim().isEmpty) {
+      return '';
+    }
+    return _localizeList(muscles, isArabic, isEquipment: false);
+  }
+
+  String _localizeList(String value, bool isArabic, {required bool isEquipment}) {
+    final parts = value.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
+    final labels = parts.map((part) {
+      return isEquipment
+          ? (_catalogService.getEquipLabel(part, isArabic: isArabic) ?? part)
+          : (_catalogService.getMuscleLabel(part, isArabic: isArabic) ?? part);
+    }).toList();
+    return labels.join(', ');
   }
 }
 

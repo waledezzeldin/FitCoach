@@ -755,7 +755,34 @@ class _InBodyInputScreenState extends State<InBodyInputScreen> {
         _extractionComplete = false;
         _extractedData = null;
       });
-      await _simulateExtraction();
+      if (DemoConfig.isDemo) {
+        await _simulateExtraction();
+        return;
+      }
+
+      final repository = WorkoutRepository();
+      final result = await repository.uploadInBodyImage(file.path);
+      final extracted = (result['extractedData'] as Map?)?.cast<String, dynamic>();
+
+      if (!mounted) return;
+
+      if (extracted == null) {
+        throw Exception('No extracted data returned');
+      }
+
+      setState(() {
+        _isAnalyzing = false;
+        _extractionComplete = true;
+        _extractedData = {
+          'weight': extracted['weight'],
+          'bmi': extracted['bmi'],
+          'bodyFat': extracted['percentBodyFat'],
+          'muscleMass': extracted['skeletalMuscleMass'],
+          'visceralFat': extracted['visceralFatLevel'],
+          'bodyWater': extracted['totalBodyWater'],
+          'bmr': extracted['basalMetabolicRate'],
+        };
+      });
     } catch (error) {
       _showImageError();
     }

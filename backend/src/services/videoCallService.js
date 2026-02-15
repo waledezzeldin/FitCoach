@@ -262,33 +262,35 @@ class VideoCallService {
         throw new Error('User not authorized to end this call');
       }
 
-      // Update session
-      await client.query(
-        `UPDATE video_call_sessions
-         SET status = 'completed',
-             ended_at = NOW(),
-             duration_minutes = $1,
-             updated_at = NOW()
-         WHERE id = $2`,
-        [duration || 0, session.id]
-      );
+      if (session.status !== 'completed') {
+        // Update session
+        await client.query(
+          `UPDATE video_call_sessions
+           SET status = 'completed',
+               ended_at = NOW(),
+               duration_minutes = $1,
+               updated_at = NOW()
+           WHERE id = $2`,
+          [duration || 0, session.id]
+        );
 
-      // Update appointment status
-      await client.query(
-        `UPDATE appointments
-         SET status = 'completed',
-             updated_at = NOW()
-         WHERE id = $1`,
-        [appointmentId]
-      );
+        // Update appointment status
+        await client.query(
+          `UPDATE appointments
+           SET status = 'completed',
+               updated_at = NOW()
+           WHERE id = $1`,
+          [appointmentId]
+        );
 
-      // Increment video call count for user
-      await client.query(
-        `UPDATE users
-         SET video_calls_this_month = video_calls_this_month + 1
-         WHERE id = $1`,
-        [session.user_id]
-      );
+        // Increment video call count for user
+        await client.query(
+          `UPDATE users
+           SET video_calls_this_month = video_calls_this_month + 1
+           WHERE id = $1`,
+          [session.user_id]
+        );
+      }
 
       await client.query('COMMIT');
       client.release();
@@ -297,8 +299,9 @@ class VideoCallService {
 
       return {
         success: true,
-        duration,
-        appointmentId
+        duration: duration || session.duration_minutes || 0,
+        appointmentId,
+        alreadyCompleted: session.status === 'completed'
       };
 
     } catch (error) {
@@ -344,7 +347,10 @@ class VideoCallService {
       const scheduledTime = new Date(appointment.scheduled_at);
       const now = new Date();
       const tenMinutesBefore = new Date(scheduledTime.getTime() - 10 * 60 * 1000);
-      const oneHourAfter = new Date(scheduledTime.getTime() + 60 * 60 * 1000);
+      const durationMinutes = appointment.duration_minutes || 60;
+      const fifteenMinutesAfter = new Date(
+        scheduledTime.getTime() + (durationMinutes + 15) * 60 * 1000
+      );
 
       if (now < tenMinutesBefore) {
         return { 
@@ -355,7 +361,7 @@ class VideoCallService {
         };
       }
 
-      if (now > oneHourAfter) {
+      if (now > fifteenMinutesAfter) {
         return { 
           canJoin: false, 
           reason: 'Appointment time has passed' 

@@ -59,10 +59,15 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     final isArabic = context.read<LanguageProvider>().isArabic;
     final role = context.read<AuthProvider>().user?.role ?? 'user';
     final isCoach = role == 'coach';
-    provider.loadConversations(isArabic: isArabic, isCoach: isCoach);
+    provider.loadConversations(
+      isArabic: isArabic,
+      isCoach: isCoach,
+      currentUserId: context.read<AuthProvider>().user?.id,
+    );
     provider.connectSocket();
     unawaited(_loadUserAppointments());
     unawaited(_ensureCoachClients());
+    unawaited(_refreshUserProfileAndData());
   }
 
   @override
@@ -126,6 +131,29 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
         _showIntro = false;
       });
     }
+  }
+
+  Future<void> _refreshUserProfileAndData() async {
+    if (DemoConfig.isDemo) {
+      return;
+    }
+
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.refreshUserProfile(notify: false);
+    if (!mounted) return;
+
+    final languageProvider = context.read<LanguageProvider>();
+    final role = authProvider.user?.role ?? 'user';
+    final isCoach = role == 'coach';
+    final messagingProvider = context.read<MessagingProvider>();
+
+    await messagingProvider.loadConversations(
+      isArabic: languageProvider.isArabic,
+      isCoach: isCoach,
+      currentUserId: authProvider.user?.id,
+    );
+    await _loadUserAppointments(refresh: true);
+    await _ensureCoachClients();
   }
 
   @override
@@ -432,11 +460,7 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
         const SizedBox(width: 12),
         IconButton(
           tooltip: lang.t('coach_refresh_inbox'),
-          onPressed: () =>
-              messagingProvider.loadConversations(
-                isArabic: isArabic,
-                isCoach: isCoach,
-              ),
+          onPressed: _refreshUserProfileAndData,
           icon: const Icon(Icons.refresh),
         ),
       ],

@@ -5,18 +5,28 @@ import '../../core/config/api_config.dart';
 class PaymentRepository {
   final Dio _dio;
   final FlutterSecureStorage _secureStorage;
+  final Future<String?> Function()? _tokenReader;
   
   static const String _tokenKey = 'fitcoach_auth_token';
   
-  PaymentRepository()
-      : _dio = Dio(BaseOptions(
-          baseUrl: ApiConfig.baseUrl,
-          connectTimeout: ApiConfig.connectTimeout,
-          receiveTimeout: ApiConfig.receiveTimeout,
-        )),
-        _secureStorage = const FlutterSecureStorage();
+  PaymentRepository({
+    Dio? dio,
+    FlutterSecureStorage? secureStorage,
+    Future<String?> Function()? tokenReader,
+  })
+      : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: ApiConfig.baseUrl,
+              connectTimeout: ApiConfig.connectTimeout,
+              receiveTimeout: ApiConfig.receiveTimeout,
+            )),
+        _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _tokenReader = tokenReader;
   
   Future<String?> _getToken() async {
+    if (_tokenReader != null) {
+      return _tokenReader();
+    }
     return await _secureStorage.read(key: _tokenKey);
   }
   
@@ -34,15 +44,21 @@ class PaymentRepository {
   }) async {
     try {
       final response = await _dio.post(
-        '/payments/stripe/create-intent',
+        '/payments/create-checkout',
         data: {
           'tier': tier,
           'billingCycle': billingCycle,
+          'provider': 'stripe',
         },
         options: await _getAuthOptions(),
       );
-      
-      return response.data as Map<String, dynamic>;
+
+      final data = response.data as Map<String, dynamic>;
+      final checkout = (data['checkout'] as Map?)?.cast<String, dynamic>() ?? {};
+      return {
+        'checkoutUrl': checkout['checkoutUrl'] ?? checkout['checkout_url'],
+        'sessionId': checkout['sessionId'] ?? checkout['session_id'],
+      };
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to create payment');
     }
@@ -51,13 +67,16 @@ class PaymentRepository {
   /// Confirm Stripe payment
   Future<Map<String, dynamic>> confirmStripePayment(String paymentIntentId) async {
     try {
-      final response = await _dio.post(
-        '/payments/stripe/confirm',
-        data: {'paymentIntentId': paymentIntentId},
+      final response = await _dio.get(
+        '/payments/subscription',
         options: await _getAuthOptions(),
       );
-      
-      return response.data as Map<String, dynamic>;
+
+      final data = response.data as Map<String, dynamic>;
+      return {
+        ...data,
+        'paymentIntentId': paymentIntentId,
+      };
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Payment confirmation failed');
     }
@@ -70,15 +89,21 @@ class PaymentRepository {
   }) async {
     try {
       final response = await _dio.post(
-        '/payments/tap/create-charge',
+        '/payments/create-checkout',
         data: {
           'tier': tier,
           'billingCycle': billingCycle,
+          'provider': 'tap',
         },
         options: await _getAuthOptions(),
       );
-      
-      return response.data as Map<String, dynamic>;
+
+      final data = response.data as Map<String, dynamic>;
+      final checkout = (data['checkout'] as Map?)?.cast<String, dynamic>() ?? {};
+      return {
+        'paymentUrl': checkout['checkoutUrl'] ?? checkout['checkout_url'],
+        'chargeId': checkout['chargeId'] ?? checkout['charge_id'],
+      };
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to create Tap payment');
     }
@@ -88,11 +113,15 @@ class PaymentRepository {
   Future<Map<String, dynamic>> checkTapPaymentStatus(String chargeId) async {
     try {
       final response = await _dio.get(
-        '/payments/tap/status/$chargeId',
+        '/payments/subscription',
         options: await _getAuthOptions(),
       );
-      
-      return response.data as Map<String, dynamic>;
+
+      final data = response.data as Map<String, dynamic>;
+      return {
+        ...data,
+        'chargeId': chargeId,
+      };
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to check payment status');
     }
@@ -102,10 +131,10 @@ class PaymentRepository {
   Future<Map<String, dynamic>> getSubscriptionPrices() async {
     try {
       final response = await _dio.get(
-        '/payments/prices',
+        '/subscriptions/plans',
         options: await _getAuthOptions(),
       );
-      
+
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to get prices');
@@ -130,7 +159,7 @@ class PaymentRepository {
   Future<void> cancelSubscription() async {
     try {
       await _dio.post(
-        '/payments/cancel-subscription',
+        '/payments/cancel',
         options: await _getAuthOptions(),
       );
     } on DioException catch (e) {
@@ -141,9 +170,23 @@ class PaymentRepository {
   /// Update payment method
   Future<void> updatePaymentMethod(Map<String, dynamic> paymentMethodData) async {
     try {
-      await _dio.put(
-        '/payments/payment-method',
-        data: paymentMethodData,
+      final newTier = paymentMethodData['newTier'] ?? paymentMethodData['tier'];
+      if (newTier is String && newTier.isNotEmpty) {
+        await _dio.post(
+          '/payments/upgrade',
+          data: {
+            'newTier': newTier,
+            'billingCycle': paymentMethodData['billingCycle'] ?? 'monthly',
+            'provider': paymentMethodData['provider'] ?? 'stripe',
+          },
+          options: await _getAuthOptions(),
+        );
+        return;
+      }
+
+      // Fallback to a supported route to validate auth/session.
+      await _dio.get(
+        '/payments/subscription',
         options: await _getAuthOptions(),
       );
     } on DioException catch (e) {
@@ -155,7 +198,7 @@ class PaymentRepository {
   Future<Map<String, dynamic>> applyPromoCode(String code) async {
     try {
       final response = await _dio.post(
-        '/payments/apply-promo',
+        '/store/promo-codes/apply',
         data: {'code': code},
         options: await _getAuthOptions(),
       );

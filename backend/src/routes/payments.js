@@ -13,6 +13,14 @@ router.get('/invoice/:paymentId', authMiddleware, paymentController.generateInvo
 
 // Webhook routes (NO authentication - webhooks come from payment providers)
 router.post('/webhook/stripe', express.raw({ type: 'application/json' }), paymentController.stripeWebhook);
-router.post('/webhook/tap', express.json(), paymentController.tapWebhook);
+router.post(
+  '/webhook/tap',
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf.toString('utf8');
+    }
+  }),
+  paymentController.tapWebhook
+);
 
 module.exports = router;

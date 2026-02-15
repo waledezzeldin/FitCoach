@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
+import '../../../data/repositories/user_repository.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/theme_provider.dart';
@@ -12,6 +13,7 @@ import '../progress/progress_screen.dart';
 import '../inbody/inbody_input_screen.dart';
 import '../profile/profile_edit_screen.dart';
 import '../settings/notification_settings_screen.dart';
+import 'payment_management_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -54,7 +56,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
   String _adminRole = 'System Administrator';
   String _adminDepartment = 'Platform Operations';
-  String _adminEmployeeId = 'ADM-001';
+  final String _adminEmployeeId = 'ADM-001';
   final List<String> _adminPermissions = [
     'User Management',
     'Coach Management',
@@ -62,6 +64,27 @@ class _AccountScreenState extends State<AccountScreen> {
     'System Settings',
     'Analytics',
   ];
+
+  bool get _showUserProfilePendingCards => DemoConfig.isDemo;
+  bool get _showHelpCenter => DemoConfig.isDemo;
+  bool get _showContactUs => DemoConfig.isDemo;
+  bool get _showTerms => DemoConfig.isDemo;
+  bool get _showPrivacy => DemoConfig.isDemo;
+
+  bool _roleProfileLoading = false;
+  String? _roleProfileError;
+  Map<String, dynamic>? _coachProfileData;
+  Map<String, dynamic>? _adminProfileData;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!DemoConfig.isDemo) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadRoleProfile();
+      });
+    }
+  }
 
   Future<void> _handleBack() async {
     final didPop = await Navigator.of(context).maybePop();
@@ -289,22 +312,24 @@ class _AccountScreenState extends State<AccountScreen> {
           },
         ),
         if (!isCoach && !isAdmin) ...[
-          const SizedBox(height: 12),
-          CustomInfoCard(
-            title: languageProvider.t('account_fitness_goals'),
-            subtitle: languageProvider.t('account_fitness_goals_subtitle'),
-            icon: Icons.flag,
-            iconColor: AppColors.secondary,
-            onTap: () => _showComingSoon(isArabic),
-          ),
-          const SizedBox(height: 12),
-          CustomInfoCard(
-            title: languageProvider.t('account_injuries'),
-            subtitle: languageProvider.t('account_injuries_subtitle'),
-            icon: Icons.healing,
-            iconColor: AppColors.warning,
-            onTap: () => _showComingSoon(isArabic),
-          ),
+          if (_showUserProfilePendingCards) ...[
+            const SizedBox(height: 12),
+            CustomInfoCard(
+              title: languageProvider.t('account_fitness_goals'),
+              subtitle: languageProvider.t('account_fitness_goals_subtitle'),
+              icon: Icons.flag,
+              iconColor: AppColors.secondary,
+              onTap: () => _showComingSoon(isArabic),
+            ),
+            const SizedBox(height: 12),
+            CustomInfoCard(
+              title: languageProvider.t('account_injuries'),
+              subtitle: languageProvider.t('account_injuries_subtitle'),
+              icon: Icons.healing,
+              iconColor: AppColors.warning,
+              onTap: () => _showComingSoon(isArabic),
+            ),
+          ],
         ],
         if (isCoach && DemoConfig.isDemo) ...[
           const SizedBox(height: 24),
@@ -330,12 +355,11 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(height: 24),
           _buildSectionTitle(languageProvider.t('account_coach_profile')),
           const SizedBox(height: 12),
-          CustomCard(
-            child: Text(
-              languageProvider.t('account_coming_soon'),
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
+          _buildRoleProfileStatusCard(),
+          if (_coachProfileData != null) ...[
+            const SizedBox(height: 12),
+            _buildCoachBackendProfileCard(languageProvider),
+          ],
         ],
         if (isAdmin && DemoConfig.isDemo) ...[
           const SizedBox(height: 24),
@@ -351,12 +375,11 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(height: 24),
           _buildSectionTitle(languageProvider.t('account_admin_profile')),
           const SizedBox(height: 12),
-          CustomCard(
-            child: Text(
-              languageProvider.t('account_coming_soon'),
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
+          _buildRoleProfileStatusCard(),
+          if (_adminProfileData != null) ...[
+            const SizedBox(height: 12),
+            _buildAdminBackendProfileCard(),
+          ],
         ],
       ],
     );
@@ -421,10 +444,53 @@ class _AccountScreenState extends State<AccountScreen> {
           subtitle: languageProvider.t('account_payment_history_subtitle'),
           icon: Icons.payment,
           iconColor: AppColors.secondary,
-          onTap: () => _showComingSoon(isArabic),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PaymentManagementScreen()),
+            );
+          },
         ),
       ],
     );
+  }
+
+  Future<void> _loadRoleProfile() async {
+    final authProvider = context.read<AuthProvider>();
+    final userRepository = context.read<UserRepository>();
+    final role = (authProvider.user?.role ?? '').toLowerCase();
+    if (role != 'coach' && role != 'admin') return;
+
+    setState(() {
+      _roleProfileLoading = true;
+      _roleProfileError = null;
+    });
+
+    try {
+      if (role == 'coach') {
+        final coach = await userRepository.getCoachProfileSettings();
+        if (!mounted) return;
+        setState(() {
+          _coachProfileData = coach;
+        });
+      } else if (role == 'admin') {
+        final admin = await userRepository.getAdminProfileSettings();
+        if (!mounted) return;
+        setState(() {
+          _adminProfileData = admin;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _roleProfileError = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _roleProfileLoading = false;
+        });
+      }
+    }
   }
 
   Widget _buildNotificationsSection(
@@ -594,22 +660,26 @@ class _AccountScreenState extends State<AccountScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        CustomInfoCard(
-          title: languageProvider.t('account_help_center'),
-          subtitle: languageProvider.t('account_help_center_subtitle'),
-          icon: Icons.help_outline,
-          iconColor: AppColors.primary,
-          onTap: () => _showComingSoon(isArabic),
-        ),
-        const SizedBox(height: 12),
-        CustomInfoCard(
-          title: languageProvider.t('account_contact_us'),
-          subtitle: languageProvider.t('account_contact_us_subtitle'),
-          icon: Icons.email,
-          iconColor: AppColors.secondary,
-          onTap: () => _showComingSoon(isArabic),
-        ),
+        if (_showHelpCenter) ...[
+          const SizedBox(height: 16),
+          CustomInfoCard(
+            title: languageProvider.t('account_help_center'),
+            subtitle: languageProvider.t('account_help_center_subtitle'),
+            icon: Icons.help_outline,
+            iconColor: AppColors.primary,
+            onTap: () => _showComingSoon(isArabic),
+          ),
+        ],
+        if (_showContactUs) ...[
+          const SizedBox(height: 12),
+          CustomInfoCard(
+            title: languageProvider.t('account_contact_us'),
+            subtitle: languageProvider.t('account_contact_us_subtitle'),
+            icon: Icons.email,
+            iconColor: AppColors.secondary,
+            onTap: () => _showComingSoon(isArabic),
+          ),
+        ],
         const SizedBox(height: 12),
         CustomInfoCard(
           title: languageProvider.t('account_about'),
@@ -620,20 +690,24 @@ class _AccountScreenState extends State<AccountScreen> {
             _showAboutDialog(context, isArabic);
           },
         ),
-        const SizedBox(height: 12),
-        CustomInfoCard(
-          title: languageProvider.t('account_terms'),
-          icon: Icons.article,
-          iconColor: AppColors.textSecondary,
-          onTap: () => _showComingSoon(isArabic),
-        ),
-        const SizedBox(height: 12),
-        CustomInfoCard(
-          title: languageProvider.t('account_privacy'),
-          icon: Icons.privacy_tip,
-          iconColor: AppColors.textSecondary,
-          onTap: () => _showComingSoon(isArabic),
-        ),
+        if (_showTerms) ...[
+          const SizedBox(height: 12),
+          CustomInfoCard(
+            title: languageProvider.t('account_terms'),
+            icon: Icons.article,
+            iconColor: AppColors.textSecondary,
+            onTap: () => _showComingSoon(isArabic),
+          ),
+        ],
+        if (_showPrivacy) ...[
+          const SizedBox(height: 12),
+          CustomInfoCard(
+            title: languageProvider.t('account_privacy'),
+            icon: Icons.privacy_tip,
+            iconColor: AppColors.textSecondary,
+            onTap: () => _showComingSoon(isArabic),
+          ),
+        ],
         const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
@@ -651,6 +725,107 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRoleProfileStatusCard() {
+    if (_roleProfileLoading) {
+      return const CustomCard(
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_roleProfileError != null) {
+      return CustomCard(
+        child: Text(
+          _roleProfileError!,
+          style: const TextStyle(color: AppColors.error),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildCoachBackendProfileCard(LanguageProvider languageProvider) {
+    final coach = _coachProfileData ?? const <String, dynamic>{};
+    final specializations =
+        (coach['specializations'] as List?)?.map((e) => e.toString()).toList() ??
+            const <String>[];
+    final certifications =
+        (coach['certifications'] as List?)?.map((e) => e.toString()).toList() ??
+            const <String>[];
+    final experience = coach['years_of_experience']?.toString() ??
+        coach['experience_years']?.toString() ??
+        '-';
+
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            coach['full_name']?.toString() ?? languageProvider.t('coach'),
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            coach['bio']?.toString() ?? '-',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${languageProvider.t('account_experience')}: $experience',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          if (specializations.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${languageProvider.t('account_specializations')}: ${specializations.join(', ')}',
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+          if (certifications.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${languageProvider.t('account_certifications')}: ${certifications.join(', ')}',
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdminBackendProfileCard() {
+    final admin = _adminProfileData ?? const <String, dynamic>{};
+    final permissions =
+        (admin['permissions'] as List?)?.map((e) => e.toString()).join(', ') ?? '-';
+
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            admin['full_name']?.toString() ?? 'Admin',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            admin['email']?.toString() ?? '-',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Role: ${admin['role']?.toString() ?? '-'}',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Permissions: $permissions',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
     );
   }
 
@@ -696,7 +871,7 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                '${_coachYearsExperience} ${languageProvider.t('account_years')}',
+                '$_coachYearsExperience ${languageProvider.t('account_years')}',
                 style: const TextStyle(color: AppColors.textSecondary),
               ),
             ],
@@ -1044,20 +1219,26 @@ class _AccountScreenState extends State<AccountScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            RadioListTile<String>(
+            ListTile(
+              leading: Icon(
+                provider.currentLanguage == 'en'
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
               title: Text(provider.t('english')),
-              value: 'en',
-              groupValue: provider.currentLanguage,
-              onChanged: (value) {
+              onTap: () {
                 provider.setLanguage('en');
                 Navigator.pop(context);
               },
             ),
-            RadioListTile<String>(
+            ListTile(
+              leading: Icon(
+                provider.currentLanguage == 'ar'
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
               title: Text(provider.t('arabic')),
-              value: 'ar',
-              groupValue: provider.currentLanguage,
-              onChanged: (value) {
+              onTap: () {
                 provider.setLanguage('ar');
                 Navigator.pop(context);
               },

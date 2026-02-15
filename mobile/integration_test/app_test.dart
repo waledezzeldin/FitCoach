@@ -4,6 +4,7 @@ import 'package:integration_test/integration_test.dart';
 // ...existing code...
 // Update the import path below if your main.dart is in a different location
 import 'package:fitapp/main.dart' as app;
+import 'workout_coach_e2e_test.dart' as workoutCoachE2E;
 // import 'package:fitcoach_mobile/presentation/providers/auth_provider.dart';
 
 void main() {
@@ -369,4 +370,6 @@ void main() {
       // (specific assertion depends on data)
     });
   });
+
+  workoutCoachE2E.registerWorkoutCoachE2ETests();
 }

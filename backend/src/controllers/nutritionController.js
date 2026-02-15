@@ -4,6 +4,50 @@ const { getTrialDaysRemaining } = require('../utils/helpers');
 const nutritionAccessService = require('../services/nutritionAccessService');
 const nutritionGenerationService = require('../services/nutritionGenerationService');
 
+const buildPlanWithDays = async (planId) => {
+  const planResult = await db.query(
+    'SELECT * FROM nutrition_plans WHERE id = $1',
+    [planId]
+  );
+
+  if (planResult.rows.length === 0) {
+    return null;
+  }
+
+  const plan = planResult.rows[0];
+
+  const daysResult = await db.query(
+    `SELECT 
+      dmp.*,
+      json_agg(
+        json_build_object(
+          'id', m.id,
+          'name', m.name,
+          'nameAr', m.name_ar,
+          'nameEn', m.name_en,
+          'type', m.type,
+          'time', m.time,
+          'calories', m.calories,
+          'protein', m.protein,
+          'carbs', m.carbs,
+          'fats', m.fats,
+          'isCompleted', m.is_completed,
+          'imageUrl', m.image_url
+        ) ORDER BY m.order_index
+      ) as meals
+     FROM day_meal_plans dmp
+     LEFT JOIN meals m ON dmp.id = m.day_meal_plan_id
+     WHERE dmp.nutrition_plan_id = $1
+     GROUP BY dmp.id
+     ORDER BY dmp.day_number`,
+    [planId]
+  );
+
+  plan.days = daysResult.rows;
+
+  return plan;
+};
+
 /**
  * Get nutrition access status
  */
@@ -114,19 +158,14 @@ exports.getPlanById = async (req, res) => {
     const { id } = req.params;
     
     // Get plan
-    const planResult = await db.query(
-      'SELECT * FROM nutrition_plans WHERE id = $1',
-      [id]
-    );
-    
-    if (planResult.rows.length === 0) {
+    const plan = await buildPlanWithDays(id);
+
+    if (!plan) {
       return res.status(404).json({
         success: false,
         message: 'Nutrition plan not found'
       });
     }
-    
-    const plan = planResult.rows[0];
     
     // Check authorization
     if (plan.user_id !== req.user.userId && req.user.role !== 'coach' && req.user.role !== 'admin') {
@@ -135,36 +174,6 @@ exports.getPlanById = async (req, res) => {
         message: 'Unauthorized'
       });
     }
-    
-    // Get days with meals
-    const daysResult = await db.query(
-      `SELECT 
-        dmp.*,
-        json_agg(
-          json_build_object(
-            'id', m.id,
-            'name', m.name,
-            'nameAr', m.name_ar,
-            'nameEn', m.name_en,
-            'type', m.type,
-            'time', m.time,
-            'calories', m.calories,
-            'protein', m.protein,
-            'carbs', m.carbs,
-            'fats', m.fats,
-            'isCompleted', m.is_completed,
-            'imageUrl', m.image_url
-          ) ORDER BY m.order_index
-        ) as meals
-       FROM day_meal_plans dmp
-       LEFT JOIN meals m ON dmp.id = m.day_meal_plan_id
-       WHERE dmp.nutrition_plan_id = $1
-       GROUP BY dmp.id
-       ORDER BY dmp.day_number`,
-      [id]
-    );
-    
-    plan.days = daysResult.rows;
     
     res.json({
       success: true,
@@ -177,6 +186,141 @@ exports.getPlanById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to get nutrition plan'
+    });
+  }
+};
+
+/**
+ * Get active nutrition plan (Flutter-compatible)
+ */
+exports.getActivePlanCompat = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id FROM nutrition_plans
+       WHERE user_id = $1 AND is_active = TRUE
+       ORDER BY start_date DESC
+       LIMIT 1`,
+      [req.user.userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No active nutrition plan'
+      });
+    }
+
+    const plan = await buildPlanWithDays(result.rows[0].id);
+
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        message: 'Nutrition plan not found'
+      });
+    }
+
+    res.json(plan);
+  } catch (error) {
+    logger.error('Get active nutrition plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get nutrition plan'
+    });
+  }
+};
+
+/**
+ * Get nutrition trial status (Flutter-compatible)
+ */
+exports.getTrialStatusCompat = async (req, res) => {
+  try {
+    const accessStatus = await nutritionAccessService.checkAccess(req.user.userId);
+
+    res.json({
+      startDate: accessStatus.trialStartedAt,
+      expiresAt: accessStatus.trialExpiresAt,
+      daysRemaining: accessStatus.daysRemaining,
+      hasAccess: accessStatus.hasAccess,
+      tier: accessStatus.tier
+    });
+  } catch (error) {
+    logger.error('Get nutrition trial status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get trial status'
+    });
+  }
+};
+
+/**
+ * Log a meal consumption (Flutter-compatible)
+ */
+exports.logMealCompat = async (req, res) => {
+  try {
+    const { mealId } = req.params;
+
+    await db.query(
+      `UPDATE meals
+       SET is_completed = TRUE,
+           completed_at = NOW()
+       WHERE id = $1
+       AND day_meal_plan_id IN (
+         SELECT dmp.id
+         FROM day_meal_plans dmp
+         JOIN nutrition_plans np ON dmp.nutrition_plan_id = np.id
+         WHERE np.user_id = $2
+       )`,
+      [mealId, req.user.userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Meal logged successfully'
+    });
+  } catch (error) {
+    logger.error('Log meal error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to log meal'
+    });
+  }
+};
+
+/**
+ * Get nutrition history (Flutter-compatible)
+ */
+exports.getNutritionHistoryCompat = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT
+        DATE(m.completed_at) as date,
+        COALESCE(SUM(m.calories), 0) as calories,
+        COALESCE(SUM(m.protein), 0) as protein,
+        COALESCE(SUM(m.carbs), 0) as carbs,
+        COALESCE(SUM(m.fats), 0) as fat
+       FROM meals m
+       JOIN day_meal_plans dmp ON m.day_meal_plan_id = dmp.id
+       JOIN nutrition_plans np ON dmp.nutrition_plan_id = np.id
+       WHERE np.user_id = $1
+         AND m.is_completed = TRUE
+         AND m.completed_at IS NOT NULL
+       GROUP BY DATE(m.completed_at)
+       ORDER BY DATE(m.completed_at) DESC`,
+      [req.user.userId]
+    );
+
+    res.json(result.rows.map((row) => ({
+      date: row.date,
+      calories: Number(row.calories),
+      protein: Number(row.protein),
+      carbs: Number(row.carbs),
+      fat: Number(row.fat)
+    })));
+  } catch (error) {
+    logger.error('Get nutrition history error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to load nutrition history'
     });
   }
 };

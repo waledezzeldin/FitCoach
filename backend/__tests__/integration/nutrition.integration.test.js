@@ -226,6 +226,145 @@ describe('Nutrition Integration Tests', () => {
     });
   });
 
+  describe('GET /v2/nutrition/plan', () => {
+    it('should return active nutrition plan', async () => {
+      const mockUser = {
+        id: 'test-user-id',
+        subscription_tier: 'premium',
+        is_active: true
+      };
+      const mockAccess = {
+        id: 'test-user-id',
+        subscription_tier: 'premium',
+        has_access: true,
+        nutrition_access_unlocked_at: null,
+        nutrition_access_expires_at: null,
+        days_remaining: null
+      };
+
+      const mockPlanId = { id: 'plan-1' };
+      const mockPlan = {
+        id: 'plan-1',
+        user_id: 'test-user-id',
+        name: 'Active Plan'
+      };
+      const mockDays = [
+        { id: 'day-1', day_number: 1, meals: [] }
+      ];
+
+      db.query
+        .mockResolvedValueOnce({ rows: [mockUser] }) // Auth
+        .mockResolvedValueOnce({ rows: [mockAccess] }) // Access check
+        .mockResolvedValueOnce({ rows: [mockPlanId] }) // Active plan id
+        .mockResolvedValueOnce({ rows: [mockPlan] }) // Plan details
+        .mockResolvedValueOnce({ rows: mockDays }); // Day meals
+
+      const response = await request(app)
+        .get('/v2/nutrition/plan')
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe('plan-1');
+      expect(response.body.days).toHaveLength(1);
+    });
+  });
+
+  describe('GET /v2/nutrition/trial-status', () => {
+    it('should return trial status payload', async () => {
+      const mockUser = {
+        id: 'test-user-id',
+        subscription_tier: 'freemium',
+        is_active: true
+      };
+      const mockAccess = {
+        id: 'test-user-id',
+        subscription_tier: 'freemium',
+        has_access: true,
+        nutrition_access_unlocked_at: new Date(),
+        nutrition_access_expires_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+        days_remaining: 2
+      };
+
+      db.query
+        .mockResolvedValueOnce({ rows: [mockUser] }) // Auth
+        .mockResolvedValueOnce({ rows: [mockAccess] }); // Access check
+
+      const response = await request(app)
+        .get('/v2/nutrition/trial-status')
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('startDate');
+      expect(response.body).toHaveProperty('daysRemaining');
+    });
+  });
+
+  describe('POST /v2/nutrition/meals/:mealId/log', () => {
+    it('should log a meal completion', async () => {
+      const mockUser = {
+        id: 'test-user-id',
+        subscription_tier: 'premium',
+        is_active: true
+      };
+      const mockAccess = {
+        id: 'test-user-id',
+        subscription_tier: 'premium',
+        has_access: true,
+        nutrition_access_unlocked_at: null,
+        nutrition_access_expires_at: null,
+        days_remaining: null
+      };
+
+      db.query
+        .mockResolvedValueOnce({ rows: [mockUser] }) // Auth
+        .mockResolvedValueOnce({ rows: [mockAccess] }) // Access check
+        .mockResolvedValueOnce({ rows: [] }); // Update meal
+
+      const response = await request(app)
+        .post('/v2/nutrition/meals/meal-1/log')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({});
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+  });
+
+  describe('GET /v2/nutrition/history', () => {
+    it('should return nutrition history', async () => {
+      const mockUser = {
+        id: 'test-user-id',
+        subscription_tier: 'premium',
+        is_active: true
+      };
+      const mockAccess = {
+        id: 'test-user-id',
+        subscription_tier: 'premium',
+        has_access: true,
+        nutrition_access_unlocked_at: null,
+        nutrition_access_expires_at: null,
+        days_remaining: null
+      };
+
+      const historyRows = [
+        { date: '2026-02-01', calories: 2000, protein: 150, carbs: 220, fat: 60 }
+      ];
+
+      db.query
+        .mockResolvedValueOnce({ rows: [mockUser] }) // Auth
+        .mockResolvedValueOnce({ rows: [mockAccess] }) // Access check
+        .mockResolvedValueOnce({ rows: historyRows }); // History query
+
+      const response = await request(app)
+        .get('/v2/nutrition/history')
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body[0]).toHaveProperty('calories', 2000);
+    });
+  });
+
   describe('POST /v2/nutrition/:id/meals/:mealId/complete', () => {
     it('should mark meal as complete', async () => {
       const mockUser = {

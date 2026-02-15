@@ -84,6 +84,9 @@ exports.validateUpdateProfile = [
       }
       return true;
     }),
+  body('age')
+    .optional()
+    .isInt({ min: 13, max: 120 }).withMessage('Age must be between 13 and 120'),
   body('height')
     .optional()
     .isFloat({ min: 50, max: 300 }).withMessage('Height must be between 50 and 300 cm'),

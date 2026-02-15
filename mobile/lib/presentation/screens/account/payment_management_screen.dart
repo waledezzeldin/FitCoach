@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/config/demo_config.dart';
 import '../../../core/constants/colors.dart';
+import '../../../data/repositories/payment_repository.dart';
 import '../../providers/language_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_card.dart';
@@ -14,6 +16,7 @@ class PaymentManagementScreen extends StatefulWidget {
 }
 
 class _PaymentManagementScreenState extends State<PaymentManagementScreen> {
+  final PaymentRepository _paymentRepository = PaymentRepository();
   final List<_PaymentMethod> _methods = [
     const _PaymentMethod(
       id: 'visa',
@@ -35,6 +38,17 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen> {
 
   String _defaultMethodId = 'visa';
   bool _autoPayEnabled = true;
+  bool _historyLoading = false;
+  String? _historyError;
+  List<Map<String, dynamic>> _paymentHistory = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (!DemoConfig.isDemo) {
+      _loadPaymentHistory();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +58,13 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen> {
       appBar: AppBar(
         title: Text(lang.t('payment_management_title')),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddMethodSheet,
-        icon: const Icon(Icons.add),
-        label: Text(lang.t('payment_add_method')),
-      ),
+      floatingActionButton: DemoConfig.isDemo
+          ? FloatingActionButton.extended(
+              onPressed: _showAddMethodSheet,
+              icon: const Icon(Icons.add),
+              label: Text(lang.t('payment_add_method')),
+            )
+          : null,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
         children: [
@@ -57,7 +73,9 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen> {
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 16),
-          _buildMethodsCard(lang),
+          DemoConfig.isDemo ? _buildMethodsCard(lang) : _buildProductionMethodsCard(),
+          const SizedBox(height: 16),
+          _buildHistoryCard(lang),
           const SizedBox(height: 16),
           _buildBillingCard(lang),
           const SizedBox(height: 16),
@@ -113,6 +131,81 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen> {
     );
   }
 
+  Widget _buildProductionMethodsCard() {
+    return const CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Payment Methods',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Payment methods are managed securely by your payment provider in production mode.',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(LanguageProvider lang) {
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Payments',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              if (!DemoConfig.isDemo)
+                IconButton(
+                  onPressed: _loadPaymentHistory,
+                  icon: const Icon(Icons.refresh),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_historyLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_historyError != null)
+            Text(
+              _historyError!,
+              style: const TextStyle(color: AppColors.error),
+            )
+          else if (_paymentHistory.isEmpty)
+            Text(
+              DemoConfig.isDemo
+                  ? 'No demo transactions available.'
+                  : 'No payment history found yet.',
+              style: const TextStyle(color: AppColors.textSecondary),
+            )
+          else
+            ..._paymentHistory.take(5).map((payment) {
+              final amount = payment['amount'];
+              final currency = (payment['currency'] ?? 'SAR').toString().toUpperCase();
+              final status = (payment['status'] ?? '').toString();
+              final tier = (payment['tier'] ?? '').toString();
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.receipt_long, color: AppColors.primary),
+                title: Text(
+                  '$tier ${amount ?? '-'} $currency',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(status),
+              );
+            }),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBillingCard(LanguageProvider lang) {
     return CustomCard(
       child: Column(
@@ -159,6 +252,10 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen> {
   }
 
   void _showAddMethodSheet() {
+    if (!DemoConfig.isDemo) {
+      _showSnack('Adding methods in-app is only available in demo mode.');
+      return;
+    }
     final lang = context.read<LanguageProvider>();
     final cardNumberController = TextEditingController();
     final holderController = TextEditingController();
@@ -187,7 +284,7 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen> {
               controller: cardNumberController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: lang.t('auth_card_number') ?? 'Card Number',
+                labelText: lang.t('auth_card_number'),
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -238,6 +335,32 @@ class _PaymentManagementScreenState extends State<PaymentManagementScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+  }
+
+  Future<void> _loadPaymentHistory() async {
+    setState(() {
+      _historyLoading = true;
+      _historyError = null;
+    });
+
+    try {
+      final history = await _paymentRepository.getPaymentHistory();
+      if (!mounted) return;
+      setState(() {
+        _paymentHistory = history;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _historyError = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _historyLoading = false;
+        });
+      }
+    }
   }
 }
 

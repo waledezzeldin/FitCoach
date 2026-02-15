@@ -7,6 +7,7 @@ const exerciseController = require('../controllers/exerciseController');
 router.get('/', authMiddleware, exerciseController.getAllExercises);
 router.get('/muscle-group/:muscleGroup', authMiddleware, exerciseController.getExercisesByMuscleGroup);
 router.get('/stats', authMiddleware, roleCheck('admin'), exerciseController.getExerciseStats);
+router.post('/:id/alternatives', authMiddleware, exerciseController.getExerciseAlternatives);
 router.get('/:id', authMiddleware, exerciseController.getExerciseById);
 
 // User favorites

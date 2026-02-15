@@ -1,0 +1,433 @@
+﻿
+> fitcoach-backend@2.0.0 test
+> jest --coverage --runInBand
+
+node : (node:12848) NOTE: The AWS SDK for JavaScript (v2) has reached 
+end-of-support.
+At line:1 char:64
++ ... h\backend"; node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cl 
+...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:12848) NO...end-of-suppor 
+   t.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+It will no longer receive updates or releases.
+
+Please migrate your code to use AWS SDK for JavaScript (v3).
+For more information, check the blog post at https://a.co/cUPnyil
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:12848) NOTE: The AWS SDK for JavaScript (v2) has reached 
+end-of-support.
+It will no longer receive updates or releases.
+
+Please migrate your code to use AWS SDK for JavaScript (v3).
+For more information, check the blog post at https://a.co/cUPnyil
+PASS __tests__/controllers/authController.test.js
+  AuthController
+    sendOTP
+      ΓêÜ should send OTP successfully (19 ms)
+      ΓêÜ should return 400 if phone number is missing (3 ms)
+      ΓêÜ should return 400 if phone number is invalid (4 ms)
+      ΓêÜ should handle database errors (7 ms)
+    verifyOTP
+      ΓêÜ should verify OTP and login existing user (18 ms)
+      ΓêÜ should verify OTP and create new user (10 ms)
+      ΓêÜ should return 400 if OTP is invalid (2 ms)
+      ΓêÜ should return 400 if required fields are missing (1 ms)
+    refreshToken
+      ΓêÜ should refresh token successfully (18 ms)
+      ΓêÜ should return 400 if refresh token is missing (2 ms)
+      ΓêÜ should return 401 if refresh token is invalid (3 ms)
+    logout
+      ΓêÜ should logout successfully (4 ms)
+    getCurrentUser
+      ΓêÜ should return current user (10 ms)
+      ΓêÜ should return 404 if user not found (2 ms)
+
+PASS __tests__/controllers/userController.test.js
+  UserController Intake Compatibility
+    ΓêÜ maps goal/location for first intake (10 ms)
+    ΓêÜ submits second intake with injuries and workout frequency (6 ms)
+
+PASS __tests__/integration/auth.integration.test.js
+  Auth Integration Tests
+    POST /v2/auth/send-otp
+      ΓêÜ should send OTP successfully (174 ms)
+      ΓêÜ should return 400 for invalid phone number (28 ms)
+      ΓêÜ should return 400 for missing phone number (27 ms)
+    POST /v2/auth/verify-otp
+      ΓêÜ should verify OTP and return tokens for existing user (27 ms)
+      ΓêÜ should create new user if not exists (26 ms)
+      ΓêÜ should return 400 for invalid OTP (18 ms)
+    POST /v2/auth/refresh-token
+      ΓêÜ should refresh tokens successfully (35 ms)
+      ΓêÜ should return 400 for missing refresh token (24 ms)
+      ΓêÜ should return 401 for invalid refresh token (31 ms)
+    POST /v2/auth/logout
+      ΓêÜ should logout successfully (26 ms)
+      ΓêÜ should return 401 without token (16 ms)
+    GET /v2/auth/me
+      ΓêÜ should return current user (24 ms)
+      ΓêÜ should return 401 without token (29 ms)
+
+PASS __tests__/integration/nutrition.integration.test.js
+  Nutrition Integration Tests
+    GET /v2/nutrition
+      ΓêÜ should get user nutrition plans (62 ms)
+      ΓêÜ should block freemium users without trial (30 ms)
+    GET /v2/nutrition/access-status
+      ΓêÜ should return access status (23 ms)
+    GET /v2/nutrition/:id
+      ΓêÜ should get nutrition plan by ID (28 ms)
+      ΓêÜ should return 404 for non-existent plan (19 ms)
+    GET /v2/nutrition/plan
+      ΓêÜ should return active nutrition plan (27 ms)
+    GET /v2/nutrition/trial-status
+      ΓêÜ should return trial status payload (22 ms)
+    POST /v2/nutrition/meals/:mealId/log
+      ΓêÜ should log a meal completion (97 ms)
+    GET /v2/nutrition/history
+      ΓêÜ should return nutrition history (29 ms)
+    POST /v2/nutrition/:id/meals/:mealId/complete
+      ΓêÜ should mark meal as complete (32 ms)
+    POST /v2/nutrition
+      ΓêÜ should create nutrition plan (coach only) (25 ms)
+      ΓêÜ should return 403 for non-coach users (24 ms)
+    PUT /v2/nutrition/:id
+      ΓêÜ should update nutrition plan (coach only) (23 ms)
+    DELETE /v2/nutrition/:id
+      ΓêÜ should delete nutrition plan (coach only) (31 ms)
+
+PASS __tests__/integration/intake.integration.test.js
+  Intake & Workout Integration Tests
+    ΓêÜ POST /v2/users/intake/first returns profile (551 ms)
+    ΓêÜ POST /v2/users/intake/second returns profile (72 ms)
+    ΓêÜ GET /v2/workouts/plan returns active plan (108 ms)
+
+PASS __tests__/integration/users.integration.test.js (8.545 s)
+  Users Integration Tests
+    ΓêÜ should update user profile with age/weight/height (2550 ms)
+
+PASS __tests__/integration/admin.integration.test.js
+  Admin Integration Tests
+    ΓêÜ should assign a coach when updating a user (166 ms)
+    ΓêÜ should create a product as admin (28 ms)
+    ΓêÜ should update a product as admin (198 ms)
+    ΓêÜ should delete a product as admin (25 ms)
+    ΓêÜ should create a subscription plan as admin (35 ms)
+    ΓêÜ should update a subscription plan as admin (49 ms)
+    ΓêÜ should delete a subscription plan as admin (34 ms)
+
+PASS __tests__/integration/inbody.integration.test.js
+  InBody Integration Tests
+    ΓêÜ should save a manual InBody scan (97 ms)
+    ΓêÜ should upload an InBody scan image for AI extraction (150 ms)
+    ΓêÜ should return InBody trends (104 ms)
+    ΓêÜ should return InBody statistics (31 ms)
+
+PASS __tests__/integration/messages.integration.test.js
+  Messages Integration Tests
+    ΓêÜ should send a message with an existing conversation (69 ms)
+    ΓêÜ should mark messages as read for a conversation (38 ms)
+    ΓêÜ should clear all messages in a conversation (19 ms)
+    ΓêÜ should upload a message attachment (78 ms)
+
+PASS __tests__/services/s3Service.test.js
+  S3Service
+    uploadFile
+      ΓêÜ should upload file to S3 (6 ms)
+      ΓêÜ should use default folder if not specified (2 ms)
+      ΓêÜ should handle upload errors (100 ms)
+    uploadFiles
+      ΓêÜ should upload multiple files (3 ms)
+      ΓêÜ should handle upload errors (2 ms)
+    deleteFile
+      ΓêÜ should delete file from S3 (2 ms)
+      ΓêÜ should handle delete errors (8 ms)
+    getPresignedUrl
+      ΓêÜ should generate presigned URL (2 ms)
+      ΓêÜ should use default expiry (2 ms)
+      ΓêÜ should use custom expiry (2 ms)
+      ΓêÜ should handle errors (114 ms)
+    getFileMetadata
+      ΓêÜ should get file metadata (2 ms)
+      ΓêÜ should handle errors (2 ms)
+
+PASS __tests__/integration/payments.integration.test.js
+  Payments Integration Tests
+    ΓêÜ should return subscription status (30 ms)
+
+PASS __tests__/routes/progress.routes.test.js
+  Progress Routes
+    ΓêÜ GET /v2/progress returns empty entries (31 ms)
+    ΓêÜ POST /v2/progress creates entry (53 ms)
+    ΓêÜ PUT /v2/progress/:id updates entry (19 ms)
+    ΓêÜ DELETE /v2/progress/:id deletes entry (28 ms)
+
+PASS __tests__/integration/orders.integration.test.js
+  Orders Integration Tests
+    ΓêÜ should create an order (54 ms)
+    ΓêÜ should track an order (27 ms)
+    ΓêÜ should cancel an order via PUT (29 ms)
+
+PASS __tests__/integration/smoke.integration.test.js
+  Smoke Integration Tests
+    ΓêÜ should allow can-join check for video calls (58 ms)
+
+PASS __tests__/integration/progress.integration.test.js
+  Progress Integration Tests
+    ΓêÜ should list progress entries (29 ms)
+    ΓêÜ should create a progress entry (51 ms)
+    ΓêÜ should update a progress entry (45 ms)
+    ΓêÜ should delete a progress entry (14 ms)
+
+PASS __tests__/routes/ratings.routes.test.js
+  Ratings Routes
+    ΓêÜ POST /v2/ratings should call submitRating (47 ms)
+    ΓêÜ GET /v2/ratings/coach/:id should call getCoachRatings (36 ms)
+    ΓêÜ GET /v2/ratings/user/:id should call getUserRatings (33 ms)
+
+PASS __tests__/routes/settings.routes.test.js
+  Settings Routes
+    ΓêÜ GET /v2/settings/notifications (202 ms)
+    ΓêÜ PUT /v2/settings/notifications (193 ms)
+    ΓêÜ GET /v2/settings/coach-profile (32 ms)
+    ΓêÜ PUT /v2/settings/coach-profile (181 ms)
+    ΓêÜ GET /v2/settings/admin-profile (20 ms)
+    ΓêÜ POST /v2/settings/change-password (167 ms)
+    ΓêÜ DELETE /v2/settings/delete-account (83 ms)
+
+PASS __tests__/integration/subscriptions.integration.test.js
+  Subscriptions Integration Tests
+    ΓêÜ should list subscription plans (74 ms)
+
+PASS __tests__/integration/store.integration.test.js
+  Store Integration Tests
+    ΓêÜ should list products (39 ms)
+    ΓêÜ should list categories (19 ms)
+    ΓêÜ should check product availability (34 ms)
+    ΓêÜ should apply promo code (25 ms)
+    ΓêÜ should calculate shipping (19 ms)
+
+PASS __tests__/middleware/auth.test.js
+  Auth Middleware
+    authMiddleware
+      ΓêÜ should authenticate valid token (12 ms)
+      ΓêÜ should return 401 if no token provided (4 ms)
+      ΓêÜ should return 401 for invalid token (2 ms)
+      ΓêÜ should return 401 for expired token (10 ms)
+      ΓêÜ should return 401 if user not found (8 ms)
+      ΓêÜ should return 403 if user is suspended (10 ms)
+    roleCheck
+      ΓêÜ should allow access for matching role (1 ms)
+      ΓêÜ should deny access for non-matching role (2 ms)
+      ΓêÜ should handle multiple allowed roles (1 ms)
+    tierCheck
+      ΓêÜ should allow access for matching tier (1 ms)
+      ΓêÜ should deny access for lower tier (10 ms)
+    checkMessageQuota
+      ΓêÜ should allow message if quota available (2 ms)
+      ΓêÜ should block message if quota exceeded for freemium (4 ms)
+      ΓêÜ should allow unlimited messages for premium users (1 ms)
+      ΓêÜ should handle database errors (6 ms)
+    checkNutritionAccess
+      ΓêÜ should allow access for premium users (2 ms)
+      ΓêÜ should allow access for freemium users with active trial (2 ms)
+      ΓêÜ should block access for freemium users without trial (8 ms)
+      ΓêÜ should block access for expired trial (2 ms)
+
+PASS __tests__/controllers/nutritionController.test.js
+  NutritionController
+    getUserPlans
+      ΓêÜ should get user nutrition plans with progress (4 ms)
+      ΓêÜ should handle database errors (3 ms)
+    getPlanById
+      ΓêÜ should get nutrition plan by ID with meals (6 ms)
+      ΓêÜ should return 404 if plan not found (2 ms)
+      ΓêÜ should return 403 for unauthorized access (3 ms)
+    completeMeal
+      ΓêÜ should mark meal as complete (2 ms)
+      ΓêÜ should handle errors (2 ms)
+    getAccessStatus
+      ΓêÜ should return access status (7 ms)
+      ΓêÜ should handle access errors (1 ms)
+    createPlan
+      ΓêÜ should create nutrition plan with meals (3 ms)
+      ΓêÜ should rollback on error (2 ms)
+    updatePlan
+      ΓêÜ should update nutrition plan (2 ms)
+    deletePlan
+      ΓêÜ should delete nutrition plan (2 ms)
+
+PASS __tests__/services/intakeService.test.js
+  IntakeService
+    ΓêÜ uses starter template for stage 1 and forces 3 days for freemium (7 
+ms)
+    ΓêÜ uses recommended template and passes injuries for stage 2 (5 ms)
+
+PASS __tests__/controllers/ratingController.test.js
+  RatingController
+    submitRating
+      ΓêÜ should submit rating successfully (14 ms)
+      ΓêÜ should return 400 for invalid rating (3 ms)
+      ΓêÜ should return 400 for invalid context (20 ms)
+      ΓêÜ should rollback on database error (4 ms)
+    getCoachRatings
+      ΓêÜ should get coach ratings with stats (3 ms)
+      ΓêÜ should filter by context (2 ms)
+      ΓêÜ should handle errors (7 ms)
+    getUserRatings
+      ΓêÜ should get user ratings (6 ms)
+      ΓêÜ should return 403 for unauthorized access (2 ms)
+      ΓêÜ should allow admin to view any user ratings (3 ms)
+
+PASS __tests__/services/exerciseCatalog.test.js
+  Exercise Catalog Coverage
+    ΓêÜ contains all template exercise ex_id values (53 ms)
+
+PASS __tests__/services/quotaService.test.js
+  QuotaService
+    resetMonthlyQuotas
+      ΓêÜ should reset monthly quotas and return affected users (5 ms)
+      ΓêÜ should throw on database error (27 ms)
+    incrementMessageCount
+      ΓêÜ should increment message count (11 ms)
+      ΓêÜ should throw on database error (3 ms)
+    incrementCallCount
+      ΓêÜ should increment call count (5 ms)
+      ΓêÜ should throw on database error (3 ms)
+    incrementQuota
+      ΓêÜ should increment message quota for messages type (5 ms)
+      ΓêÜ should increment call quota for videoCalls type (1 ms)
+      ΓêÜ should throw for unsupported types (26 ms)
+    getQuotaStatus
+      ΓêÜ should return quota status row when present (3 ms)
+      ΓêÜ should return null when user not found (1 ms)
+    canSendMessage
+      ΓêÜ should return false when no quota status (2 ms)
+      ΓêÜ should allow unlimited messages when quota is -1 (1 ms)
+      ΓêÜ should allow messages when under quota (2 ms)
+      ΓêÜ should block messages when quota exceeded (1 ms)
+    canBookCall
+      ΓêÜ should return false when no quota status (1 ms)
+      ΓêÜ should allow calls when under quota (1 ms)
+      ΓêÜ should block calls when quota exceeded (1 ms)
+    startNutritionTrial
+      ΓêÜ should start nutrition trial for freemium user (2 ms)
+      ΓêÜ should throw on database error (2 ms)
+
+PASS __tests__/services/videoCallService.test.js
+  VideoCallService
+    canJoinCall
+      ΓêÜ should block too-early joins (9 ms)
+      ΓêÜ should block late joins (4 ms)
+      ΓêÜ should allow joins within duration + 15 minutes window (3 ms)
+      ΓêÜ should block unauthorized users (2 ms)
+    endCallSession
+      ΓêÜ should complete session and update appointment status (4 ms)
+
+PASS __tests__/services/injuryMappingService.test.js
+  InjuryMappingService
+    ΓêÜ applies injury swaps and records substitution reason (9 ms)
+
+----------------------------------|---------|----------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+File                              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                                                                                                                              
+----------------------------------|---------|----------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+All files                         |   30.64 |    15.82 |   21.22 |   31.05 |                                                                                                                                                                                                                                
+ controllers                      |   28.14 |    18.31 |   26.06 |   28.39 |                                                                                                                                                                                                                                
+  adminController.js              |   21.14 |    16.03 |      25 |    20.9 | 12-83,94-165,176-216,238,245,252,271,281-285,296,368-369,380-426,437-473,484-549,560-603,614-665,676-738,749-820,831-869,880-937,948-1015,1026-1065,1087-1088,1130,1145-1146,1161,1180-1181,1201,1212-1213,1224-1246,1257-1280 
+  authController.js               |   48.61 |    32.85 |    62.5 |   48.61 | 54,207-209,222-297,308-411,419-545,573,618-619,659-660                                                                                                                                                                         
+  bookingController.js            |    7.94 |        0 |       0 |    8.39 | 7-12,16-23,27-28,32-76,84-135,143-245,250-319,324-388                                                                                                                                                                          
+  coachController.js              |    6.15 |        0 |       0 |    6.32 | 9-13,17-18,25-141,149-200,211-244,255-329,340-411,422-507,518-628,639-778,789-862,873-940,951-1022,1035-1103                                                                                                                   
+  coachPlanController.js          |    8.16 |        0 |       0 |    8.63 | 6-10,14-20,24-97,101-157,176-231,242-430,441-473,484-567                                                                                                                                                                       
+  exerciseController.js           |   10.09 |        0 |       0 |   10.37 | 13-111,122-158,169-211,222-242,253-281,292-325,336-353,364-387                                                                                                                                                                 
+  inbodyController.js             |   34.84 |     25.8 |   33.33 |   34.84 | 43,80-81,92-112,123-148,159-183,194-230,241-267,291-293,297-299,312-313,324-346,357-413,424-447,464,495-496,533-534                                                                                                            
+  intakeController.js             |   16.66 |        0 |       0 |   16.66 | 8-30,41-64,75-87,98-110                                                                                                                                                                                                        
+  messageController.js            |   37.93 |    19.14 |   36.36 |   38.46 | 15-52,63-124,156-192,197,256-258,283,314-315,331,355-356,367-413,435,462-463,474-492,503-548                                                                                                                                   
+  notificationController.js       |    9.73 |        0 |       0 |    9.73 | 14-43,54-70,81-114,125-220,231-261,272-296,307-324                                                                                                                                                                             
+  nutritionController.js          |   73.13 |    71.42 |   86.66 |   72.72 | 77-97,185-186,207,216,224-225,247-248,281-282,320-321,470-471,493-494,505-539                                                                                                                                                  
+  orderController.js              |   44.75 |    34.04 |    37.5 |   44.75 | 14-48,59-108,132,139,159-160,170-171,284-287,298-340,351-408,442-443,453-454,495-498,525,544-545,556-606                                                                                                                       
+  paymentController.js            |   19.04 |        0 |    12.5 |   19.04 | 14-52,63-80,88-100,119-120,131-143,154-166,177-206,217-271                                                                                                                                                                     
+  productController.js            |   40.64 |    49.36 |      50 |   40.64 | 43-50,55-57,62-64,68-70,75-77,82,106-108,112-114,132-133,144-190,218-219,230-254,265-288,316,354-355,417,432-433,454,468-469,480-548,559-598                                                                                   
+  progressController.js           |   70.27 |    91.66 |     100 |   70.27 | 25-26,53,91-92,156,167-168,185,196-197                                                                                                                                                                                         
+  ratingController.js             |   96.77 |    95.45 |     100 |   96.77 | 217-218                                                                                                                                                                                                                        
+  settingsController.js           |   11.95 |        0 |       0 |   11.95 | 9-49,60-147,158-199,210-265,276-307,318-371,382-435                                                                                                                                                                            
+  storeController.js              |   79.41 |       50 |     100 |   79.41 | 20,35-36,62-63,82-83                                                                                                                                                                                                           
+  userController.js               |   32.53 |     14.1 |   35.71 |   32.53 | 12-55,69,76,135-136,147-161,198,222-223,274-284,295-296,303-361,372-417,428-466,477-524,535-559,570-598                                                                                                                        
+  videoCallController.js          |   24.13 |        0 |      20 |   24.13 | 14-57,68-81,92-109,132-133,144-192                                                                                                                                                                                             
+  workoutController.js            |   16.73 |     4.65 |   13.04 |    16.8 | 16,81-102,113-131,142-169,180-198,209-224,245,254,262-263,274-296,307-376,384-391,402-413,424-490,501-525,536-558,569-671,679-760,768-792,803-815,826-845,856-876,887-906,917-936                                              
+ database                         |    4.22 |    36.36 |       0 |    4.31 |                                                                                                                                                                                                                                
+  index.js                        |   54.54 |    66.66 |       0 |   54.54 | 18,22,26-28                                                                                                                                                                                                                    
+  migrate.js                      |       0 |        0 |       0 |       0 | 1-67                                                                                                                                                                                                                           
+  reset.js                        |       0 |        0 |       0 |       0 | 1-62                                                                                                                                                                                                                           
+  seed.js                         |       0 |        0 |       0 |       0 | 1-254                                                                                                                                                                                                                          
+ middleware                       |   48.03 |     31.2 |   39.28 |    48.6 |                                                                                                                                                                                                                                
+  auth.js                         |   74.69 |    76.19 |    87.5 |   74.69 | 62-63,76,99,128,171-210,233,283-290                                                                                                                                                                                            
+  chatAttachmentControl.js        |    8.69 |        0 |       0 |    8.69 | 9-82                                                                                                                                                                                                                           
+  nutritionAccessControl.js       |      50 |       75 |      50 |      50 | 37-58                                                                                                                                                                                                                          
+  premiumFeatureMiddleware.js     |   18.51 |        0 |       0 |   18.51 | 9-42,54-85                                                                                                                                                                                                                     
+  rateLimiter.js                  |     100 |       50 |     100 |     100 | 8                                                                                                                                                                                                                              
+  upload.js                       |   66.66 |    43.75 |   66.66 |   66.66 | 23,85-108                                                                                                                                                                                                                      
+  validation.js                   |   28.98 |        0 |       0 |    30.3 | 12-24,37-40,78-85,155-162,218-229,340-364,373-390                                                                                                                                                                              
+ routes                           |   96.13 |       30 |      40 |   96.13 |                                                                                                                                                                                                                                
+  admin.js                        |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  auth.js                         |   62.85 |       30 |      40 |   62.85 | 53,80-84,113-117,142-146                                                                                                                                                                                                       
+  bookings.js                     |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  coaches.js                      |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  exercises.js                    |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  inbody.js                       |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  intake.js                       |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  messages.js                     |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  notifications.js                |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  nutrition.js                    |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  orders.js                       |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  payments.js                     |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  products.js                     |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  progress.js                     |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  ratings.js                      |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  settings.js                     |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  store.js                        |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  subscriptions.js                |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  users.js                        |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  videoCalls.js                   |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+  workouts.js                     |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                                
+ services                         |   22.05 |    11.46 |   15.73 |   22.42 |                                                                                                                                                                                                                                
+  aiExtractionService.js          |       6 |        0 |       0 |    6.81 | 22-194                                                                                                                                                                                                                         
+  coachCustomizationService.js    |    4.16 |        0 |       0 |    4.16 | 17-390                                                                                                                                                                                                                         
+  emailService.js                 |       0 |        0 |       0 |       0 | 1-170                                                                                                                                                                                                                          
+  injuryMappingService.js         |   46.08 |    34.52 |   46.66 |   46.42 | 20-51,60-77,88,126,140,167,178,184,231-234,246-326                                                                                                                                                                             
+  intakeService.js                |   58.33 |    47.27 |      50 |   58.33 | 32,42,61-71,132-134,157,164,266-268,278-373                                                                                                                                                                                    
+  nutritionAccessService.js       |   11.26 |       35 |   14.28 |   11.26 | 44,60-297                                                                                                                                                                                                                      
+  nutritionGenerationService.js   |    3.66 |        0 |       0 |    3.96 | 17-580                                                                                                                                                                                                                         
+  paymentService.js               |   11.96 |        0 |       0 |   11.96 | 47-112,120-205,213-236,244-380,387-421,429-450,458-489                                                                                                                                                                         
+  pushNotificationService.js      |   17.85 |     6.66 |       0 |   18.11 | 18-22,32-83,91-161,169-188,196-214,222-232,236-246,250-260,264-274,278-288,292-302,306-316,320-330,334-344,348-358,365-398,406-449,457-484                                                                                     
+  quotaService.js                 |   89.09 |      100 |     100 |   88.46 | 84-85,104-105,121-122                                                                                                                                                                                                          
+  s3Service.js                    |     100 |    71.42 |     100 |     100 | 9-12                                                                                                                                                                                                                           
+  twilioService.js                |   29.41 |      100 |       0 |   29.41 | 13-25,33-45                                                                                                                                                                                                                    
+  userProfileService.js           |      30 |        0 |       0 |      30 | 6-31                                                                                                                                                                                                                           
+  videoCallService.js             |   41.41 |    34.42 |      50 |   41.41 | 27-225,253-254,261-262,308-311,331,343,377-378                                                                                                                                                                                 
+  workoutGenerationService.js     |    8.64 |        0 |       0 |    8.75 | 17-354                                                                                                                                                                                                                         
+  workoutRecommendationService.js |    5.06 |        0 |       0 |    5.06 | 17-280                                                                                                                                                                                                                         
+  workoutTemplateService.js       |    5.38 |        0 |    1.81 |    5.83 | 31-706                                                                                                                                                                                                                         
+ sockets                          |   10.41 |        0 |   11.11 |   10.41 |                                                                                                                                                                                                                                
+  index.js                        |   10.41 |        0 |   11.11 |   10.41 | 16-35,40-282                                                                                                                                                                                                                   
+ utils                            |   24.46 |        0 |       5 |   25.88 |                                                                                                                                                                                                                                
+  helpers.js                      |   31.66 |        0 |    6.66 |   32.72 | 17-18,25-26,33-34,48-52,62,69,79-81,88-89,96-105,112-130,137-143,150-157                                                                                                                                                       
+  logger.js                       |       0 |        0 |       0 |       0 | 1-55                                                                                                                                                                                                                           
+  userProfileMapper.js            |   18.18 |        0 |       0 |   22.22 | 2-5,9-15,20-27                                                                                                                                                                                                                 
+----------------------------------|---------|----------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Jest: "global" coverage threshold for statements (80%) not met: 30.64%
+Jest: "global" coverage threshold for branches (80%) not met: 15.82%
+Jest: "global" coverage threshold for lines (80%) not met: 31.05%
+Jest: "global" coverage threshold for functions (80%) not met: 21.22%
+Test Suites: 2 skipped, 27 passed, 27 of 29 total
+Tests:       54 skipped, 175 passed, 229 total
+Snapshots:   0 total
+Time:        68.794 s, estimated 80 s
+Ran all test suites.
+Jest did not exit one second after the test run has completed.
+
+'This usually means that there are asynchronous operations that weren't 
+stopped in your tests. Consider running Jest with `--detectOpenHandles` to 
+troubleshoot this issue.

@@ -1,5 +1,6 @@
 import '../models/coach_profile.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/coach_client.dart';
 import '../models/appointment.dart';
 import '../models/coach_analytics.dart';
@@ -13,20 +14,36 @@ class CoachRepository {
   /// Get comprehensive coach profile
   Future<CoachProfile> getCoachProfile({required String coachId}) async {
     try {
-      final response = await _dio.get('/coaches/$coachId/profile');
+      final response = await _dio.get(
+        '/coaches/$coachId/profile',
+        options: await _getAuthOptions(),
+      );
       return CoachProfile.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to get coach profile');
     }
   }
   final Dio _dio;
+  final FlutterSecureStorage _secureStorage;
 
   CoachRepository()
       : _dio = Dio(BaseOptions(
           baseUrl: ApiConfig.baseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
-        ));
+        )),
+        _secureStorage = const FlutterSecureStorage();
+
+  static const String _tokenKey = 'fitcoach_auth_token';
+
+  Future<String?> _getToken() async {
+    return await _secureStorage.read(key: _tokenKey);
+  }
+
+  Future<Options> _getAuthOptions() async {
+    final token = await _getToken();
+    return Options(headers: {'Authorization': 'Bearer $token'});
+  }
 
   /// Get coach's clients
   Future<List<CoachClient>> getClients({
@@ -47,6 +64,7 @@ class CoachRepository {
       final response = await _dio.get(
         '/coaches/$coachId/clients',
         queryParameters: queryParams,
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -94,6 +112,7 @@ class CoachRepository {
       final response = await _dio.get(
         '/coaches/$coachId/appointments',
         queryParameters: queryParams,
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -126,6 +145,7 @@ class CoachRepository {
           'type': type,
           if (notes != null) 'notes': notes,
         },
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -155,6 +175,7 @@ class CoachRepository {
           if (notes != null) 'notes': notes,
           if (status != null) 'status': status,
         },
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -181,6 +202,7 @@ class CoachRepository {
       final response = await _dio.get(
         '/coaches/$coachId/earnings',
         queryParameters: queryParams,
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -204,6 +226,7 @@ class CoachRepository {
           'fitnessScore': fitnessScore,
           if (notes != null) 'notes': notes,
         },
+        options: await _getAuthOptions(),
       );
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to assign fitness score');
@@ -215,7 +238,10 @@ class CoachRepository {
     required String coachId,
   }) async {
     try {
-      final response = await _dio.get('/coaches/$coachId/analytics');
+      final response = await _dio.get(
+        '/coaches/$coachId/analytics',
+        options: await _getAuthOptions(),
+      );
 
       final data = response.data as Map<String, dynamic>;
       return CoachAnalytics.fromJson(data['analytics'] as Map<String, dynamic>);
@@ -232,6 +258,7 @@ class CoachRepository {
     try {
       final response = await _dio.get(
         '/coaches/$coachId/clients/$clientId/workout-plan',
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -258,6 +285,7 @@ class CoachRepository {
           'planData': planData,
           'notes': notes,
         },
+        options: await _getAuthOptions(),
       );
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to update workout plan');
@@ -272,6 +300,7 @@ class CoachRepository {
     try {
       final response = await _dio.get(
         '/coaches/$coachId/clients/$clientId/nutrition-plan',
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -302,6 +331,7 @@ class CoachRepository {
           'mealPlan': mealPlan,
           'notes': notes,
         },
+        options: await _getAuthOptions(),
       );
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to update nutrition plan');

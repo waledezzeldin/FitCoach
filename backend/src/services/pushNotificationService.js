@@ -288,6 +288,34 @@ exports.sendBookingConfirmedNotification = async (userId, scheduledTime) => {
   return await exports.sendToUser(userId, notification, data);
 };
 
+exports.sendBookingUpdatedNotification = async (userId, scheduledTime) => {
+  const notification = {
+    title: 'تحديث الموعد 📅',
+    body: `تم تحديث موعد المكالمة المرئية: ${scheduledTime}`
+  };
+
+  const data = {
+    type: 'booking_updated',
+    screen: 'bookings'
+  };
+
+  return await exports.sendToUser(userId, notification, data);
+};
+
+exports.sendBookingCancelledNotification = async (userId, scheduledTime) => {
+  const notification = {
+    title: 'تم إلغاء الموعد ❌',
+    body: `تم إلغاء موعد المكالمة المرئية: ${scheduledTime}`
+  };
+
+  const data = {
+    type: 'booking_cancelled',
+    screen: 'bookings'
+  };
+
+  return await exports.sendToUser(userId, notification, data);
+};
+
 exports.sendBookingReminderNotification = async (userId, minutesUntil) => {
   const notification = {
     title: 'تذكير بالموعد 📞',

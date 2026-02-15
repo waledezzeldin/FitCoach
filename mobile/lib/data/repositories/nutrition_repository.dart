@@ -87,4 +87,19 @@ class NutritionRepository {
       throw Exception(e.response?.data['message'] ?? 'Failed to load history');
     }
   }
+
+  // Generate nutrition plan using preferences/intake
+  Future<Map<String, dynamic>> generatePlan(Map<String, dynamic> preferences) async {
+    try {
+      final response = await _dio.post(
+        '/nutrition/generate',
+        data: preferences,
+        options: await _getAuthOptions(),
+      );
+
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to generate nutrition plan');
+    }
+  }
 }

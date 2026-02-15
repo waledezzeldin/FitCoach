@@ -7,11 +7,15 @@ const upload = require('../middleware/upload');
 
 // Conversation routes
 router.get('/conversations', authMiddleware, messageController.getConversations);
-router.get('/conversations/:id', authMiddleware, messageController.getConversationMessages);
+router.get('/conversations/:id', authMiddleware, messageController.getConversation);
+router.get('/conversations/:id/messages', authMiddleware, messageController.getConversationMessages);
+router.delete('/conversations/:id/messages', authMiddleware, messageController.deleteConversationMessages);
 
 // Message routes
 router.post('/', authMiddleware, checkMessageQuota, messageController.sendMessage);
+router.post('/send', authMiddleware, checkMessageQuota, messageController.sendMessage);
 router.put('/:id/read', authMiddleware, messageController.markAsRead);
+router.patch('/:id/read', authMiddleware, messageController.markAsRead);
 router.delete('/:id', authMiddleware, messageController.deleteMessage);
 
 // Attachment upload (Premium+ only for PDFs/files)

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/admin_analytics.dart';
 import '../models/admin_user.dart';
 import '../models/admin_coach.dart';
@@ -8,18 +9,40 @@ import '../../core/config/api_config.dart';
 
 class AdminRepository {
   final Dio _dio;
+  final FlutterSecureStorage _secureStorage;
+  final Future<String?> Function()? _tokenReader;
+  static const String _tokenKey = 'fitcoach_auth_token';
 
-  AdminRepository()
-      : _dio = Dio(BaseOptions(
-          baseUrl: ApiConfig.baseUrl,
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-        ));
+  AdminRepository({
+    Dio? dio,
+    FlutterSecureStorage? secureStorage,
+    Future<String?> Function()? tokenReader,
+  })
+      : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: ApiConfig.baseUrl,
+              connectTimeout: const Duration(seconds: 30),
+              receiveTimeout: const Duration(seconds: 30),
+            )),
+        _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _tokenReader = tokenReader;
+
+  Future<Options> _getAuthOptions() async {
+    final token = _tokenReader != null
+        ? await _tokenReader()
+        : await _secureStorage.read(key: _tokenKey);
+    return Options(
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
 
   /// Get dashboard analytics
   Future<AdminAnalytics> getDashboardAnalytics() async {
     try {
-      final response = await _dio.get('/admin/analytics');
+      final response = await _dio.get(
+        '/admin/analytics',
+        options: await _getAuthOptions(),
+      );
       final data = response.data as Map<String, dynamic>;
       return AdminAnalytics.fromJson(data['analytics'] as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -49,6 +72,7 @@ class AdminRepository {
       final response = await _dio.get(
         '/admin/users',
         queryParameters: queryParams,
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -65,7 +89,10 @@ class AdminRepository {
   /// Get user by ID
   Future<AdminUser> getUserById(String id) async {
     try {
-      final response = await _dio.get('/admin/users/$id');
+      final response = await _dio.get(
+        '/admin/users/$id',
+        options: await _getAuthOptions(),
+      );
       final data = response.data as Map<String, dynamic>;
       return AdminUser.fromJson(data['user'] as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -92,6 +119,7 @@ class AdminRepository {
           if (isActive != null) 'isActive': isActive,
           if (coachId != null) 'coachId': coachId,
         },
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -107,6 +135,7 @@ class AdminRepository {
       await _dio.post(
         '/admin/users/$id/suspend',
         data: {'reason': reason},
+        options: await _getAuthOptions(),
       );
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to suspend user');
@@ -116,7 +145,10 @@ class AdminRepository {
   /// Delete user
   Future<void> deleteUser(String id) async {
     try {
-      await _dio.delete('/admin/users/$id');
+      await _dio.delete(
+        '/admin/users/$id',
+        options: await _getAuthOptions(),
+      );
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to delete user');
     }
@@ -142,6 +174,7 @@ class AdminRepository {
       final response = await _dio.get(
         '/admin/coaches',
         queryParameters: queryParams,
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -173,6 +206,7 @@ class AdminRepository {
           if (specializations != null && specializations.isNotEmpty) 'specializations': specializations,
           'sendInvitation': sendInvitation,
         },
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -185,7 +219,10 @@ class AdminRepository {
   /// Approve coach
   Future<void> approveCoach(String id) async {
     try {
-      await _dio.post('/admin/coaches/$id/approve');
+      await _dio.post(
+        '/admin/coaches/$id/approve',
+        options: await _getAuthOptions(),
+      );
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to approve coach');
     }
@@ -197,6 +234,7 @@ class AdminRepository {
       await _dio.post(
         '/admin/coaches/$id/suspend',
         data: {'reason': reason},
+        options: await _getAuthOptions(),
       );
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to suspend coach');
@@ -219,6 +257,7 @@ class AdminRepository {
       final response = await _dio.get(
         '/admin/revenue',
         queryParameters: queryParams,
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -250,6 +289,7 @@ class AdminRepository {
       final response = await _dio.get(
         '/admin/audit-logs',
         queryParameters: queryParams,
+        options: await _getAuthOptions(),
       );
 
       final data = response.data as Map<String, dynamic>;

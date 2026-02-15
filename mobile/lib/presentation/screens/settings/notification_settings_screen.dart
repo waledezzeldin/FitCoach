@@ -7,7 +7,9 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
-  const NotificationSettingsScreen({super.key});
+  final UserRepository? userRepository;
+
+  const NotificationSettingsScreen({super.key, this.userRepository});
 
   @override
   State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
@@ -41,6 +43,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   bool _emailEnabled = true;
   bool _smsEnabled = false;
 
+  UserRepository get _userRepository => widget.userRepository ?? UserRepository();
+
   @override
   void initState() {
     super.initState();
@@ -49,8 +53,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
   Future<void> _loadSettings() async {
     try {
-      final repository = UserRepository();
-      final settings = await repository.getNotificationSettings();
+      final settings = await _userRepository.getNotificationSettings();
       
       if (mounted) {
         setState(() {
@@ -431,7 +434,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         style: const TextStyle(color: AppColors.textSecondary),
       ),
       secondary: Icon(icon, color: AppColors.primary),
-      activeColor: AppColors.primary,
+      activeThumbColor: AppColors.primary,
     );
   }
   
@@ -441,9 +444,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     });
     
     try {
-      final repository = UserRepository();
-      
-      await repository.updateNotificationSettings({
+      await _userRepository.updateNotificationSettings({
         'workoutReminders': _workoutReminders,
         'coachMessagesNotifications': _coachMessages,
         'nutritionTrackingNotifications': _nutritionTracking,

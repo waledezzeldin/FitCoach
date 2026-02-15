@@ -59,6 +59,30 @@ class AuthProvider extends ChangeNotifier {
       }
     }
   }
+
+  // Refresh user profile
+  Future<void> refreshUserProfile({bool notify = true}) async {
+    if (DemoConfig.isDemo) {
+      return;
+    }
+
+    try {
+      final userProfile = await _repository.getUserProfile();
+      if (userProfile != null) {
+        _user = userProfile;
+        _isAuthenticated = true;
+        _error = null;
+        if (notify) {
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      _error = e.toString();
+      if (notify) {
+        notifyListeners();
+      }
+    }
+  }
   
   // Request OTP
   Future<bool> requestOTP(String phoneNumber) async {

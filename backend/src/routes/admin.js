@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { authMiddleware, roleCheck } = require('../middleware/auth');
 const adminController = require('../controllers/adminController');
+const productController = require('../controllers/productController');
 
 /**
  * @route   GET /api/v2/admin/analytics
@@ -51,6 +52,13 @@ router.delete('/users/:id', authMiddleware, roleCheck('admin'), adminController.
  * @access  Private (Admin only)
  */
 router.get('/coaches', authMiddleware, roleCheck('admin'), adminController.getCoaches);
+
+/**
+ * @route   POST /api/v2/admin/coaches
+ * @desc    Create coach
+ * @access  Private (Admin only)
+ */
+router.post('/coaches', authMiddleware, roleCheck('admin'), adminController.createCoach);
 
 /**
  * @route   POST /api/v2/admin/coaches/:id/approve
@@ -109,6 +117,27 @@ router.put('/exercises/:id', authMiddleware, roleCheck('admin'), adminController
 router.delete('/exercises/:id', authMiddleware, roleCheck('admin'), adminController.deleteExercise);
 
 /**
+ * @route   POST /api/v2/admin/products
+ * @desc    Create product
+ * @access  Private (Admin only)
+ */
+router.post('/products', authMiddleware, roleCheck('admin'), productController.createProduct);
+
+/**
+ * @route   PUT /api/v2/admin/products/:id
+ * @desc    Update product
+ * @access  Private (Admin only)
+ */
+router.put('/products/:id', authMiddleware, roleCheck('admin'), productController.updateProduct);
+
+/**
+ * @route   DELETE /api/v2/admin/products/:id
+ * @desc    Delete product
+ * @access  Private (Admin only)
+ */
+router.delete('/products/:id', authMiddleware, roleCheck('admin'), productController.deleteProduct);
+
+/**
  * @route   GET /api/v2/admin/subscription-plans
  * @desc    Get all subscription plans
  * @access  Private (Admin only)
@@ -116,11 +145,39 @@ router.delete('/exercises/:id', authMiddleware, roleCheck('admin'), adminControl
 router.get('/subscription-plans', authMiddleware, roleCheck('admin'), adminController.getSubscriptionPlans);
 
 /**
+ * @route   GET /api/v2/admin/subscriptions/plans
+ * @desc    Get all subscription plans (Flutter compatibility)
+ * @access  Private (Admin only)
+ */
+router.get('/subscriptions/plans', authMiddleware, roleCheck('admin'), adminController.getSubscriptionPlans);
+
+/**
+ * @route   POST /api/v2/admin/subscriptions/plans
+ * @desc    Create subscription plan (Flutter compatibility)
+ * @access  Private (Admin only)
+ */
+router.post('/subscriptions/plans', authMiddleware, roleCheck('admin'), adminController.createSubscriptionPlan);
+
+/**
  * @route   PUT /api/v2/admin/subscription-plans/:id
  * @desc    Update subscription plan
  * @access  Private (Admin only)
  */
 router.put('/subscription-plans/:id', authMiddleware, roleCheck('admin'), adminController.updateSubscriptionPlan);
+
+/**
+ * @route   PUT /api/v2/admin/subscriptions/plans/:id
+ * @desc    Update subscription plan (Flutter compatibility)
+ * @access  Private (Admin only)
+ */
+router.put('/subscriptions/plans/:id', authMiddleware, roleCheck('admin'), adminController.updateSubscriptionPlan);
+
+/**
+ * @route   DELETE /api/v2/admin/subscriptions/plans/:id
+ * @desc    Delete subscription plan (Flutter compatibility)
+ * @access  Private (Admin only)
+ */
+router.delete('/subscriptions/plans/:id', authMiddleware, roleCheck('admin'), adminController.deleteSubscriptionPlan);
 
 /**
  * @route   GET /api/v2/admin/settings

@@ -1,5 +1,6 @@
 const db = require('../database');
 const logger = require('../utils/logger');
+const { v4: uuidv4 } = require('uuid');
 
 const isValidUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const validSubscriptionTiers = new Set(['freemium', 'premium', 'smart_premium']);
@@ -281,7 +282,25 @@ exports.updateUser = async (req, res) => {
           'UPDATE user_coaches SET is_active = FALSE WHERE user_id = $1',
           [id]
         );
+        await db.query(
+          'UPDATE users SET assigned_coach_id = NULL, updated_at = NOW() WHERE id = $1',
+          [id]
+        );
       } else {
+        const coachResult = await db.query(
+          'SELECT id, user_id FROM coaches WHERE id = $1 OR user_id = $1',
+          [coachId]
+        );
+
+        if (coachResult.rows.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: 'Coach not found'
+          });
+        }
+
+        const coachRecord = coachResult.rows[0];
+
         // Deactivate old assignments
         await db.query(
           'UPDATE user_coaches SET is_active = FALSE WHERE user_id = $1',
@@ -294,7 +313,49 @@ exports.updateUser = async (req, res) => {
            VALUES ($1, $2, TRUE)
            ON CONFLICT (user_id, coach_id) 
            DO UPDATE SET is_active = TRUE, assigned_date = NOW()`,
-          [id, coachId]
+          [id, coachRecord.id]
+        );
+
+        await db.query(
+          'UPDATE users SET assigned_coach_id = $1, updated_at = NOW() WHERE id = $2',
+          [coachRecord.user_id, id]
+        );
+
+        await db.query(
+          `INSERT INTO conversations (user_id, coach_id)
+           VALUES ($1, $2)
+           ON CONFLICT (user_id, coach_id) DO NOTHING`,
+          [id, coachRecord.id]
+        );
+
+        await db.query(
+          `INSERT INTO notifications (
+            id, user_id, type, title, title_ar, message, message_ar, data, created_at
+          ) VALUES ($1, $2, 'coach_assigned', $3, $4, $5, $6, $7, NOW())`,
+          [
+            uuidv4(),
+            id,
+            'Coach Assigned',
+            'تم تعيين مدرب',
+            'A coach has been assigned to your account',
+            'تم تعيين مدرب لحسابك',
+            JSON.stringify({ coachId: coachRecord.id })
+          ]
+        );
+
+        await db.query(
+          `INSERT INTO notifications (
+            id, user_id, type, title, title_ar, message, message_ar, data, created_at
+          ) VALUES ($1, $2, 'new_client_assigned', $3, $4, $5, $6, $7, NOW())`,
+          [
+            uuidv4(),
+            coachRecord.user_id,
+            'New Client Assigned',
+            'تم تعيين عميل جديد',
+            'A new client has been assigned to you',
+            'تم تعيين عميل جديد لك',
+            JSON.stringify({ userId: id })
+          ]
         );
       }
     }
@@ -496,6 +557,104 @@ exports.getCoaches = async (req, res) => {
       success: false,
       message: 'Failed to get coaches'
     });
+  }
+};
+
+/**
+ * Create coach (admin)
+ */
+exports.createCoach = async (req, res) => {
+  const client = await db.pool.connect();
+  try {
+    const {
+      fullName,
+      email,
+      phoneNumber,
+      specializations = [],
+      sendInvitation = true
+    } = req.body;
+
+    if (!fullName || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'fullName and email are required'
+      });
+    }
+
+    const existingEmail = await client.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email]
+    );
+    if (existingEmail.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'A user with this email already exists'
+      });
+    }
+
+    const generatedPhone = `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+    const finalPhone = (typeof phoneNumber === 'string' && phoneNumber.trim().length > 0)
+      ? phoneNumber.trim()
+      : generatedPhone;
+
+    await client.query('BEGIN');
+
+    const userResult = await client.query(
+      `INSERT INTO users (
+        id, full_name, email, phone_number, role, is_active, is_verified, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, 'coach', TRUE, FALSE, NOW(), NOW())
+      RETURNING id, full_name, email, phone_number, profile_photo_url, is_active, created_at`,
+      [uuidv4(), fullName, email, finalPhone]
+    );
+
+    const user = userResult.rows[0];
+
+    const coachResult = await client.query(
+      `INSERT INTO coaches (
+        id, user_id, specializations, is_approved, is_active, created_at, updated_at
+      ) VALUES ($1, $2, $3, FALSE, TRUE, NOW(), NOW())
+      RETURNING id, user_id, specializations, average_rating, is_approved, is_active, created_at, approved_at`,
+      [uuidv4(), user.id, Array.isArray(specializations) ? specializations : []]
+    );
+
+    const coach = coachResult.rows[0];
+
+    await client.query('COMMIT');
+
+    // Placeholder for async invitation flow.
+    if (sendInvitation) {
+      logger.info(`Coach invitation requested for user ${user.id} (${email})`);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Coach created successfully',
+      coach: {
+        id: coach.id,
+        user_id: coach.user_id,
+        full_name: user.full_name,
+        email: user.email,
+        phone_number: user.phone_number,
+        profile_photo_url: user.profile_photo_url,
+        specializations: coach.specializations || [],
+        client_count: 0,
+        total_earnings: 0,
+        average_rating: coach.average_rating,
+        is_approved: coach.is_approved,
+        is_active: user.is_active && coach.is_active,
+        created_at: coach.created_at,
+        approved_at: coach.approved_at
+      }
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    logger.error('Create coach error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create coach'
+    });
+  } finally {
+    client.release();
   }
 };
 
@@ -842,7 +1001,8 @@ exports.createExercise = async (req, res) => {
       `INSERT INTO exercises (
         name,
         name_ar,
-        description,
+        name_en,
+        description_en,
         description_ar,
         category,
         difficulty,
@@ -851,10 +1011,22 @@ exports.createExercise = async (req, res) => {
         video_url,
         thumbnail_url,
         instructions
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *`,
-      [name, nameAr, description, descriptionAr, category, difficulty,
-       muscleGroups, equipment, videoUrl, thumbnailUrl, instructions]
+      [
+        name,
+        nameAr,
+        name,
+        description,
+        descriptionAr,
+        category,
+        difficulty,
+        muscleGroups,
+        equipment,
+        videoUrl,
+        thumbnailUrl,
+        instructions
+      ]
     );
     
     res.status(201).json({
@@ -898,20 +1070,34 @@ exports.updateExercise = async (req, res) => {
       `UPDATE exercises
        SET name = COALESCE($1, name),
            name_ar = COALESCE($2, name_ar),
-           description = COALESCE($3, description),
-           description_ar = COALESCE($4, description_ar),
-           category = COALESCE($5, category),
-           difficulty = COALESCE($6, difficulty),
-           muscle_groups = COALESCE($7, muscle_groups),
-           equipment = COALESCE($8, equipment),
-           video_url = COALESCE($9, video_url),
-           thumbnail_url = COALESCE($10, thumbnail_url),
-           instructions = COALESCE($11, instructions),
+           name_en = COALESCE($3, name_en),
+           description_en = COALESCE($4, description_en),
+           description_ar = COALESCE($5, description_ar),
+           category = COALESCE($6, category),
+           difficulty = COALESCE($7, difficulty),
+           muscle_groups = COALESCE($8, muscle_groups),
+           equipment = COALESCE($9, equipment),
+           video_url = COALESCE($10, video_url),
+           thumbnail_url = COALESCE($11, thumbnail_url),
+           instructions = COALESCE($12, instructions),
            updated_at = NOW()
-       WHERE id = $12
+       WHERE id = $13
        RETURNING *`,
-      [name, nameAr, description, descriptionAr, category, difficulty,
-       muscleGroups, equipment, videoUrl, thumbnailUrl, instructions, id]
+      [
+        name,
+        nameAr,
+        name,
+        description,
+        descriptionAr,
+        category,
+        difficulty,
+        muscleGroups,
+        equipment,
+        videoUrl,
+        thumbnailUrl,
+        instructions,
+        id
+      ]
     );
     
     if (result.rows.length === 0) {
@@ -1065,6 +1251,73 @@ exports.updateSubscriptionPlan = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to update subscription plan'
+    });
+  }
+};
+
+/**
+ * Create subscription plan
+ */
+exports.createSubscriptionPlan = async (req, res) => {
+  try {
+    const { name, price, currency = 'SAR', durationMonths = 1, isActive = true } = req.body;
+
+    if (!name || price === undefined || price === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name and price are required'
+      });
+    }
+
+    const result = await db.query(
+      `INSERT INTO subscription_plans (
+        id, name, price, currency, duration_months, is_active, created_at, updated_at
+      ) VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, NOW(), NOW())
+      RETURNING *`,
+      [name, price, currency, durationMonths, isActive]
+    );
+
+    res.status(201).json({
+      success: true,
+      plan: result.rows[0]
+    });
+  } catch (error) {
+    logger.error('Create subscription plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create subscription plan'
+    });
+  }
+};
+
+/**
+ * Delete subscription plan
+ */
+exports.deleteSubscriptionPlan = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await db.query(
+      'DELETE FROM subscription_plans WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription plan not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Subscription plan deleted'
+    });
+  } catch (error) {
+    logger.error('Delete subscription plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete subscription plan'
     });
   }
 };

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/21</span>
+                <span class='fraction'>26/26</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/21</span>
+                <span class='fraction'>26/26</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -90,68 +90,83 @@
 <a name='L25'></a><a href='#L25'>25</a>
 <a name='L26'></a><a href='#L26'>26</a>
 <a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
-const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
-const { authMiddleware, roleCheck } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth');</span>
-const workoutController = <span class="cstat-no" title="statement not covered" >require('../controllers/workoutController');</span>
+<span class="cline-any cline-yes">3x</span></td><td class="text"><pre class="prettyprint lang-js">const express = require('express');
+const router = express.Router();
+const { authMiddleware, roleCheck } = require('../middleware/auth');
+const workoutController = require('../controllers/workoutController');
 &nbsp;
 // Template routes (public - can be viewed by authenticated users)
-<span class="cstat-no" title="statement not covered" >router.get('/templates', authMiddleware, workoutController.getTemplates);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/templates/:id', authMiddleware, workoutController.getTemplateById);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/generate-from-template', authMiddleware, workoutController.generateFromTemplate);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/recommend-template/:userId?', authMiddleware, workoutController.getRecommendedTemplate);</span>
+router.get('/templates', authMiddleware, workoutController.getTemplates);
+router.get('/templates/:id', authMiddleware, workoutController.getTemplateById);
+router.post('/generate-from-template', authMiddleware, workoutController.generateFromTemplate);
+router.get('/recommend-template/:userId?', authMiddleware, workoutController.getRecommendedTemplate);
 &nbsp;
 // User routes
-<span class="cstat-no" title="statement not covered" >router.get('/', authMiddleware, workoutController.getUserWorkouts);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/:id', authMiddleware, workoutController.getWorkoutById);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/:id/exercises/:exerciseId/complete', authMiddleware, workoutController.completeExercise);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/:id/progress', authMiddleware, workoutController.getProgress);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/:id/substitute-exercise', authMiddleware, workoutController.substituteExercise);</span>
+router.get('/plan', authMiddleware, workoutController.getActivePlan);
+router.post('/exercises/:exerciseId/complete', authMiddleware, workoutController.completeExerciseCompat);
+router.post('/exercises/substitute', authMiddleware, workoutController.substituteExerciseCompat);
+router.post('/log', authMiddleware, workoutController.logWorkoutCompat);
+router.get('/history', authMiddleware, workoutController.getWorkoutHistoryCompat);
+router.get('/', authMiddleware, workoutController.getUserWorkouts);
+router.get('/:id', authMiddleware, workoutController.getWorkoutById);
+router.post('/:id/exercises/:exerciseId/complete', authMiddleware, workoutController.completeExercise);
+router.get('/:id/progress', authMiddleware, workoutController.getProgress);
+router.post('/:id/substitute-exercise', authMiddleware, workoutController.substituteExercise);
 &nbsp;
 // Coach routes
-<span class="cstat-no" title="statement not covered" >router.post('/', authMiddleware, roleCheck('coach', 'admin'), workoutController.createWorkoutPlan);</span>
-<span class="cstat-no" title="statement not covered" >router.put('/:id', authMiddleware, roleCheck('coach', 'admin'), workoutController.updateWorkoutPlan);</span>
-<span class="cstat-no" title="statement not covered" >router.delete('/:id', authMiddleware, roleCheck('coach', 'admin'), workoutController.deleteWorkoutPlan);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/:id/clone', authMiddleware, roleCheck('coach', 'admin'), workoutController.cloneWorkoutPlan);</span>
-<span class="cstat-no" title="statement not covered" >router.put('/:id/exercises/:exerciseId', authMiddleware, roleCheck('coach', 'admin'), workoutController.updateExerciseForUser);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/:id/days/:dayId/note', authMiddleware, roleCheck('coach', 'admin'), workoutController.addCustomNoteToDay);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/customization-history/:userId', authMiddleware, roleCheck('coach', 'admin'), workoutController.getCustomizationHistory);</span>
+router.post('/', authMiddleware, roleCheck('coach', 'admin'), workoutController.createWorkoutPlan);
+router.put('/:id', authMiddleware, roleCheck('coach', 'admin'), workoutController.updateWorkoutPlan);
+router.delete('/:id', authMiddleware, roleCheck('coach', 'admin'), workoutController.deleteWorkoutPlan);
+router.post('/:id/clone', authMiddleware, roleCheck('coach', 'admin'), workoutController.cloneWorkoutPlan);
+router.put('/:id/exercises/:exerciseId', authMiddleware, roleCheck('coach', 'admin'), workoutController.updateExerciseForUser);
+router.post('/:id/days/:dayId/note', authMiddleware, roleCheck('coach', 'admin'), workoutController.addCustomNoteToDay);
+router.get('/customization-history/:userId', authMiddleware, roleCheck('coach', 'admin'), workoutController.getCustomizationHistory);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = router;</span></pre></td></tr></table></pre>
+module.exports = router;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-30T20:53:57.737Z
+                at 2026-02-06T15:40:46.295Z
             </div>
         <script src="../prettify.js"></script>
         <script>

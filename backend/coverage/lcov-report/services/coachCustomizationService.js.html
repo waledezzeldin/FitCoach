@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">4.16% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/96</span>
+                <span class='fraction'>4/96</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/26</span>
+                <span class='fraction'>0/40</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">4.16% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/96</span>
+                <span class='fraction'>4/96</span>
             </div>
         
             
@@ -441,9 +441,26 @@
 <a name='L376'></a><a href='#L376'>376</a>
 <a name='L377'></a><a href='#L377'>377</a>
 <a name='L378'></a><a href='#L378'>378</a>
-<a name='L379'></a><a href='#L379'>379</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<a name='L379'></a><a href='#L379'>379</a>
+<a name='L380'></a><a href='#L380'>380</a>
+<a name='L381'></a><a href='#L381'>381</a>
+<a name='L382'></a><a href='#L382'>382</a>
+<a name='L383'></a><a href='#L383'>383</a>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a>
+<a name='L388'></a><a href='#L388'>388</a>
+<a name='L389'></a><a href='#L389'>389</a>
+<a name='L390'></a><a href='#L390'>390</a>
+<a name='L391'></a><a href='#L391'>391</a>
+<a name='L392'></a><a href='#L392'>392</a>
+<a name='L393'></a><a href='#L393'>393</a>
+<a name='L394'></a><a href='#L394'>394</a>
+<a name='L395'></a><a href='#L395'>395</a>
+<a name='L396'></a><a href='#L396'>396</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -578,6 +595,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -601,6 +626,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -818,10 +852,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { v4: uuidv4 } = <span class="cstat-no" title="statement not covered" >require('uuid');</span>
-const db = <span class="cstat-no" title="statement not covered" >require('../database');</span>
-const logger = <span class="cstat-no" title="statement not covered" >require('../utils/logger');</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { v4: uuidv4 } = require('uuid');
+const db = require('../database');
+const logger = require('../utils/logger');
 &nbsp;
 /**
  * Coach Customization Service
@@ -950,20 +984,29 @@ class CoachCustomizationService {
 &nbsp;
           // Clone exercises for this day
           const exercisesResult = <span class="cstat-no" title="statement not covered" >await client.query(</span>
-            'SELECT * FROM workout_exercises WHERE workout_day_id = $1 ORDER BY order_index',
+            'SELECT * FROM workout_day_exercises WHERE workout_day_id = $1 ORDER BY exercise_order',
             [day.id]
           );
 &nbsp;
 <span class="cstat-no" title="statement not covered" >          for (const exercise of exercisesResult.rows) {</span>
 <span class="cstat-no" title="statement not covered" >            await client.query(</span>
-              `INSERT INTO workout_exercises (
-                id, workout_day_id, exercise_id, sets, reps, rest_seconds,
-                rpe, tempo, notes, notes_ar, order_index, created_at, updated_at
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
+              `INSERT INTO workout_day_exercises (
+                id, workout_day_id, exercise_id, exercise_name, exercise_name_ar,
+                sets, reps, rest_seconds, rpe, tempo, notes, notes_ar, exercise_order,
+                equipment, muscles, video_id, was_substituted, original_exercise_id,
+                substitution_reason, is_completed, completed_at, created_at, updated_at
+              ) VALUES (
+                $1, $2, $3, $4, $5,
+                $6, $7, $8, $9, $10, $11, $12, $13,
+                $14, $15, $16, $17, $18,
+                $19, $20, $21, NOW(), NOW()
+              )`,
               [
                 uuidv4(),
                 newDayId,
                 exercise.exercise_id,
+                exercise.exercise_name || exercise.exercise_id,
+                exercise.exercise_name_ar || null,
                 exercise.sets,
                 exercise.reps,
                 exercise.rest_seconds,
@@ -971,7 +1014,15 @@ class CoachCustomizationService {
                 exercise.tempo,
                 exercise.notes,
                 exercise.notes_ar,
-                exercise.order_index
+                exercise.exercise_order,
+                exercise.equipment,
+                exercise.muscles,
+                exercise.video_id,
+                exercise.was_substituted || false,
+                exercise.original_exercise_id || null,
+                exercise.substitution_reason || null,
+                exercise.is_completed || false,
+                exercise.completed_at || null
               ]
             );
           }
@@ -1069,7 +1120,7 @@ class CoachCustomizationService {
 <span class="cstat-no" title="statement not covered" >      updateValues.push(exerciseId);</span>
 &nbsp;
       const result = <span class="cstat-no" title="statement not covered" >await client.query(</span>
-        `UPDATE workout_exercises 
+        `UPDATE workout_day_exercises 
          SET ${updateFields.join(', ')}
          WHERE id = $${paramCount}
          RETURNING *`,
@@ -1196,7 +1247,7 @@ class CoachCustomizationService {
   }
 }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = new CoachCustomizationService();</span>
+module.exports = new CoachCustomizationService();
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -1204,7 +1255,7 @@ class CoachCustomizationService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-30T20:53:57.737Z
+                at 2026-02-06T15:40:46.295Z
             </div>
         <script src="../prettify.js"></script>
         <script>

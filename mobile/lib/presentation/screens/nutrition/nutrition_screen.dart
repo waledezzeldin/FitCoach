@@ -12,6 +12,7 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
 import 'nutrition_intro_screen.dart';
 import 'nutrition_preferences_intake_screen.dart';
+import '../../../data/repositories/nutrition_repository.dart';
 import '../subscription/subscription_manager_screen.dart';
 
 class NutritionScreen extends StatefulWidget {
@@ -106,6 +107,14 @@ class _NutritionScreenState extends State<NutritionScreen> {
     await prefs.setString(prefsKey, jsonEncode(preferences));
     await prefs.setBool(completedKey, true);
     await prefs.setBool(pendingKey, false);
+    if (!DemoConfig.isDemo) {
+      final repository = NutritionRepository();
+      await repository.generatePlan(preferences);
+      if (mounted) {
+        final provider = context.read<NutritionProvider>();
+        await provider.loadActivePlan();
+      }
+    }
     if (mounted) {
       setState(() {
         _showPreferencesIntake = false;

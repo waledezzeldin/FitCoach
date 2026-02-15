@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -81,42 +81,42 @@
 <a name='L16'></a><a href='#L16'>16</a>
 <a name='L17'></a><a href='#L17'>17</a>
 <a name='L18'></a><a href='#L18'>18</a>
-<a name='L19'></a><a href='#L19'>19</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<a name='L19'></a><a href='#L19'>19</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = <span class="cstat-no" title="statement not covered" >require('express');</span>
-const router = <span class="cstat-no" title="statement not covered" >express.Router();</span>
-const { authMiddleware } = <span class="cstat-no" title="statement not covered" >require('../middleware/auth');</span>
-const paymentController = <span class="cstat-no" title="statement not covered" >require('../controllers/paymentController');</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = require('express');
+const router = express.Router();
+const { authMiddleware } = require('../middleware/auth');
+const paymentController = require('../controllers/paymentController');
 &nbsp;
 // Payment routes (require authentication)
-<span class="cstat-no" title="statement not covered" >router.post('/create-checkout', authMiddleware, paymentController.createCheckout);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/upgrade', authMiddleware, paymentController.upgradeSubscription);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/cancel', authMiddleware, paymentController.cancelSubscription);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/subscription', authMiddleware, paymentController.getSubscription);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/history', authMiddleware, paymentController.getPaymentHistory);</span>
-<span class="cstat-no" title="statement not covered" >router.get('/invoice/:paymentId', authMiddleware, paymentController.generateInvoice);</span>
+router.post('/create-checkout', authMiddleware, paymentController.createCheckout);
+router.post('/upgrade', authMiddleware, paymentController.upgradeSubscription);
+router.post('/cancel', authMiddleware, paymentController.cancelSubscription);
+router.get('/subscription', authMiddleware, paymentController.getSubscription);
+router.get('/history', authMiddleware, paymentController.getPaymentHistory);
+router.get('/invoice/:paymentId', authMiddleware, paymentController.generateInvoice);
 &nbsp;
 // Webhook routes (NO authentication - webhooks come from payment providers)
-<span class="cstat-no" title="statement not covered" >router.post('/webhook/stripe', express.raw({ type: 'application/json' }), paymentController.stripeWebhook);</span>
-<span class="cstat-no" title="statement not covered" >router.post('/webhook/tap', express.json(), paymentController.tapWebhook);</span>
+router.post('/webhook/stripe', express.raw({ type: 'application/json' }), paymentController.stripeWebhook);
+router.post('/webhook/tap', express.json(), paymentController.tapWebhook);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >module.exports = router;</span>
+module.exports = router;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -124,7 +124,7 @@ const paymentController = <span class="cstat-no" title="statement not covered" >
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-30T20:53:57.737Z
+                at 2026-02-06T15:40:46.295Z
             </div>
         <script src="../prettify.js"></script>
         <script>

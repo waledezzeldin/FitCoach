@@ -9,7 +9,7 @@ class MessagingRepository {
       Future<void> deleteConversationMessages(String conversationId) async {
         try {
           await _dio.delete(
-            '/conversations/$conversationId/messages',
+            '/messages/conversations/$conversationId/messages',
             options: await _getAuthOptions(),
           );
         } on DioException catch (e) {
@@ -29,19 +29,29 @@ class MessagingRepository {
     }
   final Dio _dio;
   final FlutterSecureStorage _secureStorage;
+  final Future<String?> Function()? _tokenReader;
   IO.Socket? _socket;
   
   static const String _tokenKey = 'fitcoach_auth_token';
   
-  MessagingRepository()
-      : _dio = Dio(BaseOptions(
-          baseUrl: ApiConfig.baseUrl,
-          connectTimeout: ApiConfig.connectTimeout,
-          receiveTimeout: ApiConfig.receiveTimeout,
-        )),
-        _secureStorage = const FlutterSecureStorage();
+  MessagingRepository({
+    Dio? dio,
+    FlutterSecureStorage? secureStorage,
+    Future<String?> Function()? tokenReader,
+  })
+      : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: ApiConfig.baseUrl,
+              connectTimeout: ApiConfig.connectTimeout,
+              receiveTimeout: ApiConfig.receiveTimeout,
+            )),
+        _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _tokenReader = tokenReader;
   
   Future<String?> _getToken() async {
+    if (_tokenReader != null) {
+      return _tokenReader();
+    }
     return await _secureStorage.read(key: _tokenKey);
   }
   
@@ -84,11 +94,15 @@ class MessagingRepository {
   Future<Conversation> getConversation(String conversationId) async {
     try {
       final response = await _dio.get(
-        '/conversations/$conversationId',
+        '/messages/conversations/$conversationId',
         options: await _getAuthOptions(),
       );
-      
-      return Conversation.fromJson(response.data as Map<String, dynamic>);
+
+      final data = response.data as Map<String, dynamic>;
+      if (data['conversation'] is Map<String, dynamic>) {
+        return Conversation.fromJson(data['conversation'] as Map<String, dynamic>);
+      }
+      return Conversation.fromJson(data);
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to load conversation');
     }
@@ -98,11 +112,13 @@ class MessagingRepository {
   Future<List<Conversation>> getConversations() async {
     try {
       final response = await _dio.get(
-        '/conversations',
+        '/messages/conversations',
         options: await _getAuthOptions(),
       );
-      
-      return (response.data as List)
+
+      final data = response.data as Map<String, dynamic>;
+      final list = (data['conversations'] as List?) ?? [];
+      return list
           .map((conv) => Conversation.fromJson(conv as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -114,11 +130,13 @@ class MessagingRepository {
   Future<List<Message>> getMessages(String conversationId) async {
     try {
       final response = await _dio.get(
-        '/conversations/$conversationId/messages',
+        '/messages/conversations/$conversationId/messages',
         options: await _getAuthOptions(),
       );
-      
-      return (response.data as List)
+
+      final data = response.data as Map<String, dynamic>;
+      final list = (data['messages'] as List?) ?? [];
+      return list
           .map((msg) => Message.fromJson(msg as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -128,22 +146,31 @@ class MessagingRepository {
   
   // Send message
   Future<Message> sendMessage(
-    String conversationId,
+    String? conversationId,
     String content, {
+    String? recipientId,
     MessageType type = MessageType.text,
   }) async {
     try {
+      if (conversationId == null && recipientId == null) {
+        throw Exception('Conversation ID or recipient ID is required');
+      }
       final response = await _dio.post(
         '/messages/send',
         data: {
-          'conversationId': conversationId,
+          if (conversationId != null) 'conversationId': conversationId,
+          if (recipientId != null) 'recipientId': recipientId,
           'content': content,
-          'type': type.name,
+          'messageType': type.name,
         },
         options: await _getAuthOptions(),
       );
-      
-      return Message.fromJson(response.data as Map<String, dynamic>);
+
+      final data = response.data as Map<String, dynamic>;
+      if (data['message'] is Map<String, dynamic>) {
+        return Message.fromJson(data['message'] as Map<String, dynamic>);
+      }
+      return Message.fromJson(data);
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to send message');
     }
@@ -151,36 +178,62 @@ class MessagingRepository {
   
   // Send message with attachment (Premium+ only)
   Future<Message> sendMessageWithAttachment(
-    String conversationId,
+    String? conversationId,
     String content,
     String filePath, {
+    String? recipientId,
     MessageType type = MessageType.image,
   }) async {
     try {
-      final formData = FormData.fromMap({
-        'conversationId': conversationId,
-        'content': content,
-        'type': type.name,
-        'attachment': await MultipartFile.fromFile(filePath),
+      if (conversationId == null && recipientId == null) {
+        throw Exception('Conversation ID or recipient ID is required');
+      }
+      final uploadData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
       });
-      
-      final response = await _dio.post(
-        '/messages/send',
-        data: formData,
+
+      final uploadResponse = await _dio.post(
+        '/messages/upload',
+        data: uploadData,
         options: await _getAuthOptions(),
       );
-      
-      return Message.fromJson(response.data as Map<String, dynamic>);
+
+      final upload = uploadResponse.data as Map<String, dynamic>;
+      final attachment = (upload['attachment'] as Map?)?.cast<String, dynamic>();
+
+      if (attachment == null) {
+        throw Exception('Attachment upload failed');
+      }
+
+      final response = await _dio.post(
+        '/messages/send',
+        data: {
+          if (conversationId != null) 'conversationId': conversationId,
+          if (recipientId != null) 'recipientId': recipientId,
+          'content': content,
+          'messageType': type.name,
+          'attachmentUrl': attachment['url'],
+          'attachmentType': attachment['type'],
+          'attachmentName': attachment['name'],
+        },
+        options: await _getAuthOptions(),
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      if (data['message'] is Map<String, dynamic>) {
+        return Message.fromJson(data['message'] as Map<String, dynamic>);
+      }
+      return Message.fromJson(data);
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to send message');
     }
   }
   
-  // Mark message as read
-  Future<void> markAsRead(String messageId) async {
+  // Mark conversation messages as read
+  Future<void> markConversationAsRead(String conversationId) async {
     try {
       await _dio.patch(
-        '/messages/$messageId/read',
+        '/messages/$conversationId/read',
         options: await _getAuthOptions(),
       );
     } on DioException catch (e) {

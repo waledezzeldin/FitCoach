@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/colors.dart';
 import '../../../data/models/workout_plan.dart';
 import '../../../data/models/user_profile.dart';
+import '../../../data/services/exercise_catalog_service.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/workout_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -31,6 +32,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   bool _wasActive = true;
   bool _showIntro = false;
   bool _introLoaded = false;
+  final ExerciseCatalogService _catalogService = ExerciseCatalogService.instance;
 
   @override
   void initState() {
@@ -849,6 +851,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final userInjuries = authProvider.user?.injuries ?? [];
     final hasConflict = exercise.hasInjuryConflict(userInjuries);
     final isCompleted = provider.isExerciseCompleted(exercise.id);
+    final muscleLabel = _localizeMuscles(exercise.muscleGroup, isArabic);
     
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
@@ -887,7 +890,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   const SizedBox(height: 4),
                   Text(
                     '${exercise.sets} ${lang.t('sets')} \u2022 ${exercise.reps} ${lang.t('reps')}'
-                    '${exercise.muscleGroup == null ? '' : ' \u2022 ${exercise.muscleGroup}'}',
+                    '${muscleLabel.isEmpty ? '' : ' \u2022 $muscleLabel'}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -940,6 +943,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         ),
       ),
     );
+  }
+
+  String _localizeMuscles(String? muscles, bool isArabic) {
+    if (muscles == null || muscles.trim().isEmpty) {
+      return '';
+    }
+    final parts = muscles.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
+    final labels = parts.map((part) {
+      return _catalogService.getMuscleLabel(part, isArabic: isArabic) ?? part;
+    }).toList();
+    return labels.join(', ');
   }
 
   void _openExerciseSession(WorkoutDay day, int startIndex) {

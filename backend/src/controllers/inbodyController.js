@@ -493,7 +493,7 @@ exports.uploadScanImage = async (req, res) => {
 
   } catch (error) {
     logger.error('Upload InBody scan image error:', error);
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || 'Failed to upload and process image'
     });
