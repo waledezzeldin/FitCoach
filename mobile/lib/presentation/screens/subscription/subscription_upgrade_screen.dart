@@ -46,7 +46,6 @@ class _SubscriptionUpgradeScreenState extends State<SubscriptionUpgradeScreen> {
     final languageProvider = context.watch<LanguageProvider>();
     final authProvider = context.watch<AuthProvider>();
     final planProvider = context.watch<SubscriptionPlanProvider>();
-    final isArabic = languageProvider.isArabic;
     String tr(String key, {Map<String, String>? args}) =>
         languageProvider.t(key, args: args);
     final currentTier = authProvider.user?.subscriptionTier ?? 'freemium';

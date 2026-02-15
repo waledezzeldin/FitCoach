@@ -198,7 +198,7 @@ class SubscriptionComparisonTable extends StatelessWidget {
                   Expanded(
                     child: Text(
                       included
-                          ? (feature!.value ?? includeFallback)
+                          ? (feature.value ?? includeFallback)
                           : includeFallback,
                       style: TextStyle(
                         fontSize: 12,

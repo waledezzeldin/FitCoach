@@ -650,8 +650,6 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     if (spotlightEntries.isEmpty) {
       return const SizedBox.shrink();
     }
-    final isArabic = lang.isArabic;
-
     return CustomCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -1269,14 +1267,4 @@ class _CoachDashboardScreenState extends State<CoachDashboardScreen> {
     );
   }
 
-  Color _getTierColor(String tier) {
-    switch (tier) {
-      case 'Smart Premium':
-        return AppColors.accent;
-      case 'Premium':
-        return AppColors.secondary;
-      default:
-        return AppColors.textDisabled;
-    }
-  }
 }

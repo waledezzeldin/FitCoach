@@ -156,3 +156,4 @@ Scope: `mobile/` + `backend/` integration gaps, documentation updates, and front
 - 2026-02-12: Closed T-FE-07 by adding widget flow tests for profile photo removal action, notification settings save behavior, and video-call rating submission path.
 - 2026-02-12: Final hardening pass completed for remaining diagnostics in profile/photo, notification settings, and video-call flows (async context safety, deprecated API migration, constructor/import cleanup).
 - 2026-02-12: Full verification executed: `flutter test` passed (198 tests), backend Jest suite passed with `--runInBand --forceExit` (188 passed, 54 skipped), and messages integration test mock aligned with current `checkMessageQuota` middleware stack.
+- 2026-02-15: Mobile analyzer warning cleanup pass completed (warning count reduced to 0); removed dead/unused warning sources and redundant null assertions while preserving feature behavior.

@@ -245,20 +245,6 @@ class WorkoutProvider extends ChangeNotifier {
     return null;
   }
 
-  Exercise? _findExerciseById(String exerciseId) {
-    final fromLibrary = _exerciseLibrary.where((ex) => ex.id == exerciseId).toList();
-    if (fromLibrary.isNotEmpty) {
-      return fromLibrary.first;
-    }
-    final day = currentDay;
-    if (day == null) return null;
-    try {
-      return day.exercises.firstWhere((ex) => ex.id == exerciseId);
-    } catch (_) {
-      return null;
-    }
-  }
-
   Future<bool> substituteExercise(
     String originalExerciseId,
     String newExerciseId,

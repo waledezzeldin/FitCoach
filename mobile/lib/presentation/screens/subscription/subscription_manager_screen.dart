@@ -33,7 +33,6 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
     final languageProvider = context.watch<LanguageProvider>();
     final authProvider = context.watch<AuthProvider>();
     final planProvider = context.watch<SubscriptionPlanProvider>();
-    final isArabic = languageProvider.isArabic;
     String tr(String key, {Map<String, String>? args}) =>
         languageProvider.t(key, args: args);
     final currentTier = authProvider.user?.subscriptionTier ?? 'Freemium';
@@ -111,7 +110,6 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
     LanguageProvider languageProvider,
   ) {
     final metadata = plan?.metadata ?? const {};
-    final isArabic = languageProvider.isArabic;
     String tr(String key, {Map<String, String>? args}) =>
         languageProvider.t(key, args: args);
     return CustomCard(
@@ -190,7 +188,6 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
     final isCurrent = currentPlan != null && plan.id == currentPlan.id;
     final isUpgrade = currentPlan == null || _isUpgrade(plan, currentPlan, allPlans);
     final metadata = plan.metadata;
-    final isArabic = languageProvider.isArabic;
     String tr(String key, {Map<String, String>? args}) =>
         languageProvider.t(key, args: args);
     final monthUnitShort = tr('subscription_unit_month_short');

@@ -433,7 +433,6 @@ class _CoachMessagingScreenState extends State<CoachMessagingScreen> {
     MessagingProvider messagingProvider,
     bool isCoach,
   ) {
-    final isArabic = lang.isArabic;
     return Row(
       children: [
         Expanded(

@@ -97,7 +97,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final user = authProvider.user;
     if (user == null || user.hasCompletedSecondIntake) return;
     _promptedSecondIntake = true;
-    _showSecondIntakePrompt(user.subscriptionTier ?? 'Freemium');
+    _showSecondIntakePrompt(user.subscriptionTier);
   }
 
   void _showSecondIntakePrompt(String tier) {

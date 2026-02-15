@@ -498,7 +498,7 @@ class _CoachClientDetailScreenState extends State<CoachClientDetailScreen> {
                   const SizedBox(height: 8),
                   if (hasProgress) ...[
                     LinearProgressIndicator(
-                      value: progress!.clamp(0, 1),
+                      value: progress.clamp(0, 1),
                       minHeight: 6,
                     ),
                     const SizedBox(height: 4),

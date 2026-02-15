@@ -519,6 +519,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildTrialBanner(
     NutritionProvider provider,
     LanguageProvider lang,
@@ -592,6 +593,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
     );
   }
   
+  // ignore: unused_element
   Widget _buildTrialExpired(LanguageProvider lang, bool isArabic) {
     return Scaffold(
       appBar: AppBar(
@@ -976,6 +978,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
     );
   }
   
+  // ignore: unused_element
   Widget _buildMealsList(
     NutritionPlan plan,
     LanguageProvider lang,

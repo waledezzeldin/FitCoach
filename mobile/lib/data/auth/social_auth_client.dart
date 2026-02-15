@@ -111,7 +111,7 @@ class DefaultSocialAuthClient implements SocialAuthClient {
     final fullName = [
       credential.givenName,
       credential.familyName,
-    ].where((part) => part != null && part!.isNotEmpty).join(' ');
+    ].where((part) => part?.isNotEmpty ?? false).join(' ');
 
     return SocialAuthResult(
       provider: 'apple',

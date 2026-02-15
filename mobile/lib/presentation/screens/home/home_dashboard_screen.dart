@@ -1256,6 +1256,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildHeroHeader(LanguageProvider lang, bool isArabic) {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
@@ -1449,6 +1450,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildNavigationGrid(LanguageProvider lang, bool isArabic) {
     final authProvider = context.watch<AuthProvider>();
     final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
@@ -1590,6 +1592,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   
+  // ignore: unused_element
   Widget _buildSubscriptionBadge(LanguageProvider lang, bool isArabic) {
     final authProvider = context.watch<AuthProvider>();
     final tier = authProvider.user?.subscriptionTier ?? 'Freemium';
@@ -1670,6 +1673,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
   
+  // ignore: unused_element
   Widget _buildQuickStats(LanguageProvider lang, bool isArabic) {
     return Row(
       children: [
@@ -1737,6 +1741,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
   
+  // ignore: unused_element
   Widget _buildTodayWorkout(LanguageProvider lang, bool isArabic) {
     final workoutProvider = context.watch<WorkoutProvider>();
     final currentDay = workoutProvider.currentDay;
@@ -1832,6 +1837,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
   
+  // ignore: unused_element
   Widget _buildTodayNutrition(LanguageProvider lang, bool isArabic) {
     final nutritionProvider = context.watch<NutritionProvider>();
     
@@ -1923,6 +1929,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
   
+  // ignore: unused_element
   Widget _buildQuickActions(LanguageProvider lang, bool isArabic) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1969,6 +1976,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildDemoModeSection(LanguageProvider lang) {
     final authProvider = context.watch<AuthProvider>();
     final role = authProvider.user?.role ?? 'user';

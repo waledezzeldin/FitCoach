@@ -502,16 +502,12 @@ class _MetricItem extends StatelessWidget {
 class _NumberField extends StatefulWidget {
   final String label;
   final TextEditingController controller;
-  final int step;
   final int minValue;
-  final int? maxValue;
 
   const _NumberField({
     required this.label,
     required this.controller,
-    this.step = 1,
     this.minValue = 0,
-    this.maxValue,
   });
 
   @override
@@ -529,9 +525,6 @@ class _NumberFieldState extends State<_NumberField> {
     var next = current + delta;
     if (next < widget.minValue) {
       next = widget.minValue;
-    }
-    if (widget.maxValue != null && next > widget.maxValue!) {
-      next = widget.maxValue!;
     }
     widget.controller.text = next.toString();
   }
@@ -553,7 +546,7 @@ class _NumberFieldState extends State<_NumberField> {
           child: Row(
             children: [
               IconButton(
-                onPressed: () => _applyDelta(-widget.step),
+                onPressed: () => _applyDelta(-1),
                 icon: const Icon(Icons.remove),
                 visualDensity: VisualDensity.compact,
               ),
@@ -569,7 +562,7 @@ class _NumberFieldState extends State<_NumberField> {
                 ),
               ),
               IconButton(
-                onPressed: () => _applyDelta(widget.step),
+                onPressed: () => _applyDelta(1),
                 icon: const Icon(Icons.add),
                 visualDensity: VisualDensity.compact,
               ),

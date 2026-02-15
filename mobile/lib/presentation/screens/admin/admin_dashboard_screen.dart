@@ -404,6 +404,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
   }
   
+  // ignore: unused_element
   Widget _buildActivityItem({
     required IconData icon,
     required String title,
@@ -433,6 +434,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
   
+  // ignore: unused_element
   Widget _buildQuickActionCard({
     required IconData icon,
     required String label,
