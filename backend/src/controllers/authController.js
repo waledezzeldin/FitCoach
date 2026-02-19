@@ -6,6 +6,7 @@ const db = require('../database');
 const logger = require('../utils/logger');
 const { sendOTPSMS } = require('../services/twilioService');
 const { generateOTP } = require('../utils/helpers');
+const { isBypassEnabled } = require('../utils/featureFlags');
 const userProfileService = require('../services/userProfileService');
 
 const appleJwks = jwksClient({
@@ -494,6 +495,7 @@ exports.socialLogin = async (req, res) => {
       });
     }
 
+    const bypassSocialAuth = isBypassEnabled('BYPASS_SOCIAL_AUTH');
     let verifiedProfile = {
       id: socialId,
       email,
@@ -501,60 +503,70 @@ exports.socialLogin = async (req, res) => {
       profilePhoto
     };
 
-    if (provider === 'google') {
-      const googleData = await verifyGoogleAccessToken(accessToken);
-      const googleId = googleData.sub;
-      if (socialId && googleId && socialId !== googleId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Social ID mismatch'
-        });
-      }
-      const expectedAud = process.env.GOOGLE_CLIENT_ID;
-      if (expectedAud && googleData.aud !== expectedAud) {
-        return res.status(400).json({
-          success: false,
-          message: 'Google token audience mismatch'
-        });
-      }
+    if (bypassSocialAuth) {
+      logger.info(`Social auth bypass enabled for provider: ${provider}`);
       verifiedProfile = {
-        id: googleId || socialId,
-        email: googleData.email || email,
-        name: googleData.name || name,
-        profilePhoto: googleData.picture || profilePhoto
-      };
-    }
-
-    if (provider === 'facebook') {
-      const fbData = await verifyFacebookAccessToken(accessToken);
-      if (socialId && fbData.id && socialId !== fbData.id) {
-        return res.status(400).json({
-          success: false,
-          message: 'Social ID mismatch'
-        });
-      }
-      verifiedProfile = {
-        id: fbData.id || socialId,
-        email: fbData.email || email,
-        name: fbData.name || name,
-        profilePhoto: fbData.picture?.data?.url || profilePhoto
-      };
-    }
-
-    if (provider === 'apple') {
-      const applePayload = await verifyAppleIdentityToken(accessToken);
-      if (socialId && applePayload.sub && socialId !== applePayload.sub) {
-        return res.status(400).json({
-          success: false,
-          message: 'Social ID mismatch'
-        });
-      }
-      verifiedProfile = {
-        id: applePayload.sub || socialId,
-        email: applePayload.email || email,
-        name: name || 'Apple User',
+        id: socialId || `${provider}_${Date.now()}`,
+        email,
+        name,
         profilePhoto
       };
+    } else {
+      if (provider === 'google') {
+        const googleData = await verifyGoogleAccessToken(accessToken);
+        const googleId = googleData.sub;
+        if (socialId && googleId && socialId !== googleId) {
+          return res.status(400).json({
+            success: false,
+            message: 'Social ID mismatch'
+          });
+        }
+        const expectedAud = process.env.GOOGLE_CLIENT_ID;
+        if (expectedAud && googleData.aud !== expectedAud) {
+          return res.status(400).json({
+            success: false,
+            message: 'Google token audience mismatch'
+          });
+        }
+        verifiedProfile = {
+          id: googleId || socialId,
+          email: googleData.email || email,
+          name: googleData.name || name,
+          profilePhoto: googleData.picture || profilePhoto
+        };
+      }
+
+      if (provider === 'facebook') {
+        const fbData = await verifyFacebookAccessToken(accessToken);
+        if (socialId && fbData.id && socialId !== fbData.id) {
+          return res.status(400).json({
+            success: false,
+            message: 'Social ID mismatch'
+          });
+        }
+        verifiedProfile = {
+          id: fbData.id || socialId,
+          email: fbData.email || email,
+          name: fbData.name || name,
+          profilePhoto: fbData.picture?.data?.url || profilePhoto
+        };
+      }
+
+      if (provider === 'apple') {
+        const applePayload = await verifyAppleIdentityToken(accessToken);
+        if (socialId && applePayload.sub && socialId !== applePayload.sub) {
+          return res.status(400).json({
+            success: false,
+            message: 'Social ID mismatch'
+          });
+        }
+        verifiedProfile = {
+          id: applePayload.sub || socialId,
+          email: applePayload.email || email,
+          name: name || 'Apple User',
+          profilePhoto
+        };
+      }
     }
 
     if (!verifiedProfile.id) {

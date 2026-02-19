@@ -1,6 +1,7 @@
 const admin = require('firebase-admin');
 const db = require('../database');
 const logger = require('../utils/logger');
+const { isBypassEnabled } = require('../utils/featureFlags');
 
 /**
  * Push Notification Service
@@ -9,26 +10,39 @@ const logger = require('../utils/logger');
 
 // Initialize Firebase Admin SDK
 let firebaseApp;
+const bypassFirebase = isBypassEnabled('BYPASS_FIREBASE');
 
-try {
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    : require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './firebase-service-account.json');
+if (bypassFirebase) {
+  logger.warn('Firebase bypass enabled. Push notifications are mocked as successful.');
+} else {
+  try {
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
+      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+      : require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './firebase-service-account.json');
 
-  firebaseApp = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
 
-  logger.info('Firebase Admin SDK initialized successfully');
-} catch (error) {
-  logger.warn('Firebase Admin SDK initialization failed:', error.message);
-  logger.warn('Push notifications will be disabled');
+    logger.info('Firebase Admin SDK initialized successfully');
+  } catch (error) {
+    logger.warn('Firebase Admin SDK initialization failed:', error.message);
+    logger.warn('Push notifications will be disabled');
+  }
 }
 
 /**
  * Send push notification to a single device
  */
 exports.sendToDevice = async (deviceToken, notification, data = {}) => {
+  if (bypassFirebase) {
+    return {
+      success: true,
+      messageId: `bypass_firebase_${Date.now()}`,
+      bypassed: true
+    };
+  }
+
   if (!firebaseApp) {
     logger.warn('Firebase not initialized, skipping notification');
     return { success: false, reason: 'firebase_not_initialized' };
@@ -88,6 +102,15 @@ exports.sendToDevice = async (deviceToken, notification, data = {}) => {
  * Send push notification to multiple devices
  */
 exports.sendToMultipleDevices = async (deviceTokens, notification, data = {}) => {
+  if (bypassFirebase) {
+    return {
+      success: true,
+      successCount: Array.isArray(deviceTokens) ? deviceTokens.length : 0,
+      failureCount: 0,
+      bypassed: true
+    };
+  }
+
   if (!firebaseApp) {
     logger.warn('Firebase not initialized, skipping notifications');
     return { success: false, reason: 'firebase_not_initialized' };
@@ -454,6 +477,14 @@ async function removeMultipleDeviceTokens(deviceTokens) {
  * Send topic notification (e.g., to all users, all coaches, etc.)
  */
 exports.sendToTopic = async (topic, notification, data = {}) => {
+  if (bypassFirebase) {
+    return {
+      success: true,
+      messageId: `bypass_topic_${topic}_${Date.now()}`,
+      bypassed: true
+    };
+  }
+
   if (!firebaseApp) {
     logger.warn('Firebase not initialized, skipping notification');
     return { success: false, reason: 'firebase_not_initialized' };

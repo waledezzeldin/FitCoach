@@ -77,9 +77,9 @@ Date: 2026-02-03
   - Messaging provider: mobile/lib/presentation/providers/messaging_provider.dart
   - Repository: mobile/lib/data/repositories/messaging_repository.dart
 - Backend
-  - GET /v2/conversations
-  - GET /v2/conversations/:id/messages
-  - DELETE /v2/conversations/:id/messages
+  - GET /v2/messages/conversations
+  - GET /v2/messages/conversations/:id/messages
+  - DELETE /v2/messages/conversations/:id/messages
   - POST /v2/messages/send
   - POST /v2/messages/upload
   - PATCH /v2/messages/:id/read

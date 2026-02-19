@@ -1,22 +1,39 @@
 const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
+const { isBypassEnabled } = require('../utils/featureFlags');
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: process.env.SMTP_PORT || 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD
+let transporter;
+
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: process.env.SMTP_PORT || 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD
+      }
+    });
   }
-});
+
+  return transporter;
+};
 
 /**
  * Send email
  */
 exports.sendEmail = async (to, subject, html, text) => {
   try {
+    if (isBypassEnabled('BYPASS_SMTP')) {
+      logger.info(`SMTP bypass enabled, skipping email send to ${to}`);
+      return {
+        messageId: `bypass_smtp_${Date.now()}`,
+        accepted: [to],
+        bypassed: true
+      };
+    }
+
     const mailOptions = {
       from: `"FitCoach+" <${process.env.SMTP_USER}>`,
       to,
@@ -25,7 +42,7 @@ exports.sendEmail = async (to, subject, html, text) => {
       html: html || text
     };
     
-    const info = await transporter.sendMail(mailOptions);
+    const info = await getTransporter().sendMail(mailOptions);
     
     logger.info(`Email sent: ${info.messageId}`);
     return info;

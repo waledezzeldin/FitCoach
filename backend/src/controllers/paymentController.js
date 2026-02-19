@@ -2,6 +2,7 @@ const paymentService = require('../services/paymentService');
 const logger = require('../utils/logger');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const crypto = require('crypto');
+const { isBypassEnabled } = require('../utils/featureFlags');
 
 const normalizeSignature = (signature) => {
   if (!signature || typeof signature !== 'string') return '';
@@ -89,6 +90,11 @@ exports.createCheckout = async (req, res) => {
  * Stripe webhook handler
  */
 exports.stripeWebhook = async (req, res) => {
+  if (isBypassEnabled('BYPASS_STRIPE')) {
+    logger.info('Stripe webhook bypass enabled, skipping signature verification and handler');
+    return res.json({ received: true, bypassed: true });
+  }
+
   const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -115,6 +121,11 @@ exports.stripeWebhook = async (req, res) => {
  */
 exports.tapWebhook = async (req, res) => {
   try {
+    if (isBypassEnabled('BYPASS_TAP')) {
+      logger.info('Tap webhook bypass enabled, skipping signature verification and handler');
+      return res.json({ received: true, bypassed: true });
+    }
+
     const payload = req.body;
     const tapSignature = req.headers['tap-signature'] || req.headers['x-tap-signature'];
     const webhookSecret = process.env.TAP_WEBHOOK_SECRET || process.env.TAP_SECRET_KEY;

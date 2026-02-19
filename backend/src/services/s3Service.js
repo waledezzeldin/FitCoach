@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger');
+const { isBypassEnabled } = require('../utils/featureFlags');
 
 // Configure AWS
 const s3 = new AWS.S3({
@@ -16,6 +17,22 @@ const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'fitcoach-uploads';
  */
 exports.uploadFile = async (fileOrBuffer, folderOrKey = 'general', mimeType) => {
   try {
+    if (isBypassEnabled('BYPASS_S3')) {
+      let key = typeof folderOrKey === 'string' ? folderOrKey : 'general';
+      if (!key.includes('/')) {
+        key = `${key}/${uuidv4()}`;
+      }
+
+      const url = `https://bypass.local/${key}`;
+      logger.info(`S3 bypass enabled, returning mock upload for key: ${key}`);
+      return {
+        url,
+        key,
+        bucket: BUCKET_NAME,
+        bypassed: true
+      };
+    }
+
     let key;
     let body;
     let contentType;
@@ -79,6 +96,11 @@ exports.uploadFiles = async (files, folder = 'general') => {
  */
 exports.deleteFile = async (key) => {
   try {
+    if (isBypassEnabled('BYPASS_S3')) {
+      logger.info(`S3 bypass enabled, skipping delete for key: ${key}`);
+      return { success: true, bypassed: true };
+    }
+
     const params = {
       Bucket: BUCKET_NAME,
       Key: key
@@ -99,6 +121,10 @@ exports.deleteFile = async (key) => {
  */
 exports.getPresignedUrl = (key, expiresIn = 3600) => {
   try {
+    if (isBypassEnabled('BYPASS_S3')) {
+      return `https://bypass.local/${key}?expiresIn=${expiresIn}`;
+    }
+
     const params = {
       Bucket: BUCKET_NAME,
       Key: key,
@@ -119,6 +145,15 @@ exports.getPresignedUrl = (key, expiresIn = 3600) => {
  */
 exports.getFileMetadata = async (key) => {
   try {
+    if (isBypassEnabled('BYPASS_S3')) {
+      return {
+        size: 0,
+        contentType: 'application/octet-stream',
+        lastModified: new Date(),
+        etag: 'bypass-etag'
+      };
+    }
+
     const params = {
       Bucket: BUCKET_NAME,
       Key: key

@@ -104,7 +104,7 @@ app.get('/', (req, res) => {
       payments: `/${API_VERSION}/payments`,
       notifications: `/${API_VERSION}/notifications`,
       inbody: `/${API_VERSION}/inbody`,
-      videoCalls: `/${API_VERSION}/videoCalls`
+      videoCalls: `/${API_VERSION}/video-calls`
     }
   });
 });

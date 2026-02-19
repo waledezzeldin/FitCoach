@@ -2,6 +2,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const axios = require('axios');
 const db = require('../database');
 const logger = require('../utils/logger');
+const { isBypassEnabled } = require('../utils/featureFlags');
 
 /**
  * Payment Service
@@ -62,6 +63,26 @@ exports.createStripeCheckout = async (userId, tier, billingCycle = 'monthly') =>
     }
 
     const amount = billingCycle === 'yearly' ? pricing.yearly_usd : pricing.monthly_usd;
+    if (isBypassEnabled('BYPASS_STRIPE')) {
+      const sessionId = `bypass_stripe_${Date.now()}`;
+      const checkoutUrl = `${process.env.FRONTEND_URL}/payment/success?provider=stripe&bypass=1`;
+
+      logger.info(`Stripe bypass enabled, returning mock checkout for user ${userId}`);
+
+      await db.query(
+        `INSERT INTO payment_transactions (
+          user_id, provider, amount, currency, status, tier, billing_cycle,
+          external_payment_id, checkout_url
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [userId, PROVIDERS.STRIPE, amount, 'usd', 'pending', tier, billingCycle, sessionId, checkoutUrl]
+      );
+
+      return {
+        sessionId,
+        checkoutUrl,
+        bypassed: true
+      };
+    }
 
     const session = await stripe.checkout.sessions.create({
       customer_email: userData.email,
@@ -135,6 +156,26 @@ exports.createTapCheckout = async (userId, tier, billingCycle = 'monthly') => {
     }
 
     const amount = billingCycle === 'yearly' ? pricing.yearly_sar : pricing.monthly_sar;
+    if (isBypassEnabled('BYPASS_TAP')) {
+      const chargeId = `bypass_tap_${Date.now()}`;
+      const checkoutUrl = `${process.env.FRONTEND_URL}/payment/success?provider=tap&bypass=1`;
+
+      logger.info(`Tap bypass enabled, returning mock checkout for user ${userId}`);
+
+      await db.query(
+        `INSERT INTO payment_transactions (
+          user_id, provider, amount, currency, status, tier, billing_cycle,
+          external_payment_id, checkout_url
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [userId, PROVIDERS.TAP, amount, 'sar', 'pending', tier, billingCycle, chargeId, checkoutUrl]
+      );
+
+      return {
+        chargeId,
+        checkoutUrl,
+        bypassed: true
+      };
+    }
 
     // Tap Payments API
     const tapResponse = await axios.post(
@@ -396,11 +437,13 @@ exports.cancelSubscription = async (userId) => {
 
     const { stripe_subscription_id } = user.rows[0];
 
-    if (stripe_subscription_id) {
+    if (stripe_subscription_id && !isBypassEnabled('BYPASS_STRIPE')) {
       // Cancel Stripe subscription
       await stripe.subscriptions.update(stripe_subscription_id, {
         cancel_at_period_end: true
       });
+    } else if (stripe_subscription_id) {
+      logger.info(`Stripe bypass enabled, skipping Stripe cancel API for user ${userId}`);
     }
 
     // Update user status

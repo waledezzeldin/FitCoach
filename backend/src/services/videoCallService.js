@@ -2,6 +2,7 @@ const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
 const db = require('../database');
 const logger = require('../utils/logger');
 const { v4: uuidv4 } = require('uuid');
+const { isBypassEnabled } = require('../utils/featureFlags');
 
 /**
  * Video Call Service using Agora
@@ -14,8 +15,11 @@ class VideoCallService {
     // Agora credentials from environment
     this.appId = process.env.AGORA_APP_ID;
     this.appCertificate = process.env.AGORA_APP_CERTIFICATE;
+    this.bypassAgora = isBypassEnabled('BYPASS_AGORA');
     
-    if (!this.appId || !this.appCertificate) {
+    if (this.bypassAgora) {
+      logger.warn('Agora bypass enabled. Video call tokens are mocked.');
+    } else if (!this.appId || !this.appCertificate) {
       logger.warn('Agora credentials not configured. Video calls will not work.');
     }
   }
@@ -25,6 +29,22 @@ class VideoCallService {
    */
   generateToken(channelName, uid, role = 'publisher', expirationTime = 3600) {
     try {
+      if (this.bypassAgora) {
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const privilegeExpiredTs = currentTimestamp + expirationTime;
+        const tokenPayload = `${channelName}:${uid}:${role}:${privilegeExpiredTs}`;
+        const token = Buffer.from(tokenPayload).toString('base64');
+
+        return {
+          token,
+          appId: this.appId || 'bypass-agora-app-id',
+          channelName,
+          uid,
+          expiresAt: new Date(privilegeExpiredTs * 1000),
+          bypassed: true
+        };
+      }
+
       if (!this.appId || !this.appCertificate) {
         throw new Error('Agora credentials not configured');
       }
@@ -154,7 +174,7 @@ class VideoCallService {
             name: appointment.coach_name
           }
         },
-        appId: this.appId,
+        appId: userToken.appId,
         channelName: session.channel_name
       };
 
@@ -208,7 +228,7 @@ class VideoCallService {
 
       return {
         token: tokenData.token,
-        appId: this.appId,
+        appId: tokenData.appId,
         channelName: session.channel_name,
         uid,
         role: isCoach ? 'coach' : 'user',

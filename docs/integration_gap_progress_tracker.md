@@ -1,6 +1,6 @@
 # Flutter-Backend Integration Gap Progress Tracker
 
-Last updated: 2026-02-12  
+Last updated: 2026-02-15  
 Scope: `mobile/` + `backend/` integration gaps, documentation updates, and frontend/backend testing coverage.
 
 ## How To Use This Tracker
@@ -157,3 +157,4 @@ Scope: `mobile/` + `backend/` integration gaps, documentation updates, and front
 - 2026-02-12: Final hardening pass completed for remaining diagnostics in profile/photo, notification settings, and video-call flows (async context safety, deprecated API migration, constructor/import cleanup).
 - 2026-02-12: Full verification executed: `flutter test` passed (198 tests), backend Jest suite passed with `--runInBand --forceExit` (188 passed, 54 skipped), and messages integration test mock aligned with current `checkMessageQuota` middleware stack.
 - 2026-02-15: Mobile analyzer warning cleanup pass completed (warning count reduced to 0); removed dead/unused warning sources and redundant null assertions while preserving feature behavior.
+- 2026-02-15: Added per-feature backend bypass flags in `backend/.env` and wired them into Twilio, Stripe, Tap, S3, Agora, SMTP, social auth verification, and Firebase push services/controllers so third-party dependencies can be toggled independently during development.
